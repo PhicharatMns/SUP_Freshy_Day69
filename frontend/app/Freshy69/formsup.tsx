@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Myself from "./component/page/myself";
 import IG from "./component/page/IG";
 import { div } from "framer-motion/client";
+import { AnimatePresence, AnimateSharedLayout } from "framer-motion";
 
 export interface propspopup {
     myself: boolean
@@ -129,21 +130,25 @@ export default function Formsup() {
                 </div>
             </div>
 
-            {popup.myself && (
-                <div className="z-90 relative">
-                    <Myself
-                        setpoup={setpoup}
-                    />
-                </div>
-            )}
+            <AnimatePresence>
+                {popup.myself && (
+                    <div className="z-90 relative">
+                        <Myself
+                            setpoup={setpoup}
+                        />
+                    </div>
+                )}
+            </AnimatePresence>
 
-            {popup.myopenpopypIG && (
-                <div className="z-90 relative">
-                    <IG
-                        setpoup={setpoup}
-                    />
-                </div>
-            )}
+            <AnimatePresence>
+                {popup.myopenpopypIG && (
+                    <div className="z-90 relative">
+                        <IG
+                            setpoup={setpoup}
+                        />
+                    </div>
+                )}
+            </AnimatePresence>
 
         </div>
     )

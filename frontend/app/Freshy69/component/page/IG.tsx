@@ -1,5 +1,6 @@
 import { SetStateAction, useState } from "react";
 import { propspopup } from "../../formsup";
+import { motion } from 'motion/react'
 
 interface propsMyslt {
     setpoup: React.Dispatch<SetStateAction<propspopup>>;
@@ -12,12 +13,16 @@ export default function IG({ setpoup }: propsMyslt) {
 
     const clearpopup = () => setpoup(prev => ({
         ...prev,
-        myself: false
+        myopenpopypIG: false
     }))
 
     return (
-        <div className='absolute inset-0 flex flex-col items-center md:justify-center justify-end w-full h-screen '>
-            <div className="bg-white w-full h-[85%] rounded-t-[15]">
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className='absolute inset-0 flex flex-col items-center md:justify-center justify-end w-full h-screen '>
+            <motion.div className="bg-white w-full h-[85%] rounded-t-[15]">
                 <div />
 
                 <div className=" flex justify-end px-3 pt-2">
@@ -121,7 +126,7 @@ export default function IG({ setpoup }: propsMyslt) {
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     )
 }
