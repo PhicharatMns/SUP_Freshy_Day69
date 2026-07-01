@@ -3,11 +3,23 @@ import { useEffect, useState } from "react";
 import QRCode from 'qrcode';
 import Image from "next/image";
 
+interface Bubble {
+    id: number;
+    color: string;
+    size: number;
+    duration: number;
+    left: string;
+    delay: string;
+    opacity: number;
+}
 
 export default function Cdweb() {
+
     const [src, setSrc] = useState('');
+    const [bubbles, setBubbles] = useState<Bubble[]>([]);
 
     useEffect(() => {
+        // สร้าง QR Code
         const generateQR = async () => {
             try {
                 const url = await QRCode.toDataURL('https://www.instagram.com/bp_mnnn/');
@@ -17,7 +29,21 @@ export default function Cdweb() {
             }
         };
         generateQR();
+
+        // 2. สุ่มสร้างฟองสบู่ภายใน useEffect (รันเฉพาะฝั่ง Client แน่นอน)
+        const generatedBubbles = Array.from({ length: 30 }).map((_, i) => ({
+            id: i,
+            color: bubbleColors[Math.floor(Math.random() * bubbleColors.length)],
+            size: 13 + Math.random() * 27,
+            duration: 4 + Math.random() * 9,
+            left: `${Math.random() * 100}%`,
+            delay: `-${Math.random() * 15}s`,
+            opacity: 0.85 + Math.random() * 0.15,
+        }));
+        setBubbles(generatedBubbles);
     }, []);
+
+
 
     const bubbleColors = [
         'bg-white', 'bg-sky-300', 'bg-purple-300', 'bg-pink-300',
@@ -28,29 +54,24 @@ export default function Cdweb() {
         <div className="relative w-full h-screen overflow-hidden ">
             {/* ฟองสบู่ลอย */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                {Array.from({ length: 30 }).map((_, i) => {
-                    const color = bubbleColors[Math.floor(Math.random() * bubbleColors.length)];
-                    const size = 13 + Math.random() * 27;
-                    const duration = 4 + Math.random() * 9;
-
-                    return (
-                        <div
-                            key={i}
-                            className={`absolute bottom-[-60px] rounded-full ${color}
-                                        shadow-[0_0_18px_#fff,0_0_32px_rgba(255,255,255,0.5),inset_8px_8px_12px_rgba(255,255,255,0.9)]
-                                        ring-1 ring-white/50
-                                       animate-[floatBubble_linear_infinite]`}
-                            style={{
-                                left: `${Math.random() * 100}%`,
-                                width: `${size}px`,
-                                height: `${size}px`,
-                                animationDuration: `${duration}s`,
-                                animationDelay: `-${Math.random() * 15}s`,
-                                opacity: 0.85 + Math.random() * 0.15,
-                            }}
-                        />
-                    );
-                })}
+                {/* 3. เปลี่ยนมา Loop จาก State แทนการสร้างใหม่ดื้อๆ ใน JSX */}
+                {bubbles.map((bubble) => (
+                    <div
+                        key={bubble.id}
+                        className={`absolute bottom-[-60px] rounded-full ${bubble.color}
+                                    shadow-[0_0_18px_#fff,0_0_32px_rgba(255,255,255,0.5),inset_8px_8px_12px_rgba(255,255,255,0.9)]
+                                    ring-1 ring-white/50
+                                   animate-[floatBubble_linear_infinite]`}
+                        style={{
+                            left: bubble.left,
+                            width: `${bubble.size}px`,
+                            height: `${bubble.size}px`,
+                            animationDuration: `${bubble.duration}s`,
+                            animationDelay: bubble.delay,
+                            opacity: bubble.opacity,
+                        }}
+                    />
+                ))}
             </div>
 
             {/* เนื้อหาหลัก */}

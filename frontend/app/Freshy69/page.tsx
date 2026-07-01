@@ -10,10 +10,10 @@ export default function PageFreshy69() {
                 <div className="absolute inset-0">
                     <BK />
                 </div>
-                    <div className='relative z-60 '>
-                        <Formsup
-                        />
-                    </div>
+                <div className='relative z-60 '>
+                    <Formsup
+                    />
+                </div>
             </div>
         </div>
     )
