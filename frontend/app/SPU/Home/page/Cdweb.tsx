@@ -132,13 +132,14 @@ export default function Cdweb() {
                         />
                     </div>
                 )}
-
             </div>
 
-            {/* แสง overlay */}
+         
+
+            
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_25%,rgba(255,255,255,0.18),transparent_65%)]" />
 
-            {/* CSS Styles */}
+           
             <style jsx global>{`
                 @keyframes bounce-slow {
                     0%, 100% { transform: translateY(0); }
