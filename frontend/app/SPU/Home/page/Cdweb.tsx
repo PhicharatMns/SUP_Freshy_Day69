@@ -1,8 +1,9 @@
-'use client'
+"use client";
 
 import { useEffect, useState } from "react";
 import QRCode from 'qrcode';
 import Image from "next/image";
+
 
 export default function Cdweb() {
     const [src, setSrc] = useState('');
@@ -10,7 +11,7 @@ export default function Cdweb() {
     useEffect(() => {
         const generateQR = async () => {
             try {
-                const url = await QRCode.toDataURL('https://www.instagram.com/ntyz_lifz/');
+                const url = await QRCode.toDataURL('https://www.instagram.com/bp_mnnn/');
                 setSrc(url);
             } catch (err) {
                 console.error("เกิดข้อผิดพลาดในการสร้าง QR Code:", err);
@@ -21,7 +22,7 @@ export default function Cdweb() {
     }, []);
 
     const bubbleColors = [
-        'bg-white', 'bg-sky-300', 'bg-purple-300', 'bg-pink-300', 
+        'bg-white', 'bg-sky-300', 'bg-purple-300', 'bg-pink-300',
         'bg-emerald-300', 'bg-violet-300', 'bg-rose-300', 'bg-cyan-300'
     ];
 
@@ -34,7 +35,7 @@ export default function Cdweb() {
                     const color = bubbleColors[Math.floor(Math.random() * bubbleColors.length)];
                     const size = 13 + Math.random() * 27;
                     const duration = 4 + Math.random() * 9;
-                    
+
                     return (
                         <div
                             key={i}
@@ -54,24 +55,24 @@ export default function Cdweb() {
                     );
                 })}
             </div>
-              
+
             {/* เนื้อหาหลัก */}
             <div className="absolute inset-0 flex flex-col items-center justify-center z-50 gap-6">
-                
+
                 {/* SVG Text โค้ง */}
                 <div className="flex items-center justify-center -mb-6 -mt-25">
                     <svg width="620" height="190" viewBox="0 0 620 190" className="drop-shadow-2xl">
                         <defs>
-                            <path 
-                                id="curve" 
-                                d="M 40 160 Q 310 35 580 160" 
+                            <path
+                                id="curve"
+                                d="M 40 160 Q 310 35 580 160"
                             />
                         </defs>
 
-                        <text 
+                        <text
                             className="font-luckiest-guy"
-                            fontSize="68" 
-                            fontWeight="900" 
+                            fontSize="68"
+                            fontWeight="900"
                             letterSpacing="6"
                             textAnchor="middle"
                         >
@@ -88,11 +89,12 @@ export default function Cdweb() {
                 {/* ข้อความชักชวน (อยู่ด้านบน QR Code) */}
                 <div className="text-center ">
                     <p className="text-5xl font-bold text-white tracking-widest drop-shadow-lg mb-5">
-                        <span className="text-red-500">สแกน</span><span className="text-yellow-500">ขึ้น</span><span className="text-blue-500">จอ</span>
+                        <span className="text-red-500">สแกน</span>
+                        <span className="text-yellow-500">ขึ้น</span>
+                        <span className="text-blue-500">จอ</span>
                     </p>
                 </div>
 
-                {/* QR Code */}
                 {src && (
                     <div className="relative  bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl">
                         <Image
@@ -109,6 +111,7 @@ export default function Cdweb() {
 
             {/* แสง overlay */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_25%,rgba(255,255,255,0.18),transparent_65%)]" />
+
         </div>
     );
 }
