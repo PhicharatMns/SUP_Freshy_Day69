@@ -3,34 +3,72 @@
 import { useState, useEffect } from "react";
 import Myself from "./component/page/myself";
 import IG from "./component/page/IG";
-import { div } from "framer-motion/client";
-import { AnimatePresence, AnimateSharedLayout } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
-export interface propspopup {
-    myself: boolean
-    myopenpopypIG: boolean
+// Interface สำหรับข้อมูลฟองสบู่
+interface Bubble {
+  color: string;
+  size: number;
+  duration: number;
+  left: number;
+  delay: number;
+  opacity: number;
 }
 
-// สร้าง type รองรับข้อมูลฟองสบู่
-interface Bubble {
-    color: string;
-    size: number;
-    duration: number;
-    left: number;
-    delay: number;
-    opacity: number;
+export interface propspopup {
+  myself: boolean;
+  myopenpopypIG: boolean;
 }
 
 export default function Formsup() {
-    const [popup, setpoup] = useState({
-        myself: false,
-        myopenpopypIG: false
-    })
+  const [popup, setpoup] = useState({
+    myself: false,
+    myopenpopypIG: false,
+  });
 
-    // สร้าง state ไว้เก็บข้อมูลฟองสบู่ (เริ่มต้นเป็นอาร์เรย์ว่างเพื่อไม่ให้ฝั่ง Server แอบเรนเดอร์ล่วงหน้า)
-    const [bubbles, setBubbles] = useState<Bubble[]>([]);
+ 
+  const [bubbles, setBubbles] = useState<Bubble[]>([]);
 
-    const openpopupMyselt = () => setpoup(prev => ({
+
+
+
+
+  // ฟองสบู่
+  const bubbleColors = [
+    "bg-white",
+    "bg-sky-300",
+    "bg-purple-300",
+    "bg-pink-300",
+    "bg-emerald-300",
+    "bg-violet-300",
+    "bg-rose-300",
+    "bg-cyan-300",
+  ];
+
+  useEffect(() => {
+    const generatedBubbles = Array.from({ length: 30 }).map(() => ({
+      color: bubbleColors[Math.floor(Math.random() * bubbleColors.length)],
+      size: 13 + Math.random() * 27,
+      duration: 4 + Math.random() * 9,
+      left: Math.random() * 100,
+      delay: Math.random() * 15,
+      opacity: 0.85 + Math.random() * 0.15,
+    }));
+    setBubbles(generatedBubbles);
+  }, []);
+
+  // Animation Variants
+  const textContainerVariants = {
+    animate: { transition: { staggerChildren: 0.2 } },
+  };
+  const wordVariants = {
+    animate: {
+      y: [0, -10, 0],
+      transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+    },
+  };
+
+   const openpopupMyselt = () => setpoup(prev => ({
         ...prev,
         myself: true
     }))
@@ -40,7 +78,7 @@ export default function Formsup() {
         myopenpopypIG: true
     }))
 
-    const Social = [
+const Social = [
         {
             title: 'แนะนำตัว',
             popup: openpopupMyselt,
@@ -50,33 +88,63 @@ export default function Formsup() {
             title: 'IG ไอใจ',
             popup: openpopypIG,
             gradient: 'from-purple-600 via-rose-500 to-amber-500',
+        },
+        {
+            title: 'ถาม-ตอบ',
+            // popup: openpopupAnswer,
+            gradient: 'from-purple-600 via-rose-500 to-amber-500',
+        },
+        {
+            title: 'PopCat',
+            // popup: openpopupPopupCat,
+            gradient: 'from-purple-600 via-rose-500 to-amber-500',
         }
     ]
+    
+  return (
+    <div className="relative w-full h-screen overflow-hidden">
+      {/* 1. หน้าต่างคำเตือน (Warning Modal) */}
+      {/* <AnimatePresence>
+        {warning && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              className="bg-white p-6 rounded-[20px] max-w-sm w-full shadow-2xl text-center"
+            >
+              <h2 className="text-xl font-bold text-red-500 mb-3">
+                ⚠️ ข้อควรระวัง
+              </h2>
+              <p className="text-slate-600 mb-6 text-sm">
+                ห้ามโพสต์รูปลามกอนาจาร คำหยาบคาย
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setWarning(false)}
+                  className="flex-1 py-2 rounded-xl bg-slate-100 font-medium hover:bg-slate-200 transition-all"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  onClick={confirmWarning}
+                  className="flex-1 py-2 rounded-xl bg-purple-600 text-white font-medium hover:bg-purple-700 transition-all"
+                >
+                  เข้าใจแล้ว
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence> */}
 
-    const bubbleColors = [
-        'bg-white', 'bg-sky-300', 'bg-purple-300', 'bg-pink-300',
-        'bg-emerald-300', 'bg-violet-300', 'bg-rose-300', 'bg-cyan-300'
-    ];
-
-    // คำนวณค่าสุ่มเฉพาะบน Client เท่านั้นหลังจาก Hydration เสร็จสิ้น
-    useEffect(() => {
-        const generatedBubbles = Array.from({ length: 30 }).map(() => ({
-            color: bubbleColors[Math.floor(Math.random() * bubbleColors.length)],
-            size: 13 + Math.random() * 27,
-            duration: 4 + Math.random() * 9,
-            left: Math.random() * 100,
-            delay: Math.random() * 15,
-            opacity: 0.85 + Math.random() * 0.15,
-        }));
-        setBubbles(generatedBubbles);
-    }, []);
-
-    return (
-        <div>
-            <div className="absolute inset-0 flex flex-col items-center justify-center w-full h-screen z-50 ">
-
-                {/* ฟองสบู่ลอย */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* 2. พื้นหลังและเนื้อหาหลัก */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center w-full h-screen z-50">
+         <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     {bubbles.map((bubble, i) => {
                         return (
                             <div
@@ -98,29 +166,31 @@ export default function Formsup() {
                     })}
                 </div>
 
-                <div className="mb-5 text-3xl font-bold">
-                    <span className="text-red-500"> เลือก</span>
-                    <span className="text-yellow-500">ที่ชอบ </span>
-                    <span className="text-blue-500">เอาที่</span>
-                    <span className="text-red-500">ใช่</span>
-                </div>
+        <motion.div
+          className="mb-8 text-3xl font-bold flex gap-2 drop-shadow-md"
+          variants={textContainerVariants}
+          animate="animate"
+        >
+          <motion.span variants={wordVariants} className="text-red-500">
+            เลือก
+          </motion.span>
+          <motion.span variants={wordVariants} className="text-yellow-500">
+            ที่ชอบ
+          </motion.span>
+          <motion.span variants={wordVariants} className="text-blue-500">
+            เอาที่
+          </motion.span>
+          <motion.span variants={wordVariants} className="text-red-500">
+            ใช่
+          </motion.span>
+        </motion.div>
 
-                <style jsx global>{`
-                @keyframes gentleBounce {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-6px); } 
-                }
-                .animate-gentle-bounce {
-                    animation: gentleBounce 2s infinite ease-in-out;
-                }
-                `}</style>
-
-                <div className="grid grid-cols-2 gap-4 w-full max-w-2xl p-4">
+       <div className="grid grid-cols-2 gap-4 w-full max-w-2xl p-4">
                     {Social.map((e, i) => {
                         return (
                             <div
                                 onClick={e.popup}
-                                className={`w-full text-2xl h-40 flex items-center justify-center rounded-[20px] font-bold text-white shadow-lg bg-gradient-to-tr ${e.gradient} animate-gentle-bounce transition-all duration-300 cursor-pointer   `}
+                                className={`w-full text-2xl h-40 z-50 hover:scale-105 flex items-center justify-center rounded-[20px] font-bold text-white shadow-lg bg-gradient-to-tr ${e.gradient} animate-gentle-bounce transition-all duration-300 cursor-pointer   `}
                                 key={i}
                             >
                                 {e.title}
@@ -128,28 +198,23 @@ export default function Formsup() {
                         )
                     })}
                 </div>
-            </div>
+      </div>
 
-            <AnimatePresence>
-                {popup.myself && (
-                    <div className="z-90 relative">
-                        <Myself
-                            setpoup={setpoup}
-                        />
-                    </div>
-                )}
-            </AnimatePresence>
-
-            <AnimatePresence>
-                {popup.myopenpopypIG && (
-                    <div className="z-90 relative">
-                        <IG
-                            setpoup={setpoup}
-                        />
-                    </div>
-                )}
-            </AnimatePresence>
-
-        </div>
-    )
+      {/* 3. Popups */}
+      <AnimatePresence>
+        {popup.myself && (
+          <div className="z-[90] relative">
+            <Myself setpoup={setpoup} />
+          </div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {popup.myopenpopypIG && (
+          <div className="z-[90] relative">
+            <IG setpoup={setpoup} />
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
