@@ -1,9 +1,12 @@
 "use client";
 
+import { Variants } from "framer-motion";
 import { useState, useEffect } from "react";
 import Myself from "./component/page/myself";
 import IG from "./component/page/IG";
 import { motion, AnimatePresence } from "framer-motion";
+import { div } from "framer-motion/client";
+import Qa from "./component/page/QA";
 
 // Interface สำหรับข้อมูลฟองสบู่
 interface Bubble {
@@ -18,19 +21,18 @@ interface Bubble {
 export interface propspopup {
   myself: boolean;
   myopenpopypIG: boolean;
+  myQa: boolean
 }
 
 export default function Formsup() {
   const [popup, setpoup] = useState({
     myself: false,
     myopenpopypIG: false,
+    myQa: false
   });
 
- 
+
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
-
-
-
 
 
   // ฟองสบู่
@@ -57,50 +59,60 @@ export default function Formsup() {
     setBubbles(generatedBubbles);
   }, []);
 
+
   // Animation Variants
   const textContainerVariants = {
     animate: { transition: { staggerChildren: 0.2 } },
   };
-  const wordVariants = {
-    animate: {
+  const wordVariants: Variants = {
+    float: {
       y: [0, -10, 0],
-      transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+      transition: {
+        duration: 1.5,
+        repeat: Infinity,
+        ease: "easeInOut" // ✨ ผ่านฉลุย ไม่เออเร่อแล้ว
+      },
     },
   };
 
-   const openpopupMyselt = () => setpoup(prev => ({
-        ...prev,
-        myself: true
-    }))
+  const openpopupMyselt = () => setpoup(prev => ({
+    ...prev,
+    myself: true
+  }))
 
-    const openpopypIG = () => setpoup(prev => ({
-        ...prev,
-        myopenpopypIG: true
-    }))
+  const openpopypIG = () => setpoup(prev => ({
+    ...prev,
+    myopenpopypIG: true
+  }))
 
-const Social = [
-        {
-            title: 'แนะนำตัว',
-            popup: openpopupMyselt,
-            gradient: 'from-amber-400 via-pink-500 to-purple-600',
-        },
-        {
-            title: 'IG ไอใจ',
-            popup: openpopypIG,
-            gradient: 'from-purple-600 via-rose-500 to-amber-500',
-        },
-        {
-            title: 'ถาม-ตอบ',
-            // popup: openpopupAnswer,
-            gradient: 'from-purple-600 via-rose-500 to-amber-500',
-        },
-        {
-            title: 'PopCat',
-            // popup: openpopupPopupCat,
-            gradient: 'from-purple-600 via-rose-500 to-amber-500',
-        }
-    ]
-    
+  const openpopupQa = () => setpoup(prve => ({
+    ...prve,
+    myQa: true
+  }))
+
+  const Social = [
+    {
+      title: 'แนะนำตัว',
+      popup: openpopupMyselt,
+      gradient: 'from-amber-400 via-pink-500 to-purple-600',
+    },
+    {
+      title: 'IG ไอใจ',
+      popup: openpopypIG,
+      gradient: 'from-purple-600 via-rose-500 to-amber-500',
+    },
+    {
+      title: 'ถาม-ตอบ',
+      popup: openpopupQa,
+      gradient: 'from-purple-600 via-rose-500 to-amber-500',
+    },
+    {
+      title: 'PopCat',
+      // popup: openpopupPopupCat,
+      gradient: 'from-purple-600 via-rose-500 to-amber-500',
+    }
+  ]
+
   return (
     <div className="relative w-full h-screen overflow-hidden">
       {/* 1. หน้าต่างคำเตือน (Warning Modal) */}
@@ -143,28 +155,28 @@ const Social = [
       </AnimatePresence> */}
 
       {/* 2. พื้นหลังและเนื้อหาหลัก */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center w-full h-screen z-50">
-         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    {bubbles.map((bubble, i) => {
-                        return (
-                            <div
-                                key={i}
-                                className={`absolute bottom-[-60px] rounded-full ${bubble.color} 
+      <div className="absolute inset-0 flex flex-col items-center justify-center w-full h-full z-50">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {bubbles.map((bubble, i) => {
+            return (
+              <div
+                key={i}
+                className={`absolute bottom-[-60px] rounded-full ${bubble.color} 
                                        shadow-[0_0_18px_#fff,0_0_32px_rgba(255,255,255,0.5),inset_8px_8px_12px_rgba(255,255,255,0.9)] 
                                        ring-1 ring-white/50
                                        animate-[floatBubble_linear_infinite]`}
-                                style={{
-                                    left: `${bubble.left}%`,
-                                    width: `${bubble.size}px`,
-                                    height: `${bubble.size}px`,
-                                    animationDuration: `${bubble.duration}s`,
-                                    animationDelay: `-${bubble.delay}s`,
-                                    opacity: bubble.opacity,
-                                }}
-                            />
-                        );
-                    })}
-                </div>
+                style={{
+                  left: `${bubble.left}%`,
+                  width: `${bubble.size}px`,
+                  height: `${bubble.size}px`,
+                  animationDuration: `${bubble.duration}s`,
+                  animationDelay: `-${bubble.delay}s`,
+                  opacity: bubble.opacity,
+                }}
+              />
+            );
+          })}
+        </div>
 
         <motion.div
           className="mb-8 text-3xl font-bold flex gap-2 drop-shadow-md"
@@ -185,22 +197,21 @@ const Social = [
           </motion.span>
         </motion.div>
 
-       <div className="grid grid-cols-2 gap-4 w-full max-w-2xl p-4">
-                    {Social.map((e, i) => {
-                        return (
-                            <div
-                                onClick={e.popup}
-                                className={`w-full text-2xl h-40 z-50 hover:scale-105 flex items-center justify-center rounded-[20px] font-bold text-white shadow-lg bg-gradient-to-tr ${e.gradient} animate-gentle-bounce transition-all duration-300 cursor-pointer   `}
-                                key={i}
-                            >
-                                {e.title}
-                            </div>
-                        )
-                    })}
-                </div>
+        <div className="grid grid-cols-2 gap-4 w-full max-w-2xl p-4">
+          {Social.map((e, i) => {
+            return (
+              <div
+                onClick={e.popup}
+                className={`w-full text-2xl h-40 z-50 hover:scale-105 flex items-center justify-center rounded-[20px] font-bold text-white shadow-lg bg-gradient-to-tr ${e.gradient} animate-gentle-bounce transition-all duration-300 cursor-pointer   `}
+                key={i}
+              >
+                {e.title}
+              </div>
+            )
+          })}
+        </div>
       </div>
 
-      {/* 3. Popups */}
       <AnimatePresence>
         {popup.myself && (
           <div className="z-[90] relative">
@@ -208,10 +219,23 @@ const Social = [
           </div>
         )}
       </AnimatePresence>
+
       <AnimatePresence>
         {popup.myopenpopypIG && (
           <div className="z-[90] relative">
-            <IG setpoup={setpoup} />
+            <IG
+              setpoup={setpoup}
+            />
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {popup.myQa && (
+          <div className="z-[90] relative">
+            <Qa
+              setpoup={setpoup}
+            />
           </div>
         )}
       </AnimatePresence>

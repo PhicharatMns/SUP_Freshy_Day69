@@ -120,26 +120,32 @@ export default function Cdweb() {
                 </div>
 
                 {/* QR Code ที่เด้ง */}
-                {src && (
-                    <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-3xl shadow-2xl animate-bounce-slow p-2 md:p-0">
+                <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-3xl shadow-2xl animate-bounce-slow p-2 md:p-0">
+
+                    {!src ? (
+                        <div className="w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[380px] md:h-[380px] rounded-xl md:rounded-2xl bg-white animate-pulse flex items-center justify-center">
+                            <div className="w-20 h-20 border-4 border-slate-300 border-t-slate-500 rounded-full animate-spin" />
+                        </div>
+                    ) : (
                         <Image
-                            priority={true}
+                            priority
                             src={src}
                             alt="Instagram QR"
                             width={380}
                             height={380}
                             className="w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[380px] md:h-[380px] rounded-xl md:rounded-2xl"
                         />
-                    </div>
-                )}
+                    )}
+
+                </div>
             </div>
 
-         
 
-            
+
+
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_25%,rgba(255,255,255,0.18),transparent_65%)]" />
 
-           
+
             <style jsx global>{`
                 @keyframes bounce-slow {
                     0%, 100% { transform: translateY(0); }
