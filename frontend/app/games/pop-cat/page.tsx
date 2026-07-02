@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 
 // =========================================================================
@@ -272,6 +272,19 @@ export default function PopCatGamePage() {
   const [isBouncing, setIsBouncing] = useState(false);
   // เพิ่มเลขนี้ทุกครั้งที่กด เพื่อ "รีสตาร์ท" แอนิเมชันป๊อป/ประกายดาว
   const [burstKey, setBurstKey] = useState(0);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // ปิด dropdown เมื่อคลิกนอกกล่อง
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const currentDept =
     DEPARTMENTS_CONFIG[selectedDeptId] || DEPARTMENTS_CONFIG["digital-media"];
@@ -314,6 +327,13 @@ export default function PopCatGamePage() {
           =================================================================== */}
       <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Titan+One&family=Baloo+2:wght@400;500;600;700;800&display=swap");
+        @keyframes dropdown-slide {
+          from { opacity: 0; transform: translateY(8px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0)   scale(1);    }
+        }
+        .dropdown-slide {
+          animation: dropdown-slide 0.18s ease-out forwards;
+        }
         .font-display {
           font-family: "Titan One", system-ui, sans-serif;
         }
@@ -579,8 +599,7 @@ export default function PopCatGamePage() {
               onMouseDown={handlePress}
               onMouseUp={handleRelease}
               onMouseLeave={handleRelease}
-              onTouchStart={(e) => {
-                e.preventDefault();
+              onTouchStart={() => {
                 handlePress();
               }}
               onTouchEnd={handleRelease}
@@ -614,53 +633,125 @@ export default function PopCatGamePage() {
           </div>
         </div>
 
-        {/* เลือกคณะ */}
-        <div className="w-full space-y-2.5 relative z-10">
+        {/* เลือกคณะ — Custom Cartoon Dropdown */}
+        <div className="w-full space-y-2.5 relative z-10" ref={dropdownRef}>
           <label
-            htmlFor="faculty-select"
             className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider block"
             style={{ color: "#6b5c46" }}
           >
-            เลือกคณะของคุณ (รวม 13 คณะ):
+            เลือกคณะของคุณ ({departmentsKeys.length} คณะ):
           </label>
-          <div className="relative">
-            <select
-              id="faculty-select"
-              value={selectedDeptId}
-              onChange={(e) => setSelectedDeptId(e.target.value)}
-              className="w-full rounded-2xl px-4 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 cursor-pointer appearance-none font-body"
+
+          {/* ปุ่มแสดงคณะที่เลือก */}
+          <button
+            id="faculty-select"
+            type="button"
+            onClick={() => setIsDropdownOpen((o) => !o)}
+            className="w-full rounded-2xl px-4 py-3.5 text-sm font-bold cursor-pointer font-body flex items-center justify-between gap-2 transition-all duration-100 active:translate-x-[2px] active:translate-y-[2px]"
+            style={{
+              backgroundColor: PAPER_LIGHT,
+              color: INK,
+              border: `3px solid ${INK}`,
+              boxShadow: isDropdownOpen ? `2px 2px 0 0 ${INK}` : `4px 4px 0 0 ${INK}`,
+            }}
+          >
+            <span className="flex items-center gap-2 min-w-0">
+              {/* จุดสีประจำคณะ */}
+              <span
+                className="shrink-0 w-3 h-3 rounded-full border-2"
+                style={{
+                  backgroundColor: currentDept.theme.accentHex,
+                  borderColor: INK,
+                }}
+              />
+              <span className="truncate">{currentDept.name}</span>
+            </span>
+            {/* ลูกศร หมุนเมื่อเปิด */}
+            <svg
+              className="shrink-0 w-4 h-4 transition-transform duration-200"
+              style={{ transform: isDropdownOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* รายการตัวเลือก */}
+          {isDropdownOpen && (
+            <ul
+              className="dropdown-slide absolute left-0 right-0 bottom-full mb-1 rounded-2xl overflow-hidden overflow-y-auto font-body"
               style={{
                 backgroundColor: PAPER_LIGHT,
-                color: INK,
                 border: `3px solid ${INK}`,
                 boxShadow: `4px 4px 0 0 ${INK}`,
+                maxHeight: "280px",
+                zIndex: 50,
               }}
             >
-              {departmentsKeys.map((key) => (
-                <option
-                  key={key}
-                  value={key}
-                  className="font-body"
-                  style={{ backgroundColor: PAPER_LIGHT, color: INK }}
-                >
-                  {DEPARTMENTS_CONFIG[key].name}
-                </option>
-              ))}
-            </select>
-            <div
-              className="absolute inset-y-0 right-4 flex items-center pointer-events-none"
-              style={{ color: INK }}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="3"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </div>
-          </div>
+              {departmentsKeys.map((key, index) => {
+                const dept = DEPARTMENTS_CONFIG[key];
+                const isSelected = key === selectedDeptId;
+                return (
+                  <li key={key}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedDeptId(key);
+                        setIsDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-sm font-bold flex items-center gap-3 transition-colors duration-100"
+                      style={{
+                        backgroundColor: isSelected ? dept.theme.accentHex + "22" : "transparent",
+                        color: isSelected ? dept.theme.accentHex : INK,
+                        borderBottom:
+                          index < departmentsKeys.length - 1
+                            ? `2px dashed rgba(32,26,20,0.12)`
+                            : "none",
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                          dept.theme.accentHex + "18";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = isSelected
+                          ? dept.theme.accentHex + "22"
+                          : "transparent";
+                      }}
+                    >
+                      {/* จุดสีประจำคณะ */}
+                      <span
+                        className="shrink-0 w-2.5 h-2.5 rounded-full border-2"
+                        style={{
+                          backgroundColor: dept.theme.accentHex,
+                          borderColor: INK,
+                        }}
+                      />
+                      <span>{dept.name}</span>
+                      {/* เครื่องหมายถูกตัวที่เลือก */}
+                      {isSelected && (
+                        <svg
+                          className="ml-auto shrink-0 w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          style={{ color: dept.theme.accentHex }}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="3"
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
       </div>
 
