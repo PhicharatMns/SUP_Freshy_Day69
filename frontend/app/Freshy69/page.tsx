@@ -1,15 +1,19 @@
-import Image from "next/image";
+'use client'
 
+import BK from "../SPU/Home/page/Bk";
+import Formsup from "./formsup";
 export default function PageFreshy69() {
+
     return (
-        <div className=" md:w-full h-screen">
-            <div className="relative w-full  h-full ">
-                <Image
-                    src={'https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/bk.webp'}
-                    alt="bk"
-                    fill
-                    className="object-cover"
-                />
+        <div className="h-screen">
+            <div className='relative '>
+                <div className="absolute inset-0">
+                    <BK />
+                </div>
+                <div className='relative z-60 '>
+                    <Formsup
+                    />
+                </div>
             </div>
         </div>
     )

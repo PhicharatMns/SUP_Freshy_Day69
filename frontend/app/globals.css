@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+:root {
+  font-family: var(--font-mali, "Mali", sans-serif);
+}
+
+.font-luckiest-guy {
+  font-family: var(--font-luckiest-guy, "Luckiest Guy", cursive);
+}
+
+@layer utilities {
+    @keyframes floatBubble {
+        0% { transform: translateY(0) translateX(0); }
+        25% { transform: translateY(-30vh) translateX(25px); }
+        50% { transform: translateY(-65vh) translateX(-35px); }
+        75% { transform: translateY(-95vh) translateX(20px); }
+        100% { transform: translateY(-135vh) translateX(0); }
+    }
+}
