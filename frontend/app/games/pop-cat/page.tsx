@@ -59,8 +59,8 @@ const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#91268f]",
     },
     catImages: {
-      closed: "/image/popcat/information-technology-closed.png",
-      open: "/image/popcat/information-technology-open.png",
+      closed: "/image/popcat/IT01.png",
+      open: "/image/popcat/IT02.png",
     },
   },
   "communication-arts": {
@@ -76,8 +76,8 @@ const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#ffdd00]",
     },
     catImages: {
-      closed: "/image/popcat/communication-arts-closed.png",
-      open: "/image/popcat/communication-arts-open.png",
+      closed: "/image/popcat/Ni_TED01.png",
+      open: "/image/popcat/Ni_TED02.png",
     },
   },
   engineering: {
@@ -93,8 +93,8 @@ const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#981f22]",
     },
     catImages: {
-      closed: "/image/popcat/engineering-closed.png",
-      open: "/image/popcat/engineering-open.png",
+      closed: "/image/popcat/widwa01.png",
+      open: "/image/popcat/widwa02.png",
     },
   },
   "architecture-design": {
@@ -110,8 +110,8 @@ const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#801418]",
     },
     catImages: {
-      closed: "/image/popcat/architecture-design-closed.png",
-      open: "/image/popcat/architecture-design-open.png",
+      closed: "/image/popcat/satapat01.png",
+      open: "/image/popcat/satapat02.png",
     },
   },
   "business-administration": {
@@ -127,8 +127,8 @@ const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#0B99DF]",
     },
     catImages: {
-      closed: "/image/popcat/business-administration-closed.png",
-      open: "/image/popcat/business-administration-open.png",
+      closed: "/image/popcat/borrihan01.png",
+      open: "/image/popcat/borrihan02.png",
     },
   },
 accountancy: {
@@ -144,8 +144,8 @@ accountancy: {
     glow: "bg-[#00A651]",
   },
   catImages: {
-    closed: "/image/popcat/accountancy-closed.png",
-    open: "/image/popcat/accountancy-open.png",
+    closed: "/image/popcat/bun_she01.png",
+    open: "/image/popcat/bun_she02.png",
   },
 },
 
@@ -162,8 +162,8 @@ law: {
     glow: "bg-[#EC008C]",
   },
   catImages: {
-    closed: "/image/popcat/law-closed.png",
-    open: "/image/popcat/law-open.png",
+    closed: "/image/popcat/niti01.png",
+    open: "/image/popcat/niti02.png",
   },
 },
 
@@ -180,8 +180,8 @@ law: {
     glow: "bg-[#F5821F]",
   },
   catImages: {
-    closed: "/image/popcat/liberal-arts-closed.png",
-    open: "/image/popcat/liberal-arts-open.png",
+    closed: "/image/popcat/sin_lapa01.png",
+    open: "/image/popcat/sin_lapa02.png",
   },
 },
 
@@ -198,8 +198,8 @@ law: {
     glow: "bg-[#D81B60]",
   },
   catImages: {
-    closed: "/image/popcat/aviation-transportation-closed.png",
-    open: "/image/popcat/aviation-transportation-open.png",
+    closed: "/image/popcat/kan_bin01.png",
+    open: "/image/popcat/kan_bin02.png",
   },
 },
 
@@ -216,29 +216,10 @@ law: {
     glow: "bg-[#A7B6BE]",
   },
   catImages: {
-    closed: "/image/popcat/international-college-closed.png",
-    open: "/image/popcat/international-college-open.png",
+    closed: "/image/popcat/nana01.png",
+    open: "/image/popcat/nana02.png",
   },
 },
-
-interdisciplinary: {
-  name: "คณะสหวิทยาการ เทคโนโลยีและนวัตกรรม",
-  nameEn: "School of Interdisciplinary Technology and Innovation",
-  abbr: "SITI",
-  theme: {
-    accent: "text-[#55C6E0]",
-    accentHex: "#55C6E0",
-    badgeBg: "bg-[#55C6E0]/15",
-    badgeText: "text-[#55C6E0]",
-    border: "border-[#55C6E0]/40",
-    glow: "bg-[#55C6E0]",
-  },
-  catImages: {
-    closed: "/image/popcat/interdisciplinary-closed.png",
-    open: "/image/popcat/interdisciplinary-open.png",
-  },
-},
-
 entrepreneurship: {
   name: "คณะการสร้างเจ้าของธุรกิจและการบริหารจัดการ",
   nameEn: "School of Entrepreneurship and Management",
@@ -252,10 +233,27 @@ entrepreneurship: {
     glow: "bg-[#F92D20]",
   },
   catImages: {
-    closed: "/image/popcat/entrepreneurship-closed.png",
-    open: "/image/popcat/entrepreneurship-open.png",
+    closed: "/image/popcat/kan_sang01.png",
+    open: "/image/popcat/kan_sang02.png",
   },
-}
+},
+logistic:{
+  name: "คณะการจัดการโลจิสติกส์และซัพพลายเชน",
+  nameEn: "School of Logistics and Supply Chain Management",
+  abbr: "SLSCM",
+  theme: {
+    accent: "text-[#00A0E3]",
+    accentHex: "#00A0E3",
+    badgeBg: "bg-[#00A0E3]/15",
+    badgeText: "text-[#00A0E3]",
+    border: "border-[#00A0E3]/40",
+    glow: "bg-[#00A0E3]",
+  },
+  catImages: {
+    closed: "/image/popcat/logis01.png",
+    open: "/image/popcat/logis02.png",
+  },
+},
 };
 
 
@@ -623,7 +621,7 @@ export default function PopCatGamePage() {
             className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider block"
             style={{ color: "#6b5c46" }}
           >
-            เลือกคณะของคุณ (รวม 14 คณะ):
+            เลือกคณะของคุณ (รวม 13 คณะ):
           </label>
           <div className="relative">
             <select
