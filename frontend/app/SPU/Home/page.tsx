@@ -1,3 +1,4 @@
+import { AnimatePresence } from "framer-motion";
 import BK from "./page/Bk";
 import Cdweb from "./page/Cdweb";
 import Message from "./page/Message";
@@ -21,7 +22,9 @@ export default function HomePage() {
             </div>
 
             <div className="absolute inset-0 z-40 pointer-events-none">
-                <Scan />
+                <AnimatePresence>
+                    <Scan />
+                </AnimatePresence>
             </div>
 
             <div className="absolute inset-0 z-30 pointer-events-none">

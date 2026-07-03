@@ -78,7 +78,7 @@ export default function Cdweb() {
             <div className="absolute inset-0 flex flex-col items-center justify-center z-50 gap-4 md:gap-6 px-4">
 
                 {/* SVG Text โค้ง */}
-                <div className="flex items-center justify-center w-full max-w-[620px] -mt-12 md:-mt-20 -mb-2 md:-mb-4">
+                <div className="flex items-center justify-center w-full max-w-[1100px]  absolute md:top-20 top-40  ">
                     <svg width="100%" height="auto" viewBox="0 0 620 220" className="drop-shadow-2xl overflow-visible">
                         {/* เพิ่ม height และ viewBox Y เพื่อเผื่อพื้นที่ให้เงา (Glow) ไม่ถูกตัด */}
                         <defs>
@@ -88,8 +88,8 @@ export default function Cdweb() {
                             />
                         </defs>
                         <text
-                            className="font-luckiest-guy"
-                            fontSize="68"
+                            className="font-luckiest-guy text-6xl md:text-[90px]"
+
                             fontWeight="900"
                             letterSpacing="6"
                             textAnchor="middle"
@@ -111,32 +111,34 @@ export default function Cdweb() {
                 </div>
 
                 {/* ข้อความชักชวน */}
-                <div className="text-center mb-4 md:mb-6">
-                    <p className="text-3xl md:text-5xl font-bold text-white tracking-widest drop-shadow-lg">
-                        <span className="text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">สแกน</span>
-                        <span className="text-yellow-500 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]">ขึ้น</span>
-                        <span className="text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">จอ</span>
-                    </p>
-                </div>
+                <div className=" md:mt-50">
+                    <div className="text-center mb-4 md:mb-5">
+                        <p className="text-3xl md:text-5xl font-bold text-white tracking-widest drop-shadow-lg">
+                            <span className="text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">สแกน</span>
+                            <span className="text-yellow-500 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]">ขึ้น</span>
+                            <span className="text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">จอ</span>
+                        </p>
+                    </div>
 
-                {/* QR Code ที่เด้ง */}
-                <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-3xl shadow-2xl animate-bounce-slow p-2 md:p-0">
+                    {/* QR Code ที่เด้ง */}
+                    <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-3xl shadow-2xl animate-bounce-slow p-2 md:p-0">
 
-                    {!src ? (
-                        <div className="w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[380px] md:h-[380px] rounded-xl md:rounded-2xl bg-white animate-pulse flex items-center justify-center">
-                            <div className="w-20 h-20 border-4 border-slate-300 border-t-slate-500 rounded-full animate-spin" />
-                        </div>
-                    ) : (
-                        <Image
-                            priority
-                            src={src}
-                            alt="Instagram QR"
-                            width={380}
-                            height={380}
-                            className="w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[380px] md:h-[380px] rounded-xl md:rounded-2xl"
-                        />
-                    )}
+                        {!src ? (
+                            <div className="w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[380px] md:h-[380px] rounded-xl md:rounded-2xl bg-white animate-pulse flex items-center justify-center">
+                                <div className="w-20 h-20 border-4 border-slate-300 border-t-slate-500 rounded-full animate-spin" />
+                            </div>
+                        ) : (
+                            <Image
+                                priority
+                                src={src}
+                                alt="Instagram QR"
+                                width={380}
+                                height={380}
+                                className="w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[380px] md:h-[380px] rounded-xl md:rounded-2xl"
+                            />
+                        )}
 
+                    </div>
                 </div>
             </div>
 
