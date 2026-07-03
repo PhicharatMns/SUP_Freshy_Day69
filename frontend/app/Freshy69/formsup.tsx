@@ -7,6 +7,7 @@ import IG from "./component/page/IG";
 import { motion, AnimatePresence } from "framer-motion";
 import { div } from "framer-motion/client";
 import Qa from "./component/page/QA";
+import Link from "next/link";
 
 // Interface สำหรับข้อมูลฟองสบู่
 interface Bubble {
@@ -70,7 +71,7 @@ export default function Formsup() {
       transition: {
         duration: 1.5,
         repeat: Infinity,
-        ease: "easeInOut" // ✨ ผ่านฉลุย ไม่เออเร่อแล้ว
+        ease: "easeInOut" 
       },
     },
   };
@@ -108,52 +109,13 @@ export default function Formsup() {
     },
     {
       title: 'PopCat',
-      // popup: openpopupPopupCat,
+      lnik: '/games',
       gradient: 'from-purple-600 via-rose-500 to-amber-500',
     }
   ]
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* 1. หน้าต่างคำเตือน (Warning Modal) */}
-      {/* <AnimatePresence>
-        {warning && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              className="bg-white p-6 rounded-[20px] max-w-sm w-full shadow-2xl text-center"
-            >
-              <h2 className="text-xl font-bold text-red-500 mb-3">
-                ⚠️ ข้อควรระวัง
-              </h2>
-              <p className="text-slate-600 mb-6 text-sm">
-                ห้ามโพสต์รูปลามกอนาจาร คำหยาบคาย
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setWarning(false)}
-                  className="flex-1 py-2 rounded-xl bg-slate-100 font-medium hover:bg-slate-200 transition-all"
-                >
-                  ยกเลิก
-                </button>
-                <button
-                  onClick={confirmWarning}
-                  className="flex-1 py-2 rounded-xl bg-purple-600 text-white font-medium hover:bg-purple-700 transition-all"
-                >
-                  เข้าใจแล้ว
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence> */}
-
       {/* 2. พื้นหลังและเนื้อหาหลัก */}
       <div className="absolute inset-0 flex flex-col items-center justify-center w-full h-full z-50">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -199,15 +161,24 @@ export default function Formsup() {
 
         <div className="grid grid-cols-2 gap-4 w-full max-w-2xl p-4">
           {Social.map((e, i) => {
-            return (
+            const buttonStyle = `w-full text-2xl h-40 z-50 hover:scale-105 flex items-center justify-center rounded-[20px] font-bold text-white shadow-lg bg-gradient-to-tr ${e.gradient} animate-gentle-bounce transition-all duration-300 cursor-pointer`;
+            return i === 3 ? (
+              <Link
+                href={e.lnik || "/"}
+                className={buttonStyle}
+                key={i}
+              >
+                {e.title}
+              </Link>
+            ) : (
               <div
                 onClick={e.popup}
-                className={`w-full text-2xl h-40 z-50 hover:scale-105 flex items-center justify-center rounded-[20px] font-bold text-white shadow-lg bg-gradient-to-tr ${e.gradient} animate-gentle-bounce transition-all duration-300 cursor-pointer   `}
+                className={buttonStyle}
                 key={i}
               >
                 {e.title}
               </div>
-            )
+            );
           })}
         </div>
       </div>
