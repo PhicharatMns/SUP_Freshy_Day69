@@ -65,12 +65,13 @@ export default function Formsup() {
     animate: { transition: { staggerChildren: 0.2 } },
   };
   const wordVariants: Variants = {
-    float: {
+    initial: { y: 0 },
+    animate: {
       y: [0, -10, 0],
       transition: {
-        duration: 1.5,
+        duration: 1.8,
         repeat: Infinity,
-        ease: "easeInOut" // ✨ ผ่านฉลุย ไม่เออเร่อแล้ว
+        ease: "easeInOut",
       },
     },
   };
