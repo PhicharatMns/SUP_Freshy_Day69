@@ -2,13 +2,18 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import { post } from "@/app/Post";
+import Link from "next/link";
 
-// =========================================================================
-// ⚙️ การตั้งค่าข้อมูลของแต่ละคณะ
-// พื้นหลัง/ธีมหลักของทั้งหน้าตอนนี้ "คงที่" ตามธีมโปสเตอร์ SPU Freshy Day
-// เปลี่ยนคณะแล้วจะไม่เปลี่ยนพื้นหลังอีกต่อไป — จะเปลี่ยนแค่สีเน้น (accent)
-// ของป้ายคณะ / ตัวเลขคะแนน / เส้นขอบป้าย เท่านั้น
-// =========================================================================
+interface Bubble {
+  color: string;
+  size: number;
+  duration: number;
+  left: number;
+  delay: number;
+  opacity: number;
+}
+
 const DEPARTMENTS_CONFIG: Record<
   string,
   {
@@ -42,8 +47,8 @@ const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#B5D334]",
     },
     catImages: {
-      closed: "/image/popcat/digi01.png",
-      open: "/image/popcat/digi02.png",
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/digi01.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/digi02.webp",
     },
   },
   "information-technology": {
@@ -59,8 +64,8 @@ const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#91268f]",
     },
     catImages: {
-      closed: "/image/popcat/IT01.png",
-      open: "/image/popcat/IT02.png",
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/IT01.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/IT02.webp",
     },
   },
   "communication-arts": {
@@ -76,8 +81,8 @@ const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#ffdd00]",
     },
     catImages: {
-      closed: "/image/popcat/Ni_TED01.png",
-      open: "/image/popcat/Ni_TED02.png",
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/Ni_TED01.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/Ni_TED02.webp",
     },
   },
   engineering: {
@@ -93,12 +98,12 @@ const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#981f22]",
     },
     catImages: {
-      closed: "/image/popcat/widwa01.png",
-      open: "/image/popcat/widwa02.png",
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/widwa01.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/widwa02.webp",
     },
   },
   "architecture-design": {
-    name: "คณะสถาปัตยกรรมศาสตร์และการออกแบบ",
+    name: "คณะการออกแบบและสถาปัตยกรรมศาสตร์",
     nameEn: "School of Architecture and Design",
     abbr: "SOA",
     theme: {
@@ -110,8 +115,8 @@ const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#801418]",
     },
     catImages: {
-      closed: "/image/popcat/satapat01.png",
-      open: "/image/popcat/satapat02.png",
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/satapat01.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/satapat02.webp",
     },
   },
   "business-administration": {
@@ -127,133 +132,133 @@ const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#0B99DF]",
     },
     catImages: {
-      closed: "/image/popcat/borrihan01.png",
-      open: "/image/popcat/borrihan02.png",
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/borrihan01.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/borrihan02.webp",
     },
   },
-accountancy: {
-  name: "คณะบัญชี",
-  nameEn: "School of Accountancy",
-  abbr: "ACC",
-  theme: {
-    accent: "text-[#00A651]",
-    accentHex: "#00A651",
-    badgeBg: "bg-[#00A651]/15",
-    badgeText: "text-[#00A651]",
-    border: "border-[#00A651]/40",
-    glow: "bg-[#00A651]",
+  accountancy: {
+    name: "คณะบัญชี",
+    nameEn: "School of Accountancy",
+    abbr: "ACC",
+    theme: {
+      accent: "text-[#00A651]",
+      accentHex: "#00A651",
+      badgeBg: "bg-[#00A651]/15",
+      badgeText: "text-[#00A651]",
+      border: "border-[#00A651]/40",
+      glow: "bg-[#00A651]",
+    },
+    catImages: {
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/bun_she01.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/bun_she02.webp",
+    },
   },
-  catImages: {
-    closed: "/image/popcat/bun_she01.png",
-    open: "/image/popcat/bun_she02.png",
-  },
-},
 
-law: {
-  name: "คณะนิติศาสตร์",
-  nameEn: "School of Law",
-  abbr: "LAW",
-  theme: {
-    accent: "text-[#EC008C]",
-    accentHex: "#EC008C",
-    badgeBg: "bg-[#EC008C]/15",
-    badgeText: "text-[#EC008C]",
-    border: "border-[#EC008C]/40",
-    glow: "bg-[#EC008C]",
+  law: {
+    name: "คณะนิติศาสตร์",
+    nameEn: "School of Law",
+    abbr: "LAW",
+    theme: {
+      accent: "text-[#EC008C]",
+      accentHex: "#EC008C",
+      badgeBg: "bg-[#EC008C]/15",
+      badgeText: "text-[#EC008C]",
+      border: "border-[#EC008C]/40",
+      glow: "bg-[#EC008C]",
+    },
+    catImages: {
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/niti01.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/niti02.webp",
+    },
   },
-  catImages: {
-    closed: "/image/popcat/niti01.png",
-    open: "/image/popcat/niti02.png",
-  },
-},
 
-"liberal-arts": {
-  name: "คณะศิลปศาสตร์",
-  nameEn: "School of Liberal Arts",
-  abbr: "LA",
-  theme: {
-    accent: "text-[#F5821F]",
-    accentHex: "#F5821F",
-    badgeBg: "bg-[#F5821F]/15",
-    badgeText: "text-[#F5821F]",
-    border: "border-[#F5821F]/40",
-    glow: "bg-[#F5821F]",
+  "liberal-arts": {
+    name: "คณะศิลปศาสตร์",
+    nameEn: "School of Liberal Arts",
+    abbr: "LA",
+    theme: {
+      accent: "text-[#F5821F]",
+      accentHex: "#F5821F",
+      badgeBg: "bg-[#F5821F]/15",
+      badgeText: "text-[#F5821F]",
+      border: "border-[#F5821F]/40",
+      glow: "bg-[#F5821F]",
+    },
+    catImages: {
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/sin_lapa01.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/sin_lapa02.webp",
+    },
   },
-  catImages: {
-    closed: "/image/popcat/sin_lapa01.png",
-    open: "/image/popcat/sin_lapa02.png",
-  },
-},
 
-"aviation-transportation": {
-  name: "วิทยาลัยการบินการท่องเที่ยวและการบริการ",
-  nameEn: "College of Aviation and Transportation",
-  abbr: "CAT",
-  theme: {
-    accent: "text-[#D81B60]",
-    accentHex: "#D81B60",
-    badgeBg: "bg-[#D81B60]/15",
-    badgeText: "text-[#D81B60]",
-    border: "border-[#D81B60]/40",
-    glow: "bg-[#D81B60]",
+  "aviation-transportation": {
+    name: "วิทยาลัยการบินการท่องเที่ยวและการบริการ",
+    nameEn: "College of Aviation and Transportation",
+    abbr: "CAT",
+    theme: {
+      accent: "text-[#D81B60]",
+      accentHex: "#D81B60",
+      badgeBg: "bg-[#D81B60]/15",
+      badgeText: "text-[#D81B60]",
+      border: "border-[#D81B60]/40",
+      glow: "bg-[#D81B60]",
+    },
+    catImages: {
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/kan_bin01.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/kan_bin02.webp",
+    },
   },
-  catImages: {
-    closed: "/image/popcat/kan_bin01.png",
-    open: "/image/popcat/kan_bin02.png",
-  },
-},
 
-"international-college": {
-  name: "วิทยาลัยนานาชาติ",
-  nameEn: "Sripatum International College",
-  abbr: "SPIC",
-  theme: {
-    accent: "text-[#A7B6BE]",
-    accentHex: "#A7B6BE",
-    badgeBg: "bg-[#A7B6BE]/15",
-    badgeText: "text-[#A7B6BE]",
-    border: "border-[#A7B6BE]/40",
-    glow: "bg-[#A7B6BE]",
+  "international-college": {
+    name: "วิทยาลัยนานาชาติ",
+    nameEn: "Sripatum International College",
+    abbr: "SPIC",
+    theme: {
+      accent: "text-[#A7B6BE]",
+      accentHex: "#A7B6BE",
+      badgeBg: "bg-[#A7B6BE]/15",
+      badgeText: "text-[#A7B6BE]",
+      border: "border-[#A7B6BE]/40",
+      glow: "bg-[#A7B6BE]",
+    },
+    catImages: {
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/nana01.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/nana02.webp",
+    },
   },
-  catImages: {
-    closed: "/image/popcat/nana01.png",
-    open: "/image/popcat/nana02.png",
+  entrepreneurship: {
+    name: "คณะการสร้างเจ้าของธุรกิจและการบริหารจัดการ",
+    nameEn: "School of Entrepreneurship and Management",
+    abbr: "SE",
+    theme: {
+      accent: "text-[#F92D20]",
+      accentHex: "#F92D20",
+      badgeBg: "bg-[#F92D20]/15",
+      badgeText: "text-[#F92D20]",
+      border: "border-[#F92D20]/40",
+      glow: "bg-[#F92D20]",
+    },
+    catImages: {
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/kan_sang01.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/kan_sang02.webp",
+    },
   },
-},
-entrepreneurship: {
-  name: "คณะการสร้างเจ้าของธุรกิจและการบริหารจัดการ",
-  nameEn: "School of Entrepreneurship and Management",
-  abbr: "SE",
-  theme: {
-    accent: "text-[#F92D20]",
-    accentHex: "#F92D20",
-    badgeBg: "bg-[#F92D20]/15",
-    badgeText: "text-[#F92D20]",
-    border: "border-[#F92D20]/40",
-    glow: "bg-[#F92D20]",
+  logistic: {
+    name: "วิทยาลัยโลจิสติกส์และซัพพลายเชน",
+    nameEn: "School of Logistics and Supply Chain Management",
+    abbr: "SLSCM",
+    theme: {
+      accent: "text-[#00A0E3]",
+      accentHex: "#00A0E3",
+      badgeBg: "bg-[#00A0E3]/15",
+      badgeText: "text-[#00A0E3]",
+      border: "border-[#00A0E3]/40",
+      glow: "bg-[#00A0E3]",
+    },
+    catImages: {
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/logis01.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/logis02.webp",
+    },
   },
-  catImages: {
-    closed: "/image/popcat/kan_sang01.png",
-    open: "/image/popcat/kan_sang02.png",
-  },
-},
-logistic:{
-  name: "คณะการจัดการโลจิสติกส์และซัพพลายเชน",
-  nameEn: "School of Logistics and Supply Chain Management",
-  abbr: "SLSCM",
-  theme: {
-    accent: "text-[#00A0E3]",
-    accentHex: "#00A0E3",
-    badgeBg: "bg-[#00A0E3]/15",
-    badgeText: "text-[#00A0E3]",
-    border: "border-[#00A0E3]/40",
-    glow: "bg-[#00A0E3]",
-  },
-  catImages: {
-    closed: "/image/popcat/logis01.png",
-    open: "/image/popcat/logis02.png",
-  },
-},
 };
 
 
@@ -266,44 +271,103 @@ const BLUE = "#1F4FA0";
 const YELLOW = "#F6C51A";
 
 export default function PopCatGamePage() {
-  const [selectedDeptId, setSelectedDeptId] = useState<string>("digital-media");
-  const [deptScores, setDeptScores] = useState<Record<string, number>>({});
-  const [isMouthOpen, setIsMouthOpen] = useState(false);
-  const [isBouncing, setIsBouncing] = useState(false);
-  // เพิ่มเลขนี้ทุกครั้งที่กด เพื่อ "รีสตาร์ท" แอนิเมชันป๊อป/ประกายดาว
-  const [burstKey, setBurstKey] = useState(0);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [selectedDeptId, setSelectedDeptId] =
+    useState<string>("digital-media");
 
-  // ปิด dropdown เมื่อคลิกนอกกล่อง
+  const [deptScores, setDeptScores] =
+    useState<Record<string, number>>({});
+
+  const [isMouthOpen, setIsMouthOpen] =
+    useState(false);
+
+  const [isBouncing, setIsBouncing] =
+    useState(false);
+
+  const [burstKey, setBurstKey] = useState(0);
+
+  const [isDropdownOpen, setIsDropdownOpen] =
+    useState(false);
+
+  const dropdownRef =
+    useRef<HTMLDivElement>(null);
+
+  /* =========================
+     pending click buffer
+  ========================= */
+  const pendingClicks = useRef<Record<string, number>>({});
+  const isFlushing = useRef(false);
+
+  /* =========================
+     current score (safe number)
+  ========================= */
+  const currentScore =
+    Number(deptScores[selectedDeptId] ?? 0);
+
+  /* =========================
+     dropdown outside click
+  ========================= */
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
-  const currentDept =
-    DEPARTMENTS_CONFIG[selectedDeptId] || DEPARTMENTS_CONFIG["digital-media"];
-  const currentScore = deptScores[selectedDeptId] || 0;
+  /* =========================
+     load scores
+  ========================= */
+  useEffect(() => {
+    const loadScores = async () => {
+      try {
+        const res = await fetch(`${post}/popcar/scores`);
+        const json = await res.json();
 
+        if (!json.status) return;
+
+        const scores: Record<string, number> = {};
+
+        json.data.forEach((item: any) => {
+          scores[item.department_key] =
+            Number(item.total_clicks);
+        });
+
+        setDeptScores(scores);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadScores();
+  }, []);
+
+  /* =========================
+     click handler (NO API CALL)
+  ========================= */
   const handlePress = () => {
     setIsMouthOpen(true);
     setIsBouncing(true);
     setBurstKey((k) => k + 1);
 
+    // UI update instantly
     setDeptScores((prev) => ({
       ...prev,
-      [selectedDeptId]: (prev[selectedDeptId] || 0) + 1,
+      [selectedDeptId]:
+        Number(prev[selectedDeptId] ?? 0) + 1,
     }));
 
-    /*
-    const audio = new Audio("/sound/pop.mp3");
-    audio.play().catch(() => {});
-    */
+    // buffer click
+    pendingClicks.current[selectedDeptId] =
+      (pendingClicks.current[selectedDeptId] || 0) + 1;
 
     setTimeout(() => {
       setIsBouncing(false);
@@ -314,7 +378,104 @@ export default function PopCatGamePage() {
     setIsMouthOpen(false);
   };
 
-  const departmentsKeys = Object.keys(DEPARTMENTS_CONFIG);
+  /* =========================
+     flush to server (bulk)
+  ========================= */
+  const flushClicks = async () => {
+    if (isFlushing.current) return;
+
+    const entries = Object.entries(pendingClicks.current);
+
+    if (entries.length === 0) return;
+
+    isFlushing.current = true;
+
+    try {
+      for (const [departmentKey, count] of entries) {
+        await fetch(`${post}/popcar/click-bulk`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            departmentKey,
+            count,
+          }),
+        });
+      }
+
+      pendingClicks.current = {};
+    } catch (err) {
+      console.error(err);
+    } finally {
+      isFlushing.current = false;
+    }
+  };
+
+  /* =========================
+     flush every 30 seconds
+  ========================= */
+  useEffect(() => {
+    const interval = setInterval(() => {
+      flushClicks();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentDept =
+    DEPARTMENTS_CONFIG[selectedDeptId] ??
+    DEPARTMENTS_CONFIG["digital-media"];
+
+  /* =========================
+     send last data before close
+  ========================= */
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const data = JSON.stringify(pendingClicks.current);
+
+      navigator.sendBeacon(
+        `${post}/popcar/click-bulk`,
+        data
+      );
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
+  const departmentsKeys =
+    Object.keys(DEPARTMENTS_CONFIG);
+
+  // ฟองสบู่
+  const bubbleColors = [
+    "bg-white",
+    "bg-sky-300",
+    "bg-purple-300",
+    "bg-pink-300",
+    "bg-emerald-300",
+    "bg-violet-300",
+    "bg-rose-300",
+    "bg-cyan-300",
+  ];
+
+  const [bubbles, setBubbles] = useState<Bubble[]>([]);
+
+  useEffect(() => {
+    const generatedBubbles = Array.from({ length: 30 }).map(() => ({
+      color: bubbleColors[Math.floor(Math.random() * bubbleColors.length)],
+      size: 13 + Math.random() * 27,
+      duration: 4 + Math.random() * 9,
+      left: Math.random() * 100,
+      delay: Math.random() * 15,
+      opacity: 0.85 + Math.random() * 0.15,
+    }));
+    setBubbles(generatedBubbles);
+  }, []);
+
 
   return (
     <main
@@ -396,6 +557,18 @@ export default function PopCatGamePage() {
         }
       `}</style>
 
+      <div className="p-4 flex gap-3 items-center z-[999]">
+        <button
+          onClick={() => window.history.back()}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition-all duration-200"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+          ย้อนกลับ
+        </button>
+      </div>
+
       {/* พื้นผิวฮาล์ฟโทน (จุดจางๆ) ให้ความรู้สึกงานพิมพ์การ์ตูน */}
       <div
         className="absolute inset-0 pointer-events-none opacity-70"
@@ -404,6 +577,26 @@ export default function PopCatGamePage() {
           backgroundSize: "16px 16px",
         }}
       />
+
+      {bubbles.map((bubble, i) => {
+        return (
+          <div
+            key={i}
+            className={`absolute bottom-[-60px] rounded-full ${bubble.color} 
+                                             shadow-[0_0_18px_#fff,0_0_32px_rgba(255,255,255,0.5),inset_8px_8px_12px_rgba(255,255,255,0.9)] 
+                                             ring-1 ring-white/50
+                                             animate-[floatBubble_linear_infinite]`}
+            style={{
+              left: `${bubble.left}%`,
+              width: `${bubble.size}px`,
+              height: `${bubble.size}px`,
+              animationDuration: `${bubble.duration}s`,
+              animationDelay: `-${bubble.delay}s`,
+              opacity: bubble.opacity,
+            }}
+          />
+        );
+      })}
 
       {/* ===================== ของตกแต่งมุมจอ (คงที่ ไม่ผูกกับคณะ) ===================== */}
 
@@ -556,9 +749,8 @@ export default function PopCatGamePage() {
           <div className="relative">
             {/* แสงเรืองสีประจำคณะ (เอฟเฟกต์เล็กๆ รอบปุ่ม ไม่กระทบพื้นหลังทั้งหน้า) */}
             <div
-              className={`absolute inset-0 rounded-full blur-2xl opacity-30 transition-all duration-300 ${currentDept.theme.glow} ${
-                isMouthOpen ? "scale-110 opacity-50" : "scale-100"
-              }`}
+              className={`absolute inset-0 rounded-full blur-2xl opacity-30 transition-all duration-300 ${currentDept.theme.glow} ${isMouthOpen ? "scale-110 opacity-50" : "scale-100"
+                }`}
             />
 
             {/* ประกายดาวตอนกด */}
@@ -604,9 +796,8 @@ export default function PopCatGamePage() {
               }}
               onTouchEnd={handleRelease}
               onTouchCancel={handleRelease}
-              className={`relative z-0 w-56 h-56 sm:w-64 sm:h-64 md:w-72 md:h-72 rounded-full flex items-center justify-center overflow-hidden cursor-pointer select-none active:outline-none transition-transform duration-75 ${
-                isBouncing ? "translate-x-[6px] translate-y-[6px]" : ""
-              }`}
+              className={`relative z-0 w-56 h-56 sm:w-64 sm:h-64 md:w-72 md:h-72 rounded-full flex items-center justify-center overflow-hidden cursor-pointer select-none active:outline-none transition-transform duration-75 ${isBouncing ? "translate-x-[6px] translate-y-[6px]" : ""
+                }`}
               style={{
                 backgroundColor: PAPER_LIGHT,
                 border: `5px solid ${INK}`,
@@ -639,8 +830,9 @@ export default function PopCatGamePage() {
             className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider block"
             style={{ color: "#6b5c46" }}
           >
-            เลือกคณะของคุณ ({departmentsKeys.length} คณะ):
+            เลือกคณะ หรือวิทยาลัยที่ดวงใจ
           </label>
+
 
           {/* ปุ่มแสดงคณะที่เลือก */}
           <button

@@ -83,7 +83,7 @@ Qa.post('/Qafrom', async (c) => {
 Qa.get('/select-qa', async (c) => {
     try {
         const sql = `
-        SELECT id ,student_name,feeling_text,image_url
+        SELECT id ,student_name,feeling_text,image_url , created_at
         FROM quotes 
         ORDER BY id DESC
         LIMIT 25;
