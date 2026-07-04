@@ -18,22 +18,28 @@ export default function Message() {
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
-        const fetchQaData = async () => {
-            try {
-                // ใส่ ?t=... ป้องกัน Browser จำ Cache เก่า (Force Refresh)
-                const response = await fetch(`${post}/Qafrom/select-qa?t=${Date.now()}`);
-                const result = await response.json();
+  // In Message.tsx
+const fetchQaData = async () => {
+    try {
+        const response = await fetch(`${post}/Qafrom/select-qa?t=${Date.now()}`);
+        
+        if (!response.ok) {
+            // Log the URL that failed to help you debug
+            console.error(`Failed to fetch from: ${post}/Qafrom/select-qa`);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-                if (result.success) {
-                    setData(result.data);
-                }
-            } catch (error) {
-                console.error("Error fetching QA data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
+        const result = await response.json();
+        if (result.success) {
+            setData(result.data);
+        }
+    } catch (error) {
+        console.error("Error fetching QA data:", error);
+        // Optional: set an error state here to show a message on the UI
+    } finally {
+        setLoading(false);
+    }
+};
         // เรียกใช้งานครั้งแรกตอนเปิดหน้า
         fetchQaData();
 

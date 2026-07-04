@@ -1,1 +1,2 @@
-export const post = process.env.NEXT_PUBLIC_API_URL 
+export const post = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? ''
+ 
