@@ -90,8 +90,8 @@ export default function Cdweb() {
                             />
                         </defs>
                         <text
-                            className="font-luckiest-guy"
-                            fontSize="68"
+                            className="font-luckiest-guy text-6xl md:text-[90px]"
+
                             fontWeight="900"
                             letterSpacing="6"
                             textAnchor="middle"

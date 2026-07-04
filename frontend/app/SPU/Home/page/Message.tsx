@@ -50,17 +50,29 @@ const fetchQaData = async () => {
         return () => clearInterval(intervalId);
     }, []);
 
-  
+    const formatThaiTime = (dateString?: string) => {
+        if (!dateString) return "";
+        const date = new Date(dateString);
 
+        return new Intl.DateTimeFormat("th-TH", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+        }).format(date);
+    };
     return (
-        <div className="relative w-full flex justify-end h-screen overflow-hidden ">
-            <div className="flex flex-col gap-2 p-2 h-full overflow-y-auto pr-3 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+        // ตัวนอกสุด: ล็อกความสูงหน้าจอ และห้ามล้นออกนอกจอใหญ่
+        <div className="w-full h-full md:flex hidden md:justify-end overflow-hidden pointer-events-none">
+
+            {/* กล่องเลื่อน (Scroll Box): จุดนี้ใส่ pointer-events-auto เพื่อให้เมาส์สกรอลล์ตรงนี้ได้จริง ๆ */}
+            <div className="w-[460px] h-full max-h-screen flex flex-col gap-3 p-4 overflow-y-auto pointer-events-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 
                 <AnimatePresence>
                     {data?.slice(0, 25).map((e, i) => {
                         return (
                             <motion.div
-                                className="flex gap-5 border  w-[430px] p-3 bg-slate-50 rounded-[15px] border-gray-300"
+                                // ใส่ flex-shrink-0 ป้องกันไม่ให้การ์ดถูกบีบขนาดจนบี้แบน
+                                className="flex gap-5 border w-[430px] p-3 bg-slate-50 rounded-[15px] border-gray-300 shadow-sm flex-shrink-0"
                                 key={e.id}
                                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -72,27 +84,29 @@ const fetchQaData = async () => {
                                     delay: i * 0.05
                                 }}
                             >
-                                <div className="w-12 h-12 relative rounded-full overflow-hidden">
+                                {/* รูปโปรไฟล์ */}
+                                <div className="w-12 h-12 relative rounded-full overflow-hidden flex-shrink-0">
                                     <Image
                                         fill
                                         priority={true}
                                         quality={70}
-                                        sizes="(max-width: 768px) 40vw ,20vw"
+                                        sizes="48px"
                                         src={e.image_url ? e.image_url : 'https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/spuprofile.jpg'}
                                         alt={e.student_name || "Student Profile"}
                                         className="object-cover"
                                     />
                                 </div>
-                                <div className="flex flex-col min-w-0 flex-1">
-                                    <div className="flex gap-2 truncate font-semibold text-slate-800">
-                                        <p className="">
-                                            N : {e.student_name}
-                                        </p>
-                                        <p>{e.student_name}</p>
 
+                                {/* ข้อความ */}
+                                <div className="flex flex-col min-w-0 flex-1">
+                                    <div className="flex gap-2 truncate font-semibold text-slate-800 mb-0.5">
+                                        <p className="truncate">
+                                            N : {e.student_name || "ไม่ระบุชื่อ"}
+                                        </p>
+                                        <p className="text-gray-500">{formatThaiTime(e.created_at)} น.</p>
                                     </div>
-                                    <p className={`line-clamp-2 break-all text-sm leading-relaxed ${e.feeling_text === '' ? 'text-pink-500' : 'text-slate-600'}`}>
-                                        <span className={'text-slate-400 font-semibold'}>ถามว่า : </span>
+                                    <p className={`line-clamp-2 break-all text-sm leading-relaxed ${e.feeling_text === '' ? 'text-pink-500' : 'text-slate-600 font-semibold'}`}>
+                                        <span className={'text-slate-800 font-semibold'}>ถามว่า : </span>
                                         {e.feeling_text || "ให้กําลังใจ สโม"}
                                     </p>
                                 </div>

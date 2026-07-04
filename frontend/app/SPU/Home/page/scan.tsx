@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import QRCode from "qrcode";
 import { post } from "@/app/Post";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface IGData {
   id: number;
