@@ -130,6 +130,7 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
 
                         {/* Input Fields */}
                         <div className="flex flex-col gap-4">
+                            <p> ชื่อ
                             <input
                                 maxLength={40}
                                 value={introText}
@@ -138,15 +139,18 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
                                 placeholder="น้องชื่ออะรายยย"
                                 disabled={loading}
                             />
+                            </p>
+                            <p className="text-sm font-semibold text-gray-700"> อยากถามอะไรพี่ๆ
                             <textarea
                                 maxLength={80}
                                 value={feelingText}
                                 onChange={(e) => setFeelingText(e.target.value)}
-                                className="w-full border border-slate-300 rounded-[15px] py-2.5 px-4 bg-slate-50 focus:border-purple-500 outline-none resize-none"
+                                className="w-full border border-slate-300 rounded-[15px] mt-2 py-2.5 px-4 bg-slate-50 focus:border-purple-500 outline-none resize-none"
                                 rows={3}
-                                placeholder="อยากถามอะไรพี่ๆ..."
+                                placeholder="พิมพ์ตรงนี้..."
                                 disabled={loading}
                             />
+                            </p>
                         </div>
 
                         {/* ปุ่มกด */}
