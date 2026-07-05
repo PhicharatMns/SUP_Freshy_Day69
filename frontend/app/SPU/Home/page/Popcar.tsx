@@ -8,7 +8,7 @@ interface Department {
     id: string;
     department_key: string;
     department_name: string;
-    total_clicks: string;
+    total_clicks: number; // ปรับให้เป็น number เพื่อการันตีการแสดงผล
     created_at: string;
     updated_at: string;
     ImageCat?: string;
@@ -21,10 +21,16 @@ export default function Popcar() {
 
     const fetchData = async () => {
         try {
-            // ยิงตรงเข้าหา URL พอร์ต 5000 ที่ได้ผลลัพธ์ JSON แน่นอน
             const response = await axios.get(`http://147.50.254.93:5000/popcar/scores`);
-            if (response.data && response.data.status) {
-                setDepartments(response.data.data);
+            if (response.data && response.data.status && Array.isArray(response.data.data)) {
+                
+                // 🔥 แก้ตรงนี้: แปลง total_clicks จาก String ให้เป็น Number ชัวร์ๆ ก่อนเซตเข้า State
+                const cleanData = response.data.data.map((item: any) => ({
+                    ...item,
+                    total_clicks: Number(item.total_clicks || 0)
+                }));
+
+                setDepartments(cleanData);
             }
         } catch (error) {
             console.error("Error fetching data with axios:", error);
@@ -55,7 +61,7 @@ export default function Popcar() {
                     </div>
                 ) : (
                     <>
-                        {/* TOP 3 PODIUM */}
+                        {/* 👑 TOP 3 PODIUM - ตอนนี้จะยอมแสดงผลแล้วเพราะข้อมูลเป็น Number ถูกต้อง */}
                         <div className="mb-4">
                             <div className="flex items-end justify-center gap-2 pt-4">
 
@@ -64,7 +70,7 @@ export default function Popcar() {
                                     <div className="flex flex-col items-center w-28 sm:w-32">
                                         <div className="mb-1.5 bg-slate-100 text-black rounded-xl p-1.5 w-full text-center shadow-sm border border-slate-200">
                                             <div className="font-bold text-[11px] line-clamp-1">{departments[1]?.department_name}</div>
-                                            <div className="font-black text-xs mt-0.5 text-slate-700">{Number(departments[1]?.total_clicks || 0).toLocaleString()}</div>
+                                            <div className="font-black text-xs mt-0.5 text-slate-700">{departments[1].total_clicks.toLocaleString()}</div>
                                         </div>
                                         <div className="w-full h-24 rounded-t-xl bg-gradient-to-t from-slate-400 to-slate-200 flex flex-col items-center justify-center shadow-inner p-2">
                                             <div className="relative w-14 h-14 rounded-full overflow-hidden border border-white/40 shadow-sm bg-white/50">
@@ -83,7 +89,7 @@ export default function Popcar() {
                                         <div className="text-2xl animate-bounce mb-0.5">👑</div>
                                         <div className="mb-1.5 bg-gradient-to-r from-yellow-400 to-amber-300 text-black rounded-xl p-2 w-full text-center shadow-md border border-yellow-300">
                                             <div className="font-black text-xs line-clamp-1">{departments[0]?.department_name}</div>
-                                            <div className="text-base font-black mt-0.5 text-amber-950">{Number(departments[0]?.total_clicks || 0).toLocaleString()}</div>
+                                            <div className="text-base font-black mt-0.5 text-amber-950">{departments[0].total_clicks.toLocaleString()}</div>
                                         </div>
                                         <div className="w-full h-32 rounded-t-xl bg-gradient-to-t from-amber-500 via-yellow-400 to-yellow-300 flex flex-col items-center justify-center shadow-md p-2">
                                             <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-white/60 shadow-md bg-white/50">
@@ -101,7 +107,7 @@ export default function Popcar() {
                                     <div className="flex flex-col items-center w-24 sm:w-28">
                                         <div className="mb-1.5 bg-amber-50 text-amber-900 rounded-xl p-1.5 w-full text-center shadow-sm border border-amber-200">
                                             <div className="font-bold text-[11px] line-clamp-1">{departments[2]?.department_name}</div>
-                                            <div className="font-black text-xs mt-0.5 text-amber-800">{Number(departments[2]?.total_clicks || 0).toLocaleString()}</div>
+                                            <div className="font-black text-xs mt-0.5 text-amber-800">{departments[2].total_clicks.toLocaleString()}</div>
                                         </div>
                                         <div className="w-full h-20 rounded-t-xl bg-gradient-to-t from-amber-700 to-amber-500 flex flex-col items-center justify-center shadow-inner p-2">
                                             <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/30 shadow-sm bg-white/50">
@@ -117,7 +123,7 @@ export default function Popcar() {
                             </div>
                         </div>
 
-                        {/* Remaining Rankings */}
+                        {/* 📋 รายชื่อคณะและวิทยาลัยอื่น ๆ (อันดับ 4 เป็นต้นไป) */}
                         {departments.length > 3 && (
                             <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-1">
                                 <div className="flex items-center gap-2 px-1 sticky top-0 bg-gray-50 py-1">
@@ -143,7 +149,7 @@ export default function Popcar() {
                                                 </div>
                                             </div>
                                             <div className="text-right shrink-0">
-                                                <div className="text-base font-black text-emerald-600">{Number(dept.total_clicks || 0).toLocaleString()}</div>
+                                                <div className="text-base font-black text-emerald-600">{dept.total_clicks.toLocaleString()}</div>
                                                 <div className="text-[9px] text-zinc-400 font-medium">คะแนน</div>
                                             </div>
                                         </div>
