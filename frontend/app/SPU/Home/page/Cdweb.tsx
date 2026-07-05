@@ -21,7 +21,7 @@ export default function Cdweb() {
         // สร้าง QR Code
         const generateQR = async () => {
             try {
-                const url = await QRCode.toDataURL('https://www.instagram.com/bp_mnnn/');
+                const url = await QRCode.toDataURL('https://gt2nzzlc-3000.asse.devtunnels.ms/Freshy69');
                 setSrc(url);
             } catch (err) {
                 console.error("เกิดข้อผิดพลาดในการสร้าง QR Code:", err);
@@ -99,8 +99,8 @@ export default function Cdweb() {
                             <textPath href="#curve" startOffset="50%">
                                 <tspan fill="#ef4444" className="animate-scale-letter glow-red" style={{ animationDelay: '0s' }}>S</tspan>
                                 <tspan fill="#ef4444" className="animate-scale-letter glow-red" style={{ animationDelay: '0.1s' }}>C</tspan>
-                                <tspan fill="#fbbf24" className="animate-scale-letter glow-yellow" style={{ animationDelay: '0.2s' }}>A</tspan>
-                                <tspan fill="#fbbf24" className="animate-scale-letter glow-yellow" style={{ animationDelay: '0.3s' }}>N</tspan>
+                                <tspan fill="#ef4444" className="animate-scale-letter glow-yellow" style={{ animationDelay: '0.2s' }}>A</tspan>
+                                <tspan fill="#ef4444" className="animate-scale-letter glow-yellow" style={{ animationDelay: '0.3s' }}>N</tspan>
                                 <tspan> </tspan>
                                 <tspan fill="#3b82f6" className="animate-scale-letter glow-blue" style={{ animationDelay: '0.4s' }}>H</tspan>
                                 <tspan fill="#3b82f6" className="animate-scale-letter glow-blue" style={{ animationDelay: '0.5s' }}>E</tspan>
@@ -114,11 +114,11 @@ export default function Cdweb() {
                 {/* ข้อความชักชวน */}
                 <div className="text-center z-10">
                     {/* ปรับขนาดฟอนต์บนมือถือให้เล็กลงเล็กน้อย (text-2xl) */}
-                    <p className="text-2xl sm:text-3xl md:text-5xl font-bold text-white tracking-widest drop-shadow-lg mb-2 md:mb-0">
+                    {/* <p className="text-2xl sm:text-3xl md:text-5xl font-bold text-white tracking-widest drop-shadow-lg mb-2 md:mb-0">
                         <span className="text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">สแกน</span>
                         <span className="text-yellow-500 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]">ขึ้น</span>
                         <span className="text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">จอ</span>
-                    </p>
+                    </p> */}
                 </div>
 
                 {/* QR Code ที่เด้ง */}
