@@ -91,7 +91,7 @@ const fetchQaData = async () => {
                                         priority={true}
                                         quality={70}
                                         sizes="48px"
-                                        src={e.image_url ? e.image_url : 'https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/spuprofile.jpg'}
+                                        src={e.image_url ? e.image_url : 'https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp'}
                                         alt={e.student_name || "Student Profile"}
                                         className="object-cover"
                                     />

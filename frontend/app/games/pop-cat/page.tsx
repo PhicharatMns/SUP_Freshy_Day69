@@ -115,8 +115,8 @@ const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#801418]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/satapat01.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/satapat02.webp",
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/satapudV2_01.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/satapudV2_02.webp",
     },
   },
   "business-administration": {
@@ -132,8 +132,8 @@ const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#0B99DF]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/borrihan01.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/borrihan02.webp",
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/borrihanV2_01.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/borrihanV2_02.webp",
     },
   },
   accountancy: {
@@ -149,8 +149,8 @@ const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#00A651]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/bun_she01.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/bun_she02.webp",
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/32.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/33.webp",
     },
   },
 
@@ -255,8 +255,8 @@ const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#00A0E3]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/logis01.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/logis02.webp",
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/logisV2_01.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/logisV2_02.webp",
     },
   },
 };

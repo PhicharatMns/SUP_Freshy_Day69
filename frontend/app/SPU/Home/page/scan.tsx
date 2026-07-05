@@ -146,7 +146,7 @@ export default function Scan() {
                   quality={70}
                   src={
                     current.image_url ||
-                    "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/spuprofile.jpg"
+                    "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp"
                   }
                   alt={current.name}
                   className="object-cover"

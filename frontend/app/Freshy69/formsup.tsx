@@ -109,7 +109,7 @@ export default function Formsup() {
       gradient: 'from-purple-600 via-rose-500 to-amber-500',
     },
     {
-      title: 'PopCat',
+      title: 'PopSPU',
       lnik: '/games',
       gradient: 'from-purple-600 via-rose-500 to-amber-500',
     }

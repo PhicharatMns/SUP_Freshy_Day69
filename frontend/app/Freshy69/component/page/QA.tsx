@@ -67,7 +67,7 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
             });
 
             if (response.data.success) {
-                alert("บันทึกข้อมูลเรียบร้อย!");
+                
                 await refreshQa?.();
                 clearpopup();
             } else {
