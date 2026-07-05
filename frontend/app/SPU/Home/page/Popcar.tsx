@@ -24,7 +24,7 @@ export default function Popcar() {
         //  สร้างฟังก์ชันดึงข้อมูลด้วย Axios
         const fetchData = async () => {
             try {
-                const response = await axios.get("http://localhost:5000/popcar/scores");
+                const response = await axios.get(`${post}/popcar/scores`);
 
                 if (response.data.status) {
                     setDepartments(response.data.data);
