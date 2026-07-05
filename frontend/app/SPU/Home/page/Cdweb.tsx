@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import Image from "next/image";
-import { post } from "@/app/Post";
+import { post, postFronend } from "@/app/Post";
 
 interface Bubble {
   id: number;
@@ -41,7 +41,7 @@ export default function Cdweb() {
     const generateQR = async () => {
       try {
         const url = await QRCode.toDataURL(
-          `${post}/Freshy69`
+          `${postFronend}/Freshy69`
         );
         setSrc(url);
       } catch (err) {
