@@ -7,17 +7,16 @@ import Qa from './router/Qa.js'
 import ig_my from './router/Ig_my.js'
 import popcar from './router/popcat.js'
 
-
 const app = new Hono()
 
 await connectDB()
 
-app.use('/*', cors({
-  origin: 'http://147.50.254.93', // URL ของฝั่ง Front-end
-  allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-}))
 
-app.options("*", cors());
+app.use('*', cors({
+  origin: '*',
+  allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowHeaders: ["Content-Type", "Authorization"]
+}))
 
 app.route('/Qafrom', Qa)
 app.route('/ig_my', ig_my)
