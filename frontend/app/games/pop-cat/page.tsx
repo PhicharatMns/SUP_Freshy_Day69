@@ -64,8 +64,8 @@ const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#91268f]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/IT01.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/IT02.webp",
+      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/IT001.webp",
+      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/IT002.webp",
     },
   },
   "communication-arts": {
@@ -807,18 +807,17 @@ export default function PopCatGamePage() {
               }}
             >
               <div className="relative w-full h-full pointer-events-none">
-                <Image
-                  src={
-                    isMouthOpen
-                      ? currentDept.catImages.open
-                      : currentDept.catImages.closed
-                  }
-                  alt={currentDept.name}
-                  fill
-                  priority
-                  sizes="(max-width: 768px) 224px, 288px"
-                  className="object-cover"
-                />
+                {[currentDept.catImages.closed, currentDept.catImages.open].map((img, i) => (
+                  <Image
+                    key={i}
+                    src={img}
+                    alt={currentDept.name}
+                    fill
+                    priority
+                    quality={75}
+                    className="object-cover absolute inset-0"
+                  />
+                ))}
               </div>
             </button>
           </div>

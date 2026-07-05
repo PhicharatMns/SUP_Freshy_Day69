@@ -12,16 +12,16 @@ const app = new Hono()
 
 await connectDB()
 
-app.use('/*', cors({
-  origin: 'http://147.50.254.93',
-  allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-}))
-
-// app.use('*', cors({
-//   origin: '*',
+// app.use('/*', cors({
+//   origin: 'http://147.50.254.93',
 //   allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-//   allowHeaders: ["Content-Type", "Authorization"]
 // }))
+
+app.use('*', cors({
+  origin: '*',
+  allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowHeaders: ["Content-Type", "Authorization"]
+}))
 
 app.options("*", cors());
 
