@@ -178,7 +178,7 @@ export default function Scan() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              {current.name || "เด็ก Freshy69"}
+              {current.name || "DEK Freshy69"}
             </motion.h1>
 
             <motion.p

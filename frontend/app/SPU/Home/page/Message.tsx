@@ -101,7 +101,7 @@ const fetchQaData = async () => {
                                 <div className="flex flex-col min-w-0 flex-1">
                                     <div className="flex gap-2 truncate font-semibold text-slate-800 mb-0.5">
                                         <p className="truncate">
-                                            N : {e.student_name || "ไม่ระบุชื่อ"}
+                                            N : {e.student_name || "DEK Freshy69"}
                                         </p>
                                         <p className="text-gray-500">{formatThaiTime(e.created_at)} น.</p>
                                     </div>
