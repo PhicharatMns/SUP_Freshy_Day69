@@ -13,7 +13,7 @@ const app = new Hono()
 await connectDB()
 
 app.use('/*', cors({
-  origin: 'http://localhost:3000', // URL ของฝั่ง Front-end
+  origin: 'http://147.50.254:3000', // URL ของฝั่ง Front-end
   allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 }))
 
