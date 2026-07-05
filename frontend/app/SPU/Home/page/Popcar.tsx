@@ -22,7 +22,7 @@ export default function Popcar() {
 
     const fetchData = async () => {
         try {
-            const response = await axios.get(`${post}/popcar/scores`);
+            const response = await axios.get(`http://147.50.254.93:5000/popcar/scores`);
             if (response.data.status) {
                 setDepartments(response.data.data);
             }
