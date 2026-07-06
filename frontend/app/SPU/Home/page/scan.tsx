@@ -116,8 +116,8 @@ export default function Scan() {
           <div className="flex flex-col items-center justify-center h-full">
             <motion.div
               className={`grid gap-10 ${(current.ig_account ?? "").trim()
-                  ? "grid-cols-2"
-                  : "grid-cols-1"
+                ? "grid-cols-2"
+                : "grid-cols-1"
                 }`}
               initial={{ scale: 0.7, opacity: 0, y: 100 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -178,7 +178,8 @@ export default function Scan() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              {current.ig_account || "DEK Freshy69"}
+              {current.name || ""}
+              {current.ig_account || ""}
             </motion.h1>
 
             <motion.p
