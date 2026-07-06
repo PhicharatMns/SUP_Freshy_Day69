@@ -251,15 +251,9 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
                                 )}
 
                                 <input
-
-                                    accept="image/*"
-
-                                    capture="environment"
-
                                     type="file"
-
                                     className="hidden"
-
+                                    accept="image/*"
                                     onChange={handleImageChange} />
 
                             </label>
