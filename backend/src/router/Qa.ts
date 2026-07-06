@@ -1,7 +1,7 @@
-
 import { Hono } from "hono";
 import { pool } from "../DB/DB.js";
 import { createClient } from '@supabase/supabase-js';
+import sharp from 'sharp';
 
 const Qa = new Hono();
 
@@ -12,6 +12,7 @@ const supabase = createClient(
 
 Qa.post('/Qafrom', async (c) => {
     try {
+        // 💡 เปลี่ยนจาก c.req.parseBody() มาใช้ c.req.formData() แทน เพื่อป้องกันอาการค้าง
         const formData = await c.req.formData();
 
         const studentName = formData.get('studentName') as string;
@@ -26,19 +27,23 @@ Qa.post('/Qafrom', async (c) => {
 
         // ตรวจสอบโครงสร้างไฟล์ภาพ
         if (imageFile && imageFile.size > 0) {
-            // 💡 หน้าบ้านบีบอัดมาเป็น JPEG แล้ว เราสามารถใช้ฟอร์แมต .jpg ได้เลยครับ
-            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+
+            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.webp`;
             const filePath = `Image69/${fileName}`;
 
-            // 💡 เปลี่ยนจาก Sharp มาเป็นดึง ArrayBuffer และแปลงเป็น Buffer เพื่ออัปโหลดตรงๆ
+            // ดึง ArrayBuffer ออกมาแปลงเป็น Buffer ส่งให้ sharp ทำงาน
             const arrayBuffer = await imageFile.arrayBuffer();
-            const fileBuffer = Buffer.from(arrayBuffer);
+            const inputBuffer = Buffer.from(arrayBuffer);
 
-            // อัปโหลดเข้า Supabase Storage (ส่งรูปที่ย่อแล้วขึ้นไปตรงๆ)
+            const webpBuffer = await sharp(inputBuffer)
+                .webp({ quality: 60 })
+                .toBuffer();
+
+            // อัปโหลดเข้า Supabase Storage
             const { data: storageData, error: storageError } = await supabase.storage
                 .from('student-images')
-                .upload(filePath, fileBuffer, {
-                    contentType: imageFile.type || 'image/jpeg',
+                .upload(filePath, webpBuffer, {
+                    contentType: 'image/webp',
                     upsert: true
                 });
 
@@ -65,7 +70,7 @@ Qa.post('/Qafrom', async (c) => {
 
         return c.json({
             success: true,
-            message: "บันทึกข้อมูลเรียบร้อยแล้ว!",
+            message: "บันทึกข้อมูลและแปลงรูปภาพเป็น WebP สำเร็จเรียบร้อย!",
             data: { id: result.rows[0].id, imageUrl: uploadedImageUrl }
         }, 201);
 
@@ -92,13 +97,12 @@ Qa.get('/select-qa', async (c) => {
         }, 200);
 
     } catch (error) {
-        console.error("❌ DB Error:", error);
         return c.json({
             success: false,
             message: "เกิดข้อผิดพลาดในการดึงข้อมูลจากเซิร์ฟเวอร์"
         }, 500);
     }
-});
 
-// 💡 เติมชื่อตัวแปรที่ส่งออกให้สมบูรณ์
+})
+
 export default Qa;
