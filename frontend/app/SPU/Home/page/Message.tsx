@@ -44,7 +44,7 @@ const fetchQaData = async () => {
         fetchQaData();
 
         // ตั้งเวลาดึงข้อมูลใหม่ทุกๆ 5 วินาที
-        const intervalId = setInterval(fetchQaData, 15000);
+        const intervalId = setInterval(fetchQaData, 2000);
 
         // เคลียร์ interval
         return () => clearInterval(intervalId);

@@ -27,9 +27,9 @@ export default function HomePage() {
                 </AnimatePresence>
             </div>
 
-            <div className="absolute inset-0 z-30 pointer-events-none">
+            {/* <div className="absolute inset-0 z-30 pointer-events-none">
                 <Popcar />
-            </div>
+            </div> */}
         </div>
     )
 }

@@ -1,7 +1,9 @@
-import { SetStateAction, useState, useEffect, ChangeEvent } from "react";
+"use client";
+
+import { SetStateAction, useState, ChangeEvent } from "react";
 import { propspopup } from "../../formsup";
-import { motion } from 'motion/react';
-import axios from 'axios';
+import { motion } from "motion/react";
+import axios from "axios";
 import { post } from "@/app/Post";
 import Image from "next/image";
 
@@ -15,11 +17,52 @@ export default function IG({ setpoup }: propsMyslt) {
     const [feelingText, setFeelingText] = useState("");
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false); // 👈 เพิ่ม State สำหรับจัดการการ Loading
 
     const clearpopup = () => setpoup(prev => ({
         ...prev,
         myopenpopypIG: false
-    }))
+    }));
+
+    const resizeImage = (file: File, maxWidth = 1024, maxHeight = 1024): Promise<Blob> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new window.Image();
+                img.src = event.target?.result as string;
+                img.onload = () => {
+                    const canvas = document.createElement("canvas");
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width = Math.round((width * maxHeight) / height);
+                            height = maxHeight;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext("2d");
+                    ctx?.drawImage(img, 0, 0, width, height);
+
+                    // แปลงเป็น jpeg คุณภาพ 75% ขนาดไฟล์จะเหลือเบามาก
+                    canvas.toBlob((blob) => {
+                        if (blob) resolve(blob);
+                        else reject(new Error("Canvas to Blob failed"));
+                    }, "image/jpeg", 0.75);
+                };
+            };
+            reader.onerror = (error) => reject(error);
+        });
+    };
 
     // ฟังก์ชันจัดการตอนเลือกรูปภาพ
     const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -30,35 +73,43 @@ export default function IG({ setpoup }: propsMyslt) {
         }
     };
 
-    const handleSubmit = async () => {
-        if (!introText.trim() || !feelingText.trim()) {
-            alert("กรุณากรอก IG และความในใจ");
+  const handleSubmit = async () => {
+    if (!introText.trim() || !feelingText.trim()) {
+        alert("กรุณากรอก IG และความในใจ");
+        return;
+    }
+
+    setIsLoading(true);
+
+    const formData = new FormData();
+    formData.append("name", "");
+    formData.append("igAccount", introText.trim());
+    formData.append("quoteText", feelingText.trim());
+
+    if (imageFile) {
+        try {
+            // บีบอัดรูปถ่ายให้เล็กก่อนยิงไปหา Host
+            const resizedBlob = await resizeImage(imageFile);
+            formData.append("image", resizedBlob, imageFile.name || "upload.jpg");
+        } catch (err) {
+            console.error("Resize error:", err);
+            alert("เกิดข้อผิดพลาดในการประมวลผลรูปภาพ");
+            setIsLoading(false);
             return;
         }
+    }
 
-        const formData = new FormData();
-
-        formData.append("name", "");
-        formData.append("igAccount", introText.trim());
-        formData.append("quoteText", feelingText.trim());
-
-        if (imageFile) {
-            formData.append("image", imageFile);
+    try {
+        const response = await axios.post(`${post}/ig_my/insert-ig`, formData);
+        if (response.data.success) {
+            clearpopup();
         }
-
-        try {
-            const response = await axios.post(
-                `${post}/ig_my/insert-ig`,
-                formData
-            );
-
-            if (response.data.success) {
-                clearpopup();
-            }
-        } catch (error: any) {
-            alert(error.response?.data?.message || "ส่งข้อมูลไม่สำเร็จ");
-        }
-    };
+    } catch (error: any) {
+        alert(error.response?.data?.message || "ส่งข้อมูลไม่สำเร็จ");
+    } finally {
+        setIsLoading(false);
+    }
+};
 
     return (
         <motion.div
@@ -73,7 +124,8 @@ export default function IG({ setpoup }: propsMyslt) {
                     <button
                         onClick={clearpopup}
                         type="button"
-                        className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-red-100 hover:text-red-600 active:scale-95 transition-all duration-200 cursor-pointer shadow-sm disabled:opacity-50"
+                        disabled={isLoading} // 👈 ปิดไม่ให้กดปิดตอนกำลังอัปโหลด
+                        className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-red-100 hover:text-red-600 active:scale-95 transition-all duration-200 cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <svg
                             className="w-4 h-4"
@@ -93,8 +145,6 @@ export default function IG({ setpoup }: propsMyslt) {
                 </div>
 
                 <div className="px-6 pb-6 overflow-y-auto w-full">
-
-
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -103,7 +153,7 @@ export default function IG({ setpoup }: propsMyslt) {
                         <div className="flex flex-col gap-2 w-full">
                             <span className="text-sm font-semibold text-gray-700">รูปถ่ายนักศึกษา</span>
 
-                            <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50 hover:bg-slate-100 hover:border-purple-400 transition-all duration-200 cursor-pointer group overflow-hidden relative">
+                            <label className={`flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50 transition-all duration-200 overflow-hidden relative ${isLoading ? 'cursor-not-allowed opacity-70' : 'hover:bg-slate-100 hover:border-purple-400 cursor-pointer group'}`}>
                                 {imagePreview ? (
                                     <Image
                                         fill
@@ -129,6 +179,7 @@ export default function IG({ setpoup }: propsMyslt) {
                                     className="hidden"
                                     accept="image/*"
                                     onChange={handleImageChange}
+                                    disabled={isLoading} // 👈 ปิดไม่ให้เลือกรูปเพิ่มขณะโหลด
                                 />
                             </label>
                         </div>
@@ -143,10 +194,13 @@ export default function IG({ setpoup }: propsMyslt) {
                                     </span>
                                 </div>
                                 <input
+                                    accept="image/*"
+                                    capture="environment"
                                     maxLength={40}
                                     value={introText}
                                     onChange={(e) => setIntroText(e.target.value)}
-                                    className="w-full border border-slate-300 rounded-[15px] py-2.5 px-4 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200"
+                                    disabled={isLoading} // 👈 ล็อค Input ห้ามพิมพ์ตอนโหลด
+                                    className="w-full border border-slate-300 rounded-[15px] py-2.5 px-4 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
                                     type="text"
                                     placeholder="เช่น @username..."
                                 />
@@ -165,7 +219,8 @@ export default function IG({ setpoup }: propsMyslt) {
                                     maxLength={80}
                                     value={feelingText}
                                     onChange={(e) => setFeelingText(e.target.value)}
-                                    className="w-full border border-slate-300 rounded-[15px] py-2.5 px-4 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200 resize-none"
+                                    disabled={isLoading} // 👈 ล็อค Textarea ห้ามพิมพ์ตอนโหลด
+                                    className="w-full border border-slate-300 rounded-[15px] py-2.5 px-4 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200 resize-none disabled:opacity-70 disabled:cursor-not-allowed"
                                     rows={3}
                                     placeholder="พิมพ์ความในใจของคุณที่นี่..."
                                 />
@@ -176,7 +231,7 @@ export default function IG({ setpoup }: propsMyslt) {
                                 <button
                                     type="button"
                                     onClick={clearpopup}
-
+                                    disabled={isLoading} // 👈 ล็อคปุ่มยกเลิก
                                     className="flex-1 py-3 rounded-[12px] text-center font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     ยกเลิก
@@ -184,16 +239,27 @@ export default function IG({ setpoup }: propsMyslt) {
                                 <button
                                     type="button"
                                     onClick={handleSubmit}
+                                    disabled={isLoading} // 👈 ล็อคปุ่มยืนยันกันกดย้ำๆ
                                     className="flex-1 py-3 rounded-[12px] text-center font-medium text-white bg-purple-600 hover:bg-purple-700 shadow-md shadow-purple-200 active:scale-95 transition-all duration-200 flex justify-center items-center gap-2 disabled:bg-purple-400 disabled:cursor-not-allowed"
                                 >
-                                    ยืนยัน
+                                    {isLoading ? (
+                                        <>
+                                            {/* SVG วงกลมหมุนๆ (Spinner) */}
+                                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <span>กำลังส่งข้อมูล...</span>
+                                        </>
+                                    ) : (
+                                        "ยืนยัน"
+                                    )}
                                 </button>
                             </div>
                         </div>
                     </motion.div>
-
                 </div>
             </motion.div>
         </motion.div>
-    )
+    );
 }

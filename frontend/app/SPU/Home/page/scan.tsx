@@ -55,12 +55,12 @@ export default function Scan() {
     };
 
     getPopup();
-    const interval = setInterval(getPopup, 15000);
+    const interval = setInterval(getPopup, 2000);
 
     return () => clearInterval(interval);
   }, []);
 
-  // ================= AUTO CLOSE =================
+  // ================= AUTO CLOSE (ปรับเหลือ 6 วินาที) =================
   useEffect(() => {
     if (!show) return;
 
@@ -69,7 +69,7 @@ export default function Scan() {
       setCurrent(null);
       setQr("");
       runningRef.current = false;
-    }, 10000);
+    }, 6000); // 👈 แก้จาก 10000 เป็น 6000 (6 วินาที)
 
     return () => clearTimeout(timer);
   }, [show]);
@@ -109,8 +109,8 @@ export default function Scan() {
             backdropFilter: "blur(0px)",
           }}
           transition={{
-            duration: 0.5,
-            ease: "easeInOut",
+            duration: 0.2, // 👈 ปรับให้พื้นหลังเฟดเร็วขึ้น ไม่หน่วงตา
+            ease: "linear",
           }}
         >
           <div className="flex flex-col items-center justify-center h-full">
@@ -119,26 +119,26 @@ export default function Scan() {
                 ? "grid-cols-2"
                 : "grid-cols-1"
                 }`}
-              initial={{ scale: 0.7, opacity: 0, y: 100 }}
+              initial={{ scale: 0.95, opacity: 0, y: 20 }} // 👈 ลดระยะการเยื้องตอนโผล่มา เพื่อลดอาการหน่วง
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{
-                scale: 0.85,
+                scale: 0.95,
                 opacity: 0,
-                y: 40,
-                filter: "blur(12px)",
+                y: 20,
+                filter: "blur(8px)",
               }}
               transition={{
-                type: "spring",
-                stiffness: 140,
-                damping: 18,
+                duration: 0.25, // 👈 เปลี่ยนจาก Spring มาเป็น Duration สั้นๆ เพื่อให้เด้งขึ้นจอทันที
+                ease: "easeOut"
               }}
             >
               {/* IMAGE */}
               <motion.div
                 className="relative w-[560px] h-[560px] rounded-[20px] overflow-hidden shadow-[0_0_60px_rgba(255,255,255,0.15)]"
-                initial={{ rotate: -8, scale: 0.9 }}
+                initial={{ rotate: -2, scale: 0.98 }} // 👈 ลดการเอียงเยอะๆ ตอนขึ้นจอ จะได้ดูขึ้นมานิ่งๆ เร็วๆ
                 animate={{ rotate: 0, scale: 1 }}
-                exit={{ rotate: -4, scale: 0.95 }}
+                exit={{ rotate: -2, scale: 0.98 }}
+                transition={{ duration: 0.2 }}
               >
                 <Image
                   fill
@@ -158,9 +158,10 @@ export default function Scan() {
               {qr && (current.ig_account ?? "").trim() !== "" && (
                 <motion.div
                   className="relative w-[560px] h-[560px] rounded-[20px] overflow-hidden bg-white p-5 shadow-[0_0_60px_rgba(255,255,255,0.15)]"
-                  initial={{ rotate: 8, opacity: 0, scale: 0.8 }}
+                  initial={{ rotate: 2, opacity: 0, scale: 0.98 }} // 👈 ลดการเอียงลง
                   animate={{ rotate: 0, opacity: 1, scale: 1 }}
-                  exit={{ rotate: 4, opacity: 0, scale: 0.95 }}
+                  exit={{ rotate: 2, opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.2 }}
                 >
                   <Image
                     fill
@@ -175,8 +176,9 @@ export default function Scan() {
 
             <motion.h1
               className="text-white text-4xl font-black mt-8"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 10 }} // 👈 ลดระยะการขยับขึ้น
               animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
             >
               {current.name || ""}
               {current.ig_account || ""}
@@ -186,6 +188,7 @@ export default function Scan() {
               className="text-white/90 text-center mt-4 max-w-2xl text-xl leading-relaxed"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
             >
               {current.quote_text}
             </motion.p>
