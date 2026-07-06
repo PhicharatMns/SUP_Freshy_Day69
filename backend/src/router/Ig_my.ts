@@ -40,11 +40,11 @@ ig_my.post('/insert-ig', async (c) => {
                 return c.json({ success: false, message: "กรุณาอัปโหลดไฟล์รูปภาพที่ถูกต้อง" }, 400);
             }
 
-            // 💡 หน้าบ้านส่งไฟล์ JPEG ที่ Resize มาแล้ว เปลี่ยนนามสกุลไฟล์ปลายทางเป็น .jpg
+            // 💡 หน้าบ้านส่งแบบ jpeg ย่อขนาดมาแล้ว เปลี่ยนนามสกุลเป็น .jpg
             const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
             const filePath = `IG_Images/${fileName}`; 
 
-            // 💡 แปลงไฟล์เป็น Buffer ตรงๆ แล้วอัปโหลดได้เลย ไม่ต้องใช้ sharp ครอบแล้ว
+            // 💡 ดึงข้อมูลภาพแปลงเป็น Buffer ตรงๆ โดยไม่ต้องพึ่ง sharp หลังบ้านอีกต่อไป
             const arrayBuffer = await imageFile.arrayBuffer();
             const fileBuffer = Buffer.from(arrayBuffer);
 

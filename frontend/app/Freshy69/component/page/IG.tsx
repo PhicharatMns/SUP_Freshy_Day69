@@ -1,26 +1,29 @@
-'use client'
+"use client";
 
-import { motion } from 'motion/react';
-import { ChangeEvent, SetStateAction, useState } from 'react';
-import { propspopup } from '../../formsup';
-import Image from 'next/image';
-import { post } from '@/app/Post';
-import axios from 'axios';
+import { SetStateAction, useState, ChangeEvent } from "react";
+import { propspopup } from "../../formsup";
+import { motion } from "motion/react";
+import axios from "axios";
+import { post } from "@/app/Post";
+import Image from "next/image";
 
-interface propsQa {
+interface propsMyslt {
     setpoup: React.Dispatch<SetStateAction<propspopup>>;
-    refreshQa?: () => Promise<void>;
 }
 
-export default function Qa({ setpoup, refreshQa }: propsQa) {
+export default function IG({ setpoup }: propsMyslt) {
 
     const [introText, setIntroText] = useState("");
     const [feelingText, setFeelingText] = useState("");
     const [imageFile, setImageFile] = useState<File | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false); // 👈 เพิ่ม State สำหรับจัดการการ Loading
 
-    // 💡 ฟังก์ชันบีบอัดรูปภาพด้วย Canvas (ลดขนาดไฟล์เพื่อไม่ให้หลังบ้านพัง)
+    const clearpopup = () => setpoup(prev => ({
+        ...prev,
+        myopenpopypIG: false
+    }));
+
     const resizeImage = (file: File, maxWidth = 1024, maxHeight = 1024): Promise<Blob> => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -61,80 +64,52 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
         });
     };
 
+    // ฟังก์ชันจัดการตอนเลือกรูปภาพ
     const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
             setImageFile(file);
-            const url = URL.createObjectURL(file);
-            setPreviewUrl(url);
+            setImagePreview(URL.createObjectURL(file));
         }
     };
 
-    const clearpopup = () => setpoup(prev => ({
-        ...prev,
-        myQa: false
-    }))
+  const handleSubmit = async () => {
+    if (!introText.trim() || !feelingText.trim()) {
+        alert("กรุณากรอก IG และความในใจ");
+        return;
+    }
 
-    const handleSubmit = async () => {
-        if (!introText.trim() || !feelingText.trim()) {
-            alert("กรุณากรอกข้อมูลให้ครบถ้วนนะครับ");
-            return;
-        }
+    setIsLoading(true);
 
-        setLoading(true);
+    const formData = new FormData();
+    formData.append("name", "");
+    formData.append("igAccount", introText.trim());
+    formData.append("quoteText", feelingText.trim());
 
-        if (!post) {
-            alert('ไม่พบค่า NEXT_PUBLIC_API_URL กรุณาตั้งค่า .env.local ให้ถูกต้อง');
-            setLoading(false);
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('studentName', introText.trim());
-        formData.append('feelingText', feelingText.trim());
-
-        if (imageFile) {
-            try {
-                // 💡 เรียกใช้ฟังก์ชันบีบอัดรูปภาพก่อนนำเข้า FormData
-                const resizedBlob = await resizeImage(imageFile);
-                formData.append('studentImage', resizedBlob, imageFile.name || "upload.jpg");
-            } catch (err) {
-                console.error("Resize error:", err);
-                alert("เกิดข้อผิดพลาดในการประมวลผลรูปภาพ");
-                setLoading(false);
-                return;
-            }
-        }
-
-        // 💡 ปรับ Endpoint แก้ไขพาร์ทเบิ้ลซ้ำ (จากเดิม Qafrom/Qafrom -> Qafrom)
-        const targetUrl = `${post}/Qafrom`;
-        console.log("กำลังส่งข้อมูลไปที่ URL:", targetUrl);
-
+    if (imageFile) {
         try {
-            const response = await axios.post(targetUrl, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-
-            if (response.data.success) {
-                await refreshQa?.();
-                clearpopup();
-            } else {
-                alert(`บันทึกไม่สำเร็จ: ${response.data.message || 'เกิดข้อผิดพลาด'}`);
-            }
-        } catch (error: any) {
-            console.error("รายละเอียด Error:", error);
-
-            if (error.response?.status === 404) {
-                alert(`Error 404: ไม่พบปลายทางที่ ${targetUrl}\nโปรดตรวจสอบ API Endpoint ใน Backend ของคุณ`);
-            } else {
-                alert(error.response?.data?.message || "เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
-            }
-        } finally {
-            setLoading(false);
+            // บีบอัดรูปถ่ายให้เล็กก่อนยิงไปหา Host
+            const resizedBlob = await resizeImage(imageFile);
+            formData.append("image", resizedBlob, imageFile.name || "upload.jpg");
+        } catch (err) {
+            console.error("Resize error:", err);
+            alert("เกิดข้อผิดพลาดในการประมวลผลรูปภาพ");
+            setIsLoading(false);
+            return;
         }
-    };
+    }
+
+    try {
+        const response = await axios.post(`${post}/ig_my/insert-ig`, formData);
+        if (response.data.success) {
+            clearpopup();
+        }
+    } catch (error: any) {
+        alert(error.response?.data?.message || "ส่งข้อมูลไม่สำเร็จ");
+    } finally {
+        setIsLoading(false);
+    }
+};
 
     return (
         <motion.div
@@ -144,33 +119,59 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
             className='absolute inset-0 flex flex-col items-center md:justify-center justify-end w-full h-screen bg-black/20 backdrop-blur-sm z-50'>
             <motion.div className="bg-white w-full max-w-md h-[85%] md:h-auto md:max-h-[90%] rounded-t-[20px] md:rounded-[20px] shadow-2xl flex flex-col overflow-hidden">
 
+                {/* ปุ่มกากบาทปิด */}
                 <div className="flex justify-end px-4 pt-4">
                     <button
-                        disabled={loading}
                         onClick={clearpopup}
                         type="button"
-                        className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-red-100 hover:text-red-600 active:scale-95 transition-all duration-200 cursor-pointer shadow-sm disabled:opacity-50"
+                        disabled={isLoading} // 👈 ปิดไม่ให้กดปิดตอนกำลังอัปโหลด
+                        className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-red-100 hover:text-red-600 active:scale-95 transition-all duration-200 cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                        <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2.5"
+                                d="M6 18L18 6M6 6l12 12"
+                            />
                         </svg>
                     </button>
                 </div>
 
                 <div className="px-6 pb-6 overflow-y-auto w-full">
-                    <div className="flex flex-col w-full gap-6">
-                        {/* ส่วนอัปโหลดรูป */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex flex-col w-full"
+                    >
                         <div className="flex flex-col gap-2 w-full">
                             <span className="text-sm font-semibold text-gray-700">รูปถ่ายนักศึกษา</span>
-                            <label className="relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50 hover:bg-slate-100 hover:border-purple-400 transition-all cursor-pointer overflow-hidden">
-                                {previewUrl ? (
-                                    <div className="relative w-full h-full">
-                                        <Image src={previewUrl} alt="Preview" fill className="object-cover" unoptimized />
-                                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white text-sm font-medium">เปลี่ยนรูป</div>
-                                    </div>
+
+                            <label className={`flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50 transition-all duration-200 overflow-hidden relative ${isLoading ? 'cursor-not-allowed opacity-70' : 'hover:bg-slate-100 hover:border-purple-400 cursor-pointer group'}`}>
+                                {imagePreview ? (
+                                    <Image
+                                        fill
+                                        quality={70}
+                                        sizes="(max-width: 768px) 60vw"
+                                        src={imagePreview}
+                                        alt="Preview"
+                                        className="w-full h-full object-cover"
+                                    />
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center text-center p-4">
-                                        <p className="text-sm text-blue-600 font-semibold underline">คลิกเพื่ออัปโหลด</p>
+                                    <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
+                                        <svg className="w-10 h-10 mb-3 text-slate-400 group-hover:text-blue-500 group-hover:scale-110 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <p className="mb-1 text-sm font-medium text-slate-700">
+                                            <span className="text-blue-600 font-semibold underline">คลิกเพื่ออัปโหลด</span> หรือลากไฟล์มาวาง
+                                        </p>
+                                        <p className="text-xs text-slate-500 font-normal">เพิ่มรูปของนักศึกษา (รองรับ JPG, PNG)</p>
                                     </div>
                                 )}
                                 <input
@@ -178,49 +179,85 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
                                     className="hidden"
                                     accept="image/*"
                                     onChange={handleImageChange}
-                                    disabled={loading}
+                                    disabled={isLoading} // 👈 ปิดไม่ให้เลือกรูปเพิ่มขณะโหลด
                                 />
                             </label>
                         </div>
 
-                        {/* Input Fields */}
-                        <div className="flex flex-col gap-4">
-                            <div>
-                                <label className="text-sm font-semibold text-gray-700 block mb-1">ชื่อ</label>
+                        <div className="flex flex-col gap-5 pt-6 w-full">
+                            {/* ช่อง IG */}
+                            <div className="flex flex-col gap-2">
+                                <div className="flex gap-1 items-center justify-between pr-1">
+                                    <label className="text-sm font-semibold text-gray-700 pl-1">IG</label>
+                                    <span className={`text-xs ${introText.length >= 40 ? 'text-red-500 font-medium' : 'text-slate-400'}`}>
+                                        {introText.length} / 40
+                                    </span>
+                                </div>
                                 <input
+                                    accept="image/*"
+                                    capture="environment"
                                     maxLength={40}
                                     value={introText}
                                     onChange={(e) => setIntroText(e.target.value)}
-                                    className="w-full border border-slate-300 rounded-[15px] py-2.5 px-4 bg-slate-50 focus:border-purple-500 outline-none"
-                                    placeholder="น้องชื่ออะรายยย"
-                                    disabled={loading}
+                                    disabled={isLoading} // 👈 ล็อค Input ห้ามพิมพ์ตอนโหลด
+                                    className="w-full border border-slate-300 rounded-[15px] py-2.5 px-4 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
+                                    type="text"
+                                    placeholder="เช่น @username..."
                                 />
                             </div>
 
-                            <div>
-                                <label className="text-sm font-semibold text-gray-700 block mb-1">อยากถามอะไรพี่ๆ</label>
+                            {/* ช่องความในใจ */}
+                            <div className="flex flex-col gap-2">
+                                <div className="flex gap-1 items-center justify-between pr-1">
+                                    <label className="text-sm font-semibold text-gray-700 pl-1">ความในใจ</label>
+                                    <span
+                                        className={`text-xs ${feelingText.length >= 80 ? 'text-red-500 font-medium' : 'text-slate-400'}`}>
+                                        {feelingText.length} / 80
+                                    </span>
+                                </div>
                                 <textarea
                                     maxLength={80}
                                     value={feelingText}
                                     onChange={(e) => setFeelingText(e.target.value)}
-                                    className="w-full border border-slate-300 rounded-[15px] py-2.5 px-4 bg-slate-50 focus:border-purple-500 outline-none resize-none"
+                                    disabled={isLoading} // 👈 ล็อค Textarea ห้ามพิมพ์ตอนโหลด
+                                    className="w-full border border-slate-300 rounded-[15px] py-2.5 px-4 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200 resize-none disabled:opacity-70 disabled:cursor-not-allowed"
                                     rows={3}
-                                    placeholder="พิมพ์ตรงนี้..."
-                                    disabled={loading}
+                                    placeholder="พิมพ์ความในใจของคุณที่นี่..."
                                 />
                             </div>
-                        </div>
 
-                        {/* ปุ่มกด */}
-                        <button
-                            type="button"
-                            onClick={handleSubmit}
-                            disabled={loading}
-                            className="w-full py-3 rounded-[12px] text-white bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 transition-all flex justify-center items-center gap-2"
-                        >
-                            {loading ? "กำลังบันทึก..." : "ยืนยัน"}
-                        </button>
-                    </div>
+                            {/* ส่วนของปุ่ม กดยกเลิกและบันทึก */}
+                            <div className="flex gap-3 pt-4 pb-2">
+                                <button
+                                    type="button"
+                                    onClick={clearpopup}
+                                    disabled={isLoading} // 👈 ล็อคปุ่มยกเลิก
+                                    className="flex-1 py-3 rounded-[12px] text-center font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    ยกเลิก
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleSubmit}
+                                    disabled={isLoading} // 👈 ล็อคปุ่มยืนยันกันกดย้ำๆ
+                                    className="flex-1 py-3 rounded-[12px] text-center font-medium text-white bg-purple-600 hover:bg-purple-700 shadow-md shadow-purple-200 active:scale-95 transition-all duration-200 flex justify-center items-center gap-2 disabled:bg-purple-400 disabled:cursor-not-allowed"
+                                >
+                                    {isLoading ? (
+                                        <>
+                                            {/* SVG วงกลมหมุนๆ (Spinner) */}
+                                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <span>กำลังส่งข้อมูล...</span>
+                                        </>
+                                    ) : (
+                                        "ยืนยัน"
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
                 </div>
             </motion.div>
         </motion.div>
