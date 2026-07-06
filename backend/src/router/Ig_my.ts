@@ -1,11 +1,10 @@
 import { Hono } from "hono";
 import { pool } from "../DB/DB.js";
 import { createClient } from '@supabase/supabase-js';
-import sharp from 'sharp';
 
 const ig_my = new Hono();
 
-// เรียกใช้ Supabase Client (อ้างอิงจากโครงสร้างเดิมของคุณ)
+// เรียกใช้ Supabase Client
 const supabase = createClient(
     process.env.SUPABASE_URL || '',
     process.env.SUPABASE_ANON_KEY || ''
@@ -15,16 +14,14 @@ const supabase = createClient(
 ig_my.post('/insert-ig', async (c) => {
     try {
         const formData = await c.req.formData();
-
-
         const imageFile = formData.get('image') as File | null;
 
-        // Validation เบื้องต้น (เช็กว่ากรอกข้อมูลจำเป็นครบไหม)
+        // Validation เบื้องต้น
         const name = String(formData.get("name") || "");
         const quoteText = String(formData.get("quoteText") || "");
         const igAccount = String(formData.get("igAccount") || "");
 
-        if (!quoteText ) {
+        if (!quoteText) {
             return c.json(
                 {
                     success: false,
@@ -43,21 +40,19 @@ ig_my.post('/insert-ig', async (c) => {
                 return c.json({ success: false, message: "กรุณาอัปโหลดไฟล์รูปภาพที่ถูกต้อง" }, 400);
             }
 
-            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.webp`;
-            const filePath = `IG_Images/${fileName}`; // แยก Folder ใน Bucket ให้ชัดเจน
+            // 💡 หน้าบ้านส่งไฟล์ JPEG ที่ Resize มาแล้ว เปลี่ยนนามสกุลไฟล์ปลายทางเป็น .jpg
+            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+            const filePath = `IG_Images/${fileName}`; 
 
-            // แปลงไฟล์เป็น WebP คุณภาพ 60% ด้วย sharp
+            // 💡 แปลงไฟล์เป็น Buffer ตรงๆ แล้วอัปโหลดได้เลย ไม่ต้องใช้ sharp ครอบแล้ว
             const arrayBuffer = await imageFile.arrayBuffer();
-            const inputBuffer = Buffer.from(arrayBuffer);
-            const webpBuffer = await sharp(inputBuffer)
-                .webp({ quality: 60 })
-                .toBuffer();
+            const fileBuffer = Buffer.from(arrayBuffer);
 
-            // อัปโหลดเข้า Supabase Storage (ใช้ Bucket 'student-images' เดิม หรือเปลี่ยนตามต้องการ)
+            // อัปโหลดเข้า Supabase Storage
             const { data: storageData, error: storageError } = await supabase.storage
                 .from('student-images')
-                .upload(filePath, webpBuffer, {
-                    contentType: 'image/webp',
+                .upload(filePath, fileBuffer, {
+                    contentType: imageFile.type || 'image/jpeg',
                     upsert: true
                 });
 
@@ -74,7 +69,7 @@ ig_my.post('/insert-ig', async (c) => {
             uploadedImageUrl = urlData.publicUrl;
         }
 
-        // บันทึกเข้า PostgreSQL (สมมติชื่อตารางว่า ig_quotes)
+        // บันทึกเข้า PostgreSQL
         const queryText = `
             INSERT INTO ig_quotes (name, quote_text, image_url, ig_account) 
             VALUES ($1, $2, $3, $4) 
@@ -85,7 +80,7 @@ ig_my.post('/insert-ig', async (c) => {
 
         return c.json({
             success: true,
-            message: "บันทึกข้อมูลตาราง IG และแปลงรูปภาพสำเร็จเรียบร้อย!",
+            message: "บันทึกข้อมูลตาราง IG สำเร็จเรียบร้อย!",
             data: { id: result.rows[0].id, imageUrl: uploadedImageUrl }
         }, 201);
 
@@ -122,7 +117,6 @@ ig_my.get('/select-ig', async (c) => {
 
 ig_my.get('/next-popup', async (c) => {
     try {
-
         const popup = await pool.query(`
             SELECT *
             FROM ig_quotes
@@ -153,14 +147,11 @@ ig_my.get('/next-popup', async (c) => {
 
     } catch (error) {
         console.error(error);
-
         return c.json({
             success: false,
             message: 'Server Error'
         }, 500);
     }
 });
-
-
 
 export default ig_my;
