@@ -218,14 +218,23 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
                         </div>
 
                         {/* ปุ่มกด */}
-                        <button
-                            type="button"
-                            onClick={handleSubmit}
-                            disabled={loading}
-                            className="w-full py-3 rounded-[12px] text-white bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 transition-all flex justify-center items-center gap-2"
-                        >
-                            {loading ? "กำลังบันทึก..." : "ยืนยัน"}
-                        </button>
+                        <div className="flex gap-3 pt-4 pb-2">
+                            <button
+                                type="button"
+                                onClick={clearpopup}
+                                className="flex-1 py-3 rounded-[12px] text-center font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                ยกเลิก
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleSubmit}
+                                disabled={loading}
+                                className="flex-1 py-3 rounded-[12px] text-white bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 transition-all flex justify-center items-center gap-2"
+                            >
+                                {loading ? "กำลังบันทึก..." : "ยืนยัน"}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </motion.div>

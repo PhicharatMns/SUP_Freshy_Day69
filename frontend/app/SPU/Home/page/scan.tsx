@@ -5,6 +5,7 @@ import { post } from "@/app/Post";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { div } from "framer-motion/client";
 
 interface IGData {
   id: number;
@@ -22,40 +23,34 @@ export default function Scan() {
   const runningRef = useRef(false);
 
   // ================= FETCH POPUP =================
-  useEffect(() => {
-    const getPopup = async () => {
-      if (runningRef.current) return;
+  const getPopup = async () => {
+    if (runningRef.current) return;
 
-      try {
-        const res = await fetch(
-          `${post}/ig_my/next-popup?t=${Date.now()}`
-        );
+    try {
+      const res = await fetch(
+        `${post}/ig_my/next-popup?t=${Date.now()}`
+      );
 
-        const contentType = res.headers.get("content-type");
+      const result = await res.json();
 
-        if (
-          !res.ok ||
-          !contentType ||
-          !contentType.includes("application/json")
-        ) {
-          console.error("API Error:", res.status);
-          return;
-        }
-
-        const result = await res.json();
-
-        if (result.success && result.data) {
-          runningRef.current = true;
-          setCurrent(result.data);
-          setShow(true);
-        }
-      } catch (err) {
-        console.error("Fetch error:", err);
+      if (result.success && result.data) {
+        runningRef.current = true;
+        setCurrent(result.data);
+        setShow(true);
       }
-    };
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
+  useEffect(() => {
     getPopup();
-    const interval = setInterval(getPopup, 2000);
+
+    const interval = setInterval(() => {
+      if (!runningRef.current) {
+        getPopup();
+      }
+    }, 3000);
 
     return () => clearInterval(interval);
   }, []);
@@ -69,7 +64,7 @@ export default function Scan() {
       setCurrent(null);
       setQr("");
       runningRef.current = false;
-    }, 6000); // 👈 แก้จาก 10000 เป็น 6000 (6 วินาที)
+    }, 5000); // 👈 แก้จาก 10000 เป็น 6000 (6 วินาที)
 
     return () => clearTimeout(timer);
   }, [show]);
@@ -97,104 +92,115 @@ export default function Scan() {
 
   // ================= RENDER =================
   return (
-    <AnimatePresence mode="wait">
-      {show && current && (
-        <motion.div
-          key={current.id}
-          className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-lg"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{
-            opacity: 0,
-            backdropFilter: "blur(0px)",
-          }}
-          transition={{
-            duration: 0.2, // 👈 ปรับให้พื้นหลังเฟดเร็วขึ้น ไม่หน่วงตา
-            ease: "linear",
-          }}
-        >
-          <div className="flex flex-col items-center justify-center h-full">
-            <motion.div
-              className={`grid gap-10 ${(current.ig_account ?? "").trim()
-                ? "grid-cols-2"
-                : "grid-cols-1"
-                }`}
-              initial={{ scale: 0.95, opacity: 0, y: 20 }} // 👈 ลดระยะการเยื้องตอนโผล่มา เพื่อลดอาการหน่วง
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{
-                scale: 0.95,
-                opacity: 0,
-                y: 20,
-                filter: "blur(8px)",
-              }}
-              transition={{
-                duration: 0.25, // 👈 เปลี่ยนจาก Spring มาเป็น Duration สั้นๆ เพื่อให้เด้งขึ้นจอทันที
-                ease: "easeOut"
-              }}
-            >
-              {/* IMAGE */}
-              <motion.div
-                className="relative w-[560px] h-[560px] rounded-[20px] overflow-hidden shadow-[0_0_60px_rgba(255,255,255,0.15)]"
-                initial={{ rotate: -2, scale: 0.98 }} // 👈 ลดการเอียงเยอะๆ ตอนขึ้นจอ จะได้ดูขึ้นมานิ่งๆ เร็วๆ
-                animate={{ rotate: 0, scale: 1 }}
-                exit={{ rotate: -2, scale: 0.98 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Image
-                  fill
-                  sizes="560px"
-                  quality={70}
-                  src={
-                    current.image_url ||
-                    "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp"
-                  }
-                  alt={current.name}
-                  className="object-cover"
-                  priority
-                />
-              </motion.div>
+    // <AnimatePresence mode="wait">
+    //   {show && current && (
+    //     <motion.div
+    //       key={current.id}
+    //       className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto"
+    //       initial={{ opacity: 0 }}
+    //       animate={{ opacity: 1 }}
+    //       exit={{
+    //         opacity: 0,
+    //         backdropFilter: "blur(0px)",
+    //       }}
+    //       transition={{
+    //         duration: 0.2,
+    //         ease: "linear",
+    //       }}
+    //     >
+    //       {/* Container หลักแบ่งเป็น 2 ฝั่ง ซ้าย-ขวา */}
+    //       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center justify-center max-w-6xl w-full max-h-screen p-4">
 
-              {/* QR */}
-              {qr && (current.ig_account ?? "").trim() !== "" && (
-                <motion.div
-                  className="relative w-[560px] h-[560px] rounded-[20px] overflow-hidden bg-white p-5 shadow-[0_0_60px_rgba(255,255,255,0.15)]"
-                  initial={{ rotate: 2, opacity: 0, scale: 0.98 }} // 👈 ลดการเอียงลง
-                  animate={{ rotate: 0, opacity: 1, scale: 1 }}
-                  exit={{ rotate: 2, opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Image
-                    fill
-                    sizes="560px"
-                    src={qr}
-                    alt="Instagram QR"
-                    className="object-contain"
-                  />
-                </motion.div>
-              )}
-            </motion.div>
+    //         {/* ================= ฝั่งซ้าย: รูปภาพหลัก ================= */}
+    //         <div className="flex justify-center md:justify-end w-full">
+    //           <motion.div
+    //             className="relative w-[340px] h-[340px] sm:w-[380px] sm:h-[380px] lg:w-[450px] lg:h-[450px] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10"
+    //             initial={{ rotate: -1, scale: 0.98, opacity: 0 }}
+    //             animate={{ rotate: 0, scale: 1, opacity: 1 }}
+    //             exit={{ rotate: -1, scale: 0.98, opacity: 0 }}
+    //             transition={{ duration: 0.25, ease: "easeOut" }}
+    //           >
+    //             <Image
+    //               fill
+    //               sizes="(max-width: 768px) 100vw, 450px"
+    //               quality={75}
+    //               priority={true}
+    //               src={
+    //                 current.image_url ||
+    //                 "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp"
+    //               }
+    //               alt={current.name}
+    //               className="object-cover"
+    //             />
+    //           </motion.div>
+    //         </div>
 
-            <motion.h1
-              className="text-white text-4xl font-black mt-8"
-              initial={{ opacity: 0, y: 10 }} // 👈 ลดระยะการขยับขึ้น
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              {current.name || ""}
-              {current.ig_account || ""}
-            </motion.h1>
+    //         {/* ================= ฝั่งขวา: QR Code + ข้อมูลด้านล่าง ================= */}
+    //         <div className="flex flex-col items-center md:items-start w-full space-y-6">
 
-            <motion.p
-              className="text-white/90 text-center mt-4 max-w-2xl text-xl leading-relaxed"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.2 }}
-            >
-              {current.quote_text}
-            </motion.p>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    //           {/* QR CODE */}
+    //           {qr && (current.ig_account ?? "").trim() !== "" && (
+    //             <motion.div
+    //               className="relative w-[340px] h-[340px] sm:w-[380px] sm:h-[380px] lg:w-[450px] lg:h-[450px] rounded-2xl overflow-hidden bg-white p-8 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-center border border-white/10"
+    //               initial={{ rotate: 1, opacity: 0, scale: 0.98 }}
+    //               animate={{ rotate: 0, opacity: 1, scale: 1 }}
+    //               exit={{ rotate: 1, opacity: 0, scale: 0.98 }}
+    //               transition={{ duration: 0.25, ease: "easeOut" }}
+    //             >
+    //               <div className="relative w-full h-full">
+    //                 <Image
+    //                   fill
+    //                   sizes="(max-width: 768px) 100vw, 450px"
+    //                   src={qr}
+    //                   alt="Instagram QR"
+    //                   quality={75}
+    //                   priority={true}
+    //                   className="object-contain"
+    //                 />
+    //               </div>
+    //             </motion.div>
+    //           )}
+
+    //           {/* รายละเอียดข้อความ (จะอยู่ใต้ QR Code เสมอ) */}
+    //           <div className="text-center md:text-left w-full max-w-[380px] lg:max-w-[450px] space-y-3 px-2">
+    //             {/* ชื่อบัญชี IG */}
+    //             <motion.h1
+    //               className="text-white text-3xl md:text-5xl lg:text-6xl font-black tracking-tight drop-shadow-md break-all"
+    //               initial={{ opacity: 0, y: 10 }}
+    //               animate={{ opacity: 1, y: 0 }}
+    //               transition={{ duration: 0.2, delay: 0.05 }}
+    //             >
+    //               {current.ig_account || "No Account"}
+    //             </motion.h1>
+
+    //             {/* คำคม / แนะนำตัว */}
+    //             {current.quote_text && (
+    //               <motion.p
+    //                 className="text-white/80 text-base md:text-lg font-medium leading-relaxed drop-shadow-sm"
+    //                 initial={{ opacity: 0 }}
+    //                 animate={{ opacity: 1 }}
+    //                 transition={{ duration: 0.2, delay: 0.1 }}
+    //               >
+    //                 “ {current.quote_text} ”
+    //               </motion.p>
+    //             )}
+    //           </div>
+
+    //         </div>
+
+    //       </div>
+    //     </motion.div>
+    //   )}
+    // </AnimatePresence>
+    <div className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto h-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center justify-center w-full  p-4 h-full">
+        <div className="w-full h-full bg-white">
+          5
+        </div>
+        <div className="w-full h-full bg-white">
+          5
+        </div>
+      </div>
+    </div>
   );
 }
