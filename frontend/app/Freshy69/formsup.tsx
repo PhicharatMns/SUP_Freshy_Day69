@@ -87,10 +87,7 @@ export default function Formsup() {
     myopenpopypIG: true
   }))
 
-  const openpopupQa = () => setpoup(prve => ({
-    ...prve,
-    myQa: true
-  }))
+  const openpopupQa = () => setpoup(prev => ({ ...prev, myQa: true }))
 
   const Social = [
     // {
