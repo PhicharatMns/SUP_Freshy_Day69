@@ -79,25 +79,12 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
             return;
 
         }
-
-
-
         setLoading(true);
-
-
-
         if (!post) {
-
             alert('ไม่พบค่า NEXT_PUBLIC_API_URL กรุณาตั้งค่า .env.local ให้ถูกต้อง');
-
             setLoading(false);
-
             return;
-
         }
-
-
-
         const formData = new FormData();
 
         formData.append('studentName', introText.trim());
