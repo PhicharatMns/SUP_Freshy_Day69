@@ -107,7 +107,7 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
         }
 
         // 💡 ปรับ Endpoint แก้ไขพาร์ทเบิ้ลซ้ำ (จากเดิม Qafrom/Qafrom -> Qafrom)
-        const targetUrl = `${post}/Qafrom`;
+        const targetUrl = `${post}/Qafrom/Qafrom`;
         console.log("กำลังส่งข้อมูลไปที่ URL:", targetUrl);
 
         try {
