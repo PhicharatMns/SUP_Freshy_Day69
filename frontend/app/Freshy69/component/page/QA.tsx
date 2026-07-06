@@ -67,7 +67,7 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
             });
 
             if (response.data.success) {
-                
+
                 await refreshQa?.();
                 clearpopup();
             } else {
@@ -75,7 +75,7 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
             }
         } catch (error: any) {
             console.error("รายละเอียด Error:", error);
-            
+
             // แจ้งเตือนถ้าเป็น 404 เพื่อให้รู้ว่า URL ผิด
             if (error.response?.status === 404) {
                 alert(`Error 404: ไม่พบปลายทางที่ ${targetUrl}\nโปรดตรวจสอบ API Endpoint ใน Backend ของคุณ`);
@@ -124,32 +124,37 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
                                         <p className="text-sm text-blue-600 font-semibold underline">คลิกเพื่ออัปโหลด</p>
                                     </div>
                                 )}
-                                <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                                <input
+                                    accept="image/*"
+                                    capture="environment"
+                                    type="file"
+                                    className="hidden"
+                                    onChange={handleImageChange} />
                             </label>
                         </div>
 
                         {/* Input Fields */}
                         <div className="flex flex-col gap-4">
                             <p> ชื่อ
-                            <input
-                                maxLength={40}
-                                value={introText}
-                                onChange={(e) => setIntroText(e.target.value)}
-                                className="w-full border border-slate-300 rounded-[15px] py-2.5 px-4 bg-slate-50 focus:border-purple-500 outline-none"
-                                placeholder="น้องชื่ออะรายยย"
-                                disabled={loading}
-                            />
+                                <input
+                                    maxLength={40}
+                                    value={introText}
+                                    onChange={(e) => setIntroText(e.target.value)}
+                                    className="w-full border border-slate-300 rounded-[15px] py-2.5 px-4 bg-slate-50 focus:border-purple-500 outline-none"
+                                    placeholder="น้องชื่ออะรายยย"
+                                    disabled={loading}
+                                />
                             </p>
                             <p className="text-sm font-semibold text-gray-700"> อยากถามอะไรพี่ๆ
-                            <textarea
-                                maxLength={80}
-                                value={feelingText}
-                                onChange={(e) => setFeelingText(e.target.value)}
-                                className="w-full border border-slate-300 rounded-[15px] mt-2 py-2.5 px-4 bg-slate-50 focus:border-purple-500 outline-none resize-none"
-                                rows={3}
-                                placeholder="พิมพ์ตรงนี้..."
-                                disabled={loading}
-                            />
+                                <textarea
+                                    maxLength={80}
+                                    value={feelingText}
+                                    onChange={(e) => setFeelingText(e.target.value)}
+                                    className="w-full border border-slate-300 rounded-[15px] mt-2 py-2.5 px-4 bg-slate-50 focus:border-purple-500 outline-none resize-none"
+                                    rows={3}
+                                    placeholder="พิมพ์ตรงนี้..."
+                                    disabled={loading}
+                                />
                             </p>
                         </div>
 
