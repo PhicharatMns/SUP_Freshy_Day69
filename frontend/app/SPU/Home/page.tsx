@@ -11,7 +11,7 @@ import { post } from "@/app/Post";
 export default function HomePage() {
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
-  
+
   // ⚡ สถานะเช็กว่าขณะนี้มีสไลด์รูปคนแสดงอยู่หรือไม่
   const [hasActivePost, setHasActivePost] = useState<boolean>(false);
 
@@ -79,7 +79,7 @@ export default function HomePage() {
               <Cdweb />
             </div>
           )}
-          
+
           <div className="absolute inset-0 z-20 pointer-events-none">
             <Message />
           </div>

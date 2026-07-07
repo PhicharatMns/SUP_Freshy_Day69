@@ -25,10 +25,10 @@ app.use('*', cors({
 app.options("*", cors());
 
 // 🛡️ Rate Limiting — ป้องกันการยิง API ซ้ำๆ
-// จำกัด: GET ทั่วไป 100 ครั้ง/นาที ต่อ IP
+// จำกัด: คำขอทั่วไป 1,000 ครั้ง/นาที ต่อ IP (เผื่อหน้าจอ Polling)
 app.use('*', rateLimiter({
   windowMs: 60 * 1000,    // ช่วงเวลา 1 นาที
-  limit: 100,             // สูงสุด 100 requests ต่อนาที ต่อ IP
+  limit: 1000,            // สูงสุด 1000 requests ต่อนาที ต่อ IP
   keyGenerator: (c) => c.req.header('cf-connecting-ip') ?? // IP จริงจาก Cloudflare
                         c.req.header('x-forwarded-for') ??
                         'unknown',
