@@ -43,3 +43,41 @@ jobs:
 
             # 5. บันทึกสถานะ PM2 ให้รันอัตโนมัติถ้า Server รีบูต
             pm2 save
+
+      - name: Send Discord Notification on Success
+        if: success()
+        run: |
+          curl -H "Content-Type: application/json" \
+            -d '{
+              "username": "GitHub Deploy Bot",
+              "embeds": [{
+                "title": "🟢 Deploy to VPS Successful!",
+                "description": "การอัปเดตระบบและบิลด์โค้ดบน VPS ทำงานเรียบร้อยแล้ว",
+                "color": 562176,
+                "fields": [
+                  { "name": "Repository", "value": "${{ github.repository }}", "inline": true },
+                  { "name": "Branch", "value": "main", "inline": true },
+                  { "name": "Commit Message", "value": "${{ github.event.head_commit.message }}", "inline": false }
+                ]
+              }]
+            }' \
+            "${{ secrets.DISCORD_WEBHOOK }}"
+
+      - name: Send Discord Notification on Failure
+        if: failure()
+        run: |
+          curl -H "Content-Type: application/json" \
+            -d '{
+              "username": "GitHub Deploy Bot",
+              "embeds": [{
+                "title": "🔴 Deploy to VPS Failed!",
+                "description": "พบข้อผิดพลาดในระหว่างกระบวนการ Deploy หรือ Build บนเซิร์ฟเวอร์",
+                "color": 16729144,
+                "fields": [
+                  { "name": "Repository", "value": "${{ github.repository }}", "inline": true },
+                  { "name": "Branch", "value": "main", "inline": true },
+                  { "name": "Commit Message", "value": "${{ github.event.head_commit.message }}", "inline": false }
+                ]
+              }]
+            }' \
+            "${{ secrets.DISCORD_WEBHOOK }}"
