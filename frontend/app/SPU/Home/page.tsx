@@ -7,6 +7,7 @@ import Message from "./page/Message";
 import Scan from "./page/scan"; // 👈 อิมพอร์ตระบบสไลด์โชว์คิวรุ่นใหม่เข้ามา
 import { AnimatePresence } from "framer-motion"; // อิมพอร์ตตัวจัดการสลับแอนิเมชัน
 import { post } from "@/app/Post";
+import Popcar from "./page/Popcar";
 
 export default function HomePage() {
   const [isOpen, setIsOpen] = useState<boolean>(true);
@@ -92,6 +93,9 @@ export default function HomePage() {
           <Scan onActivePostChange={setHasActivePost} />
         </AnimatePresence>
       </div>
+      <div className="absolute inset-0 z-30 pointer-events-none">
+                <Popcar />
+            </div>
     </div>
   );
 }
