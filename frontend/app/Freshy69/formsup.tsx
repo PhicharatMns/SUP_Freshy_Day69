@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { div } from "framer-motion/client";
 import Qa from "./component/page/QA";
 import Link from "next/link";
+import Popuppopcat from "./component/page/popuppopcat";
 
 // Interface สำหรับข้อมูลฟองสบู่
 interface Bubble {
@@ -22,14 +23,16 @@ interface Bubble {
 export interface propspopup {
   myself: boolean;
   myopenpopypIG: boolean;
-  myQa: boolean
+  myQa: boolean;
+  popcat: boolean;
 }
 
 export default function Formsup() {
   const [popup, setpoup] = useState({
     myself: false,
     myopenpopypIG: false,
-    myQa: false
+    myQa: false,
+    popcat: false
   });
 
 
@@ -89,6 +92,11 @@ export default function Formsup() {
 
   const openpopupQa = () => setpoup(prev => ({ ...prev, myQa: true }))
 
+  const openPopcat = () => setpoup(prev => ({
+    ...prev,
+    popcat: true
+  }))
+
   const Social = [
     // {
     //   title: 'แนะนำตัว',
@@ -107,7 +115,7 @@ export default function Formsup() {
     },
     {
       title: 'PopSPU',
-      lnik: '/games',
+      popup: openPopcat,
       gradient: 'from-purple-600 via-rose-500 to-amber-500',
     }
   ]
@@ -162,15 +170,24 @@ export default function Formsup() {
             const buttonStyle = `w-full text-2xl h-40 z-50 hover:scale-105 flex items-center justify-center rounded-[20px] font-bold text-white shadow-lg bg-gradient-to-tr ${e.gradient} animate-gentle-bounce transition-all duration-300 cursor-pointer`;
 
             // เปลี่ยนมาเช็คว่าถ้ามี link ให้ใช้คอมโพเนนต์ <Link>
-            return e.lnik ? (
-              <Link
-                href={e.lnik}
-                className={buttonStyle}
-                key={i}
-              >
-                {e.title}
-              </Link>
-            ) : (
+            // return e.lnik ? (
+            //   <Link
+            //     href={e.lnik}
+            //     className={buttonStyle}
+            //     key={i}
+            //   >
+            //     {e.title}
+            //   </Link>
+            // ) : (
+            //   <div
+            //     onClick={e.popup}
+            //     className={buttonStyle}
+            //     key={i}
+            //   >
+            //     {e.title}
+            //   </div>
+            // );
+            return (
               <div
                 onClick={e.popup}
                 className={buttonStyle}
@@ -178,7 +195,7 @@ export default function Formsup() {
               >
                 {e.title}
               </div>
-            );
+            )
           })}
         </div>
       </div>
@@ -210,6 +227,15 @@ export default function Formsup() {
           </div>
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {popup.popcat && (
+          <Popuppopcat
+            setpoup={setpoup}
+          />
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
