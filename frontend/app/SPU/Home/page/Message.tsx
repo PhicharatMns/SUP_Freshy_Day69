@@ -30,8 +30,13 @@ const fetchQaData = async () => {
         }
 
         const result = await response.json();
-        if (result.success) {
-            setData(result.data);
+        if (result.success && result.data) {
+            // ⏱️ คัดกรองเอาเฉพาะข้อความ Q&A ที่มีอายุการส่งมากกว่า 5 วินาทีขึ้นไปเท่านั้น สำหรับแสดงจอใหญ่หลัก
+            const filteredData = result.data.filter((q: QaData) => {
+                const createdAt = q.created_at ? new Date(q.created_at).getTime() : Date.now();
+                return Date.now() - createdAt >= 5000;
+            });
+            setData(filteredData);
         }
     } catch (error) {
         console.error("Error fetching QA data:", error);
