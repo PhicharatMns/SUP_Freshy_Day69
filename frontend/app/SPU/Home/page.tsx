@@ -10,116 +10,90 @@ import { post } from "@/app/Post";
 import Popcar from "./page/Popcar";
 
 export default function HomePage() {
-    const [isOpen, setIsOpen] = useState<boolean>(true);
-    const [showPopcar, setShowPopcar] = useState<boolean>(false);
-    const [loading, setLoading] = useState<boolean>(true);
+  const [isOpen, setIsOpen] = useState<boolean>(true);
+  const [showPopcar, setShowPopcar] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
-    useEffect(() => {
-        const checkStatus = async () => {
-            try {
-                const res = await fetch(`${post}/apinext/control`, {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                    cache: "no-store" 
-                });
-                const data = await res.json();
+  // ⚡ สถานะเช็กว่าขณะนี้มีสไลด์รูปคนแสดงอยู่หรือไม่
+  const [hasActivePost, setHasActivePost] = useState<boolean>(false);
 
-                if (data.success && data.data) {
-                    setIsOpen(data.data.type);
-                    if (data.data.popcar !== undefined) {
-                        setShowPopcar(data.data.popcar);
-                    }
-                }
-            } catch (error) {
-                console.error("โหลดข้อมูลสถานะระบบล้มเหลว:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const res = await fetch(`${post}/apinext/control`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store" 
+        });
+        const data = await res.json();
 
-        checkStatus();
-        const intervalId = setInterval(checkStatus, 5000);
-        return () => clearInterval(intervalId);
-    }, []);
+        if (data.success && data.data) {
+          setIsOpen(data.data.type);
+          if (data.data.popcar !== undefined) {
+            setShowPopcar(data.data.popcar);
+          }
+        }
+      } catch (error) {
+        console.error("โหลดข้อมูลสถานะระบบล้มเหลว:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (loading) {
-        return <div className="w-full h-screen bg-black text-white flex items-center justify-center">กำลังตรวจสอบสถานะระบบ...</div>;
-    }
-
-    // 4. เคลียร์ Interval ทิ้งเมื่อย้ายหน้าหรือ Component ถูกทำลาย (ป้องกัน Memory Leak)
+    checkStatus();
+    const intervalId = setInterval(checkStatus, 5000);
     return () => clearInterval(intervalId);
   }, []);
 
-  // ตอนเข้าหน้าเว็บครั้งแรกสุด รอผลลัพธ์แป๊บหนึ่ง
   if (loading) {
     return (
-        <div className="relative w-full h-screen overflow-hidden">
-            
-            {/* 1. BK ฉากหลังสุด (z-0) */}
-            <div className="absolute inset-0 z-0">
-                <BK />
-            </div>
-            
-            {/* 2. กลุ่มหน้าหลัก (Message, QR Code, Scan Here) */}
-            {isOpen && (
-                <>
-                    {/* Cdweb (QR Code หมุนๆ) ต้องอยู่เลเยอร์ที่สูงกว่าพื้นหลัง (z-10) */}
-                    {/* 🛠️ เปลี่ยน pointer-events เป็น auto เผื่อมันบังการคลิกของกล่อง Message */}
-                    <div className="absolute inset-0 z-10 pointer-events-none">
-                        <div className="pointer-events-auto w-full h-full">
-                            <Cdweb />
-                        </div>
-                    </div>
-
-                    {/* Message (กล่องข้อความนักศึกษา) ให้อยู่สูงสุดในกลุ่มนี้ (z-20) */}
-                    <div className="absolute inset-0 z-20 pointer-events-none">
-                        <Message />
-                    </div>
-                </>
-            )}
-
-            {/* 3. Popcar รถป๊อป (z-30) (จะแสดงก็ต่อเมื่อกด "เรียกใช้ Popcar" ที่รีโมท) */}
-            {showPopcar && (
-                <div className="absolute inset-0 z-30 pointer-events-none">
-                    <Popcar />
-                </div>
-            )}
-
-        </div>
+      <div className="w-full h-screen bg-black text-white flex items-center justify-center">
+        กำลังตรวจสอบสถานะระบบ...
+      </div>
     );
   }
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* BK (ฉากหลัง) แสดงผลตลอดเวลา */}
+      
+      {/* 1. BK ฉากหลังสุด (z-0) */}
       <div className="absolute inset-0 z-0">
         <BK />
       </div>
-
-      {/* 🛠️ กล่องข้อมูลและตัวเด้ง (จะแสดงเฉพาะตอนเปิดระบบ และไม่มีรูปภาพใดๆ แสดงอยู่ในจอ) */}
+      
+      {/* 2. กลุ่มหน้าหลัก (Message, QR Code, Scan Here) */}
       {isOpen && (
         <>
+          {/* Cdweb (QR Code หมุนๆ) ต้องอยู่เลเยอร์ที่สูงกว่าพื้นหลัง (z-10) และแสดงเมื่อไม่มีรูปสไลด์เปิดอยู่ */}
           {!hasActivePost && (
-            <div className="absolute inset-0 z-10">
-              <Cdweb />
+            <div className="absolute inset-0 z-10 pointer-events-none">
+              <div className="pointer-events-auto w-full h-full">
+                <Cdweb />
+              </div>
             </div>
           )}
 
+          {/* Message (กล่องข้อความนักศึกษา) ให้อยู่สูงสุดในกลุ่มนี้ (z-20) */}
           <div className="absolute inset-0 z-20 pointer-events-none">
             <Message />
           </div>
         </>
       )}
 
-      {/* 📸 เปิดการทำงานระบบสไลด์โชว์คิว IG ขึ้นจอใหญ่อย่างเป็นทางการ */}
+      {/* 📸 เปิดการทำงานระบบสไลด์โชว์คิว IG ขึ้นจอใหญ่อย่างเป็นทางการ (z-40) */}
       <div className="absolute inset-0 z-40 pointer-events-none">
         <AnimatePresence mode="wait">
           <Scan onActivePostChange={setHasActivePost} />
         </AnimatePresence>
       </div>
-      {/* <div className="absolute inset-0 z-30 pointer-events-none">
-        <Popcar />
-      </div> */}
+
+      {/* 3. Popcar รถป๊อป (z-30) (จะแสดงก็ต่อเมื่อกด "เรียกใช้ Popcar" ที่รีโมท) */}
+      {showPopcar && (
+        <div className="absolute inset-0 z-30 pointer-events-none">
+          <Popcar />
+        </div>
+      )}
+
     </div>
   );
 }
