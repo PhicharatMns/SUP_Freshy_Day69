@@ -5,6 +5,9 @@ import BK from "./page/Bk";
 import Cdweb from "./page/Cdweb";
 import Message from "./page/Message";
 import { post } from "@/app/Post";
+import { AnimatePresence } from "framer-motion";
+import Scan from "./page/scan";
+import Popcar from "./page/Popcar";
 
 export default function HomePage() {
     const [isOpen, setIsOpen] = useState<boolean>(true);
@@ -55,9 +58,8 @@ export default function HomePage() {
             <div className="absolute inset-0 z-0">
                 <BK />
             </div>
-            
-            {/* 🛠️ ข้อมูลจะอัปเดตอัตโนมัติทุก 5 วิ ถ้าหลังบ้านเปลี่ยนเป็น false สองตัวนี้จะหายวับทันที */}
-            {isOpen && (
+                        
+         {isOpen && (
                 <>
                     <div className="absolute inset-0 z-0">
                         <Cdweb />
@@ -69,16 +71,17 @@ export default function HomePage() {
                 </>
             )}
 
-            {/* ส่วนโค้ดที่คอมเมนต์ไว้คงเดิม */}
-            {/* <div className="absolute inset-0 z-40 pointer-events-none">
+       
+            <div className="absolute inset-0 z-40 pointer-events-none">
                 <AnimatePresence>
                     <Scan />
                 </AnimatePresence>
-            </div> */}
+            </div> 
+            
 
-            {/* <div className="absolute inset-0 z-30 pointer-events-none">
+            <div className="absolute inset-0 z-30 pointer-events-none">
                 <Popcar />
-            </div> */}
+            </div>
         </div>
     );
 }

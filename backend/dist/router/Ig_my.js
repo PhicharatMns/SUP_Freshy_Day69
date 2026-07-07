@@ -64,6 +64,7 @@ ig_my.post('/insert-ig', async (c) => {
         return c.json({ success: false, message: "เกิดข้อผิดพลาดภายในระบบหลังบ้าน" }, 500);
     }
 });
+
 ig_my.get('/select-ig', async (c) => {
     try {
         const rows = await prisma.ig_quotes.findMany({
