@@ -1,6 +1,11 @@
 import { Context } from "hono";
 import { prisma } from "../config/database.js";
 
+// 🛠️ FIX: วิธีแก้ปัญหา BigInt - สอนให้ JavaScript แปลง BigInt เป็นตัวเลขปกติก่อนส่ง JSON
+(BigInt.prototype as any).toJSON = function () {
+  return Number(this);
+};
+
 export const getScores = async (c: Context) => {
   try {
     const rows = await prisma.departments_score.findMany({
