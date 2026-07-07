@@ -116,3 +116,29 @@ export const nextPopup = async (c) => {
         }, 500);
     }
 };
+export const deleteIg = async (c) => {
+    try {
+        const id = Number(c.req.param('id'));
+        if (!id) {
+            return c.json({ success: false, message: "ระบุ ID ไม่ถูกต้อง" }, 400);
+        }
+        // ลบข้อมูลแถวนี้ออกจากฐานข้อมูล MySQL
+        await prisma.ig_quotes.delete({
+            where: {
+                id: id
+            }
+        });
+        return c.json({
+            success: true,
+            message: "ลบโพสต์ IG เรียบร้อยแล้ว!"
+        }, 200);
+    }
+    catch (error) {
+        console.error("❌ Delete IG Error:", error);
+        return c.json({
+            success: false,
+            message: "เกิดข้อผิดพลาดในการลบข้อมูล",
+            error: error.message
+        }, 500);
+    }
+};
