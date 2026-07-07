@@ -1,18 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import QRCode from "qrcode";
 import { post } from "@/app/Post";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import { div } from "framer-motion/client";
 
 interface IGData {
   id: number;
   name: string;
-  quote_text: string;
-  image_url: string | null;
-  ig_account: string;
-  popup: boolean;
+  ig_account?: string;
+  image_url?: string;
+  quote_text?: string;
 }
 
 export default function Scan() {
@@ -22,47 +22,40 @@ export default function Scan() {
 
   const runningRef = useRef(false);
 
-  useEffect(() => {
-    const getPopup = async () => {
-      // If a popup is already showing, skip the fetch
-      if (runningRef.current) return;
+  // ================= FETCH POPUP =================
+  const getPopup = async () => {
+    if (runningRef.current) return;
 
-      try {
-        const res = await fetch(`${post}/ig_my/next-popup?t=${Date.now()}`);
+    try {
+      const res = await fetch(
+        `${post}/ig_my/next-popup?t=${Date.now()}`
+      );
 
-        // Check if the response is actually JSON
-        const contentType = res.headers.get("content-type");
-        if (
-          !res.ok ||
-          !contentType ||
-          !contentType.includes("application/json")
-        ) {
-          console.error(`API Error: Received status ${res.status}`);
-          return;
-        }
+      const result = await res.json();
 
-        const result = await res.json();
-
-        if (result.success && result.data) {
-          runningRef.current = true;
-          setCurrent(result.data);
-          setShow(true);
-        }
-      } catch (error) {
-        console.error("Error fetching popup data:", error);
+      if (result.success && result.data) {
+        runningRef.current = true;
+        setCurrent(result.data);
+        setShow(true);
       }
-    };
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-    // Initial fetch
+  useEffect(() => {
     getPopup();
 
-    // Polling every 15 seconds
-    const interval = setInterval(getPopup, 15000);
+    const interval = setInterval(() => {
+      if (!runningRef.current) {
+        getPopup();
+      }
+    }, 3000);
 
     return () => clearInterval(interval);
   }, []);
 
-  // Timer to close the popup after 10 seconds
+  // ================= AUTO CLOSE (ปรับเหลือ 6 วินาที) =================
   useEffect(() => {
     if (!show) return;
 
@@ -70,114 +63,163 @@ export default function Scan() {
       setShow(false);
       setCurrent(null);
       setQr("");
-      runningRef.current = false; // Allow the fetcher to run again
-    }, 10000);
+      runningRef.current = false;
+    }, 5000); // 👈 แก้จาก 10000 เป็น 6000 (6 วินาที)
 
     return () => clearTimeout(timer);
   }, [show]);
 
-  // Generate QR code when current data updates
+  // ================= GENERATE QR =================
   useEffect(() => {
     if (!current?.ig_account) return;
 
     const generateQR = async () => {
       try {
-        const username = current.ig_account.replace("@", "");
+        const username = (current.ig_account ?? "").replace("@", "");
+
         const url = await QRCode.toDataURL(
-          `https://www.instagram.com/${username}`,
+          `https://www.instagram.com/${username}`
         );
+
         setQr(url);
-      } catch (error) {
-        console.error("QR Generation failed:", error);
+      } catch (err) {
+        console.error("QR error:", err);
       }
     };
 
     generateQR();
   }, [current]);
 
-  if (!show || !current) return null;
-
-  const hasIG = current.ig_account && current.ig_account.trim() !== "";
-
+  // ================= RENDER =================
   return (
-    <div className="fixed inset-0 z-[99999] bg-black/75 backdrop-blur-xl animate-fade-in overflow-y-auto">
-      {/* ส่วนจัดตำแหน่งให้อยู่กลางจอ และเผื่อ Scroll ถ้าจอแนวตั้งสั้นเกินไป */}
-      <div className="min-h-screen flex items-center justify-center p-4 sm:p-6">
-        <div className="max-w-5xl w-full flex flex-col items-center gap-6 sm:gap-8 py-8 sm:py-0">
-          {/* ─── Grid Cards Container ─── */}
-          {/* บนมือถือ/แนวตั้ง จะบีบขนาดกล่องด้วย max-w-[280px] เพื่อไม่ให้รูปใหญ่เกินไปจนล้นจอ */}
-          <div
-            className={`grid gap-4 sm:gap-8 w-full ${
-              hasIG
-                ? "md:grid-cols-2 grid-cols-1 max-w-[280px] sm:max-w-md md:max-w-4xl mx-auto"
-                : "grid-cols-1 max-w-[280px] sm:max-w-md mx-auto"
-            }`}
-          >
-            {/* User Profile Image Card */}
-            <div className="relative aspect-square w-full rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-zinc-900 group mx-auto">
-              <Image
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                quality={85}
-                src={
-                  current.image_url ||
-                  "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/spuprofile.jpg"
-                }
-                alt={current.name}
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                priority={true}
-              />
-              {/* Gradient เงานุ่มๆ ด้านล่างภาพ */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-            </div>
+    // <AnimatePresence mode="wait">
+    //   {show && current && (
+    //     <motion.div
+    //       key={current.id}
+    //       className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto"
+    //       initial={{ opacity: 0 }}
+    //       animate={{ opacity: 1 }}
+    //       exit={{
+    //         opacity: 0,
+    //         backdropFilter: "blur(0px)",
+    //       }}
+    //       transition={{
+    //         duration: 0.2,
+    //         ease: "linear",
+    //       }}
+    //     >
+    //       {/* Container หลักแบ่งเป็น 2 ฝั่ง ซ้าย-ขวา */}
+    //       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center justify-center max-w-6xl w-full max-h-screen p-4">
 
-            {/* QR Code Card */}
-            {qr && hasIG && (
-              <div className="relative aspect-square w-full rounded-2xl overflow-hidden    flex flex-col items-center justify-center gap-3 sm:gap-4 mx-auto">
-                <div className="relative w-full h-full max-w-[75%] max-h-[75%] sm:max-w-[85%] sm:max-h-[85%]">
-                  <Image
-                    fill
-                    src={qr}
-                    alt="Instagram QR"
-                    className="object-contain"
-                  />
-                </div>
-                {/* Instagram Username Badge สีสดใส */}
-                <span className="px-3 py-1 sm:px-4 sm:py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full text-xs sm:text-sm font-semibold shadow-md tracking-wide animate-pulse truncate max-w-full">
-                  {current.ig_account.startsWith("@")
-                    ? current.ig_account
-                    : `@${current.ig_account}`}
-                </span>
-              </div>
-            )}
+    //         {/* ================= ฝั่งซ้าย: รูปภาพหลัก ================= */}
+    //         <div className="flex justify-center md:justify-end w-full">
+    //           <motion.div
+    //             className="relative w-[340px] h-[340px] sm:w-[380px] sm:h-[380px] lg:w-[450px] lg:h-[450px] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10"
+    //             initial={{ rotate: -1, scale: 0.98, opacity: 0 }}
+    //             animate={{ rotate: 0, scale: 1, opacity: 1 }}
+    //             exit={{ rotate: -1, scale: 0.98, opacity: 0 }}
+    //             transition={{ duration: 0.25, ease: "easeOut" }}
+    //           >
+    //             <Image
+    //               fill
+    //               sizes="(max-width: 768px) 100vw, 450px"
+    //               quality={75}
+    //               priority={true}
+    //               src={
+    //                 current.image_url ||
+    //                 "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp"
+    //               }
+    //               alt={current.name}
+    //               className="object-cover"
+    //             />
+    //           </motion.div>
+    //         </div>
+
+    //         {/* ================= ฝั่งขวา: QR Code + ข้อมูลด้านล่าง ================= */}
+    //         <div className="flex flex-col items-center md:items-start w-full space-y-6">
+
+    //           {/* QR CODE */}
+    //           {qr && (current.ig_account ?? "").trim() !== "" && (
+    //             <motion.div
+    //               className="relative w-[340px] h-[340px] sm:w-[380px] sm:h-[380px] lg:w-[450px] lg:h-[450px] rounded-2xl overflow-hidden bg-white p-8 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-center border border-white/10"
+    //               initial={{ rotate: 1, opacity: 0, scale: 0.98 }}
+    //               animate={{ rotate: 0, opacity: 1, scale: 1 }}
+    //               exit={{ rotate: 1, opacity: 0, scale: 0.98 }}
+    //               transition={{ duration: 0.25, ease: "easeOut" }}
+    //             >
+    //               <div className="relative w-full h-full">
+    //                 <Image
+    //                   fill
+    //                   sizes="(max-width: 768px) 100vw, 450px"
+    //                   src={qr}
+    //                   alt="Instagram QR"
+    //                   quality={75}
+    //                   priority={true}
+    //                   className="object-contain"
+    //                 />
+    //               </div>
+    //             </motion.div>
+    //           )}
+
+    //           {/* รายละเอียดข้อความ (จะอยู่ใต้ QR Code เสมอ) */}
+    //           <div className="text-center md:text-left w-full max-w-[380px] lg:max-w-[450px] space-y-3 px-2">
+    //             {/* ชื่อบัญชี IG */}
+    //             <motion.h1
+    //               className="text-white text-3xl md:text-5xl lg:text-6xl font-black tracking-tight drop-shadow-md break-all"
+    //               initial={{ opacity: 0, y: 10 }}
+    //               animate={{ opacity: 1, y: 0 }}
+    //               transition={{ duration: 0.2, delay: 0.05 }}
+    //             >
+    //               {current.ig_account || "No Account"}
+    //             </motion.h1>
+
+    //             {/* คำคม / แนะนำตัว */}
+    //             {current.quote_text && (
+    //               <motion.p
+    //                 className="text-white/80 text-base md:text-lg font-medium leading-relaxed drop-shadow-sm"
+    //                 initial={{ opacity: 0 }}
+    //                 animate={{ opacity: 1 }}
+    //                 transition={{ duration: 0.2, delay: 0.1 }}
+    //               >
+    //                 “ {current.quote_text} ”
+    //               </motion.p>
+    //             )}
+    //           </div>
+
+    //         </div>
+
+    //       </div>
+    //     </motion.div>
+    //   )}
+    // </AnimatePresence>
+    <div className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto h-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center justify-center w-full  p-4 h-full">
+        <div className="w-full h-full  rounded-2xl overflow-hidden">
+          <div className="relative w-full h-full ">
+            <Image
+              fill
+              sizes="(max-width: 768px) 100vw, 450px"
+              quality={75}
+              priority={true}
+              src={'https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp'}
+              alt='1'
+              className="object-cover "
+            />
+          </div>
+        </div>
+        <div className="w-full h-full bg-white rounded-2xl overflow-hidden">
+          {/* qr */}
+          <div>
+            <div className="relative w-full aspect-square  bg-gray-50 rounded-xl p-4 flex items-center justify-center border border-gray-100">
+              {/* ใส่ <Image src={qr} fill className="object-contain" /> ตรงนี้ */}
+              <span className="text-gray-400 text-sm">[ QR Code Area ]</span>
+            </div>
           </div>
 
-          {/* ─── User Info Section ─── */}
-          {/* ─── User Info Section ─── */}
-          <div className="text-center max-w-2xl px-2 mt-2">
-            {/* ชื่อผู้ใช้ไล่เฉดสีขาว-เงิน มีเงา Drop Shadow */}
-            <h1 className="text-white text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] bg-clip-text text-transparent bg-gradient-to-b from-white to-zinc-300">
-              {current.name || "เด็กศรีปทุมท่านหนึ่ง"}
-            </h1>
-
-            {current.quote_text && (
-              <div className="relative mt-5 sm:mt-6 px-2">
-                <div className="relative rounded-2xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-sm border border-white/10 shadow-xl px-6 py-6 sm:px-10 sm:py-8">
-                  {/* เครื่องหมายคำพูดใหญ่ สีเด่นแบบ gradient */}
-                  <span className="absolute -top-5 left-4 sm:-top-7 sm:left-6 text-6xl sm:text-8xl font-serif select-none bg-gradient-to-b from-purple-400 to-pink-500 bg-clip-text text-transparent opacity-90 drop-shadow-lg">
-                    "
-                  </span>
-
-                  <p className="relative text-white text-xl sm:text-2xl md:text-3xl italic font-bold leading-snug drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] tracking-wide">
-                    {current.quote_text}
-                  </p>
-
-                  <span className="absolute -bottom-10 right-4 sm:-bottom-14 sm:right-6 text-6xl sm:text-8xl font-serif select-none bg-gradient-to-b from-purple-400 to-pink-500 bg-clip-text text-transparent opacity-90 drop-shadow-lg">
-                    "
-                  </span>
-                </div>
-              </div>
-            )}
+          <div>
+            <p>    คณะ</p>
+            <p>IG : </p>
+            <p>ความในใจ</p>
           </div>
         </div>
       </div>

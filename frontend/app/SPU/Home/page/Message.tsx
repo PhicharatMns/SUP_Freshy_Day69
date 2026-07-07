@@ -44,7 +44,7 @@ const fetchQaData = async () => {
         fetchQaData();
 
         // ตั้งเวลาดึงข้อมูลใหม่ทุกๆ 5 วินาที
-        const intervalId = setInterval(fetchQaData, 15000);
+        const intervalId = setInterval(fetchQaData, 2000);
 
         // เคลียร์ interval
         return () => clearInterval(intervalId);
@@ -91,7 +91,7 @@ const fetchQaData = async () => {
                                         priority={true}
                                         quality={70}
                                         sizes="48px"
-                                        src={e.image_url ? e.image_url : 'https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/spuprofile.jpg'}
+                                        src={e.image_url ? e.image_url : 'https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp'}
                                         alt={e.student_name || "Student Profile"}
                                         className="object-cover"
                                     />
@@ -101,7 +101,7 @@ const fetchQaData = async () => {
                                 <div className="flex flex-col min-w-0 flex-1">
                                     <div className="flex gap-2 truncate font-semibold text-slate-800 mb-0.5">
                                         <p className="truncate">
-                                            N : {e.student_name || "ไม่ระบุชื่อ"}
+                                            N : {e.student_name || "DEK Freshy69"}
                                         </p>
                                         <p className="text-gray-500">{formatThaiTime(e.created_at)} น.</p>
                                     </div>

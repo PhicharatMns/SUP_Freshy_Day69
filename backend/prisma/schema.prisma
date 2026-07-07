@@ -1,0 +1,61 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model control {
+  id   Int      @id @default(autoincrement())
+  type Boolean? @db.TinyInt
+}
+
+model quotes {
+  id           Int       @id @default(autoincrement())
+  student_name String    @db.VarChar(255)
+  feeling_text String    @db.Text
+  created_at   DateTime? @default(now()) @db.Timestamp(0)
+  image_url    String?   @db.Text
+}
+
+model ig_quotes {
+  id         Int       @id @default(autoincrement())
+  name       String    @db.VarChar(255)
+  quote_text String    @db.Text
+  image_url  String?   @db.Text
+  ig_account String    @db.VarChar(255)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  popup      Boolean?  @default(false) @db.TinyInt
+  type       String?   @db.Text
+}
+
+model popcat_users {
+  id           Int       @id @default(autoincrement())
+  student_id   String    @unique(map: "unique_student") @db.VarChar(50)
+  student_name String    @db.VarChar(255)
+  created_at   DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model popcat_players {
+  id             Int       @id @default(autoincrement())
+  student_id     String    @db.VarChar(50)
+  department_key String    @db.VarChar(100)
+  total_clicks   BigInt    @default(0)
+  created_at     DateTime? @default(now()) @db.Timestamp(0)
+  updated_at     DateTime? @default(now()) @db.Timestamp(0)
+  student_name   String?   @db.Text
+
+  @@unique([student_id, department_key], map: "unique_player_dept")
+}
+
+model departments_score {
+  id              BigInt    @id @default(autoincrement())
+  department_key  String    @unique(map: "unique_dept_key") @db.VarChar(100)
+  department_name String    @db.Text
+  total_clicks    BigInt    @default(0)
+  created_at      DateTime? @default(now()) @db.Timestamp(0)
+  updated_at      DateTime? @default(now()) @db.Timestamp(0)
+  ImageCat        String?   @db.Text
+}

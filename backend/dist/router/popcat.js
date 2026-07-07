@@ -1,0 +1,245 @@
+import { Hono } from "hono";
+import { prisma } from "../DB/DB.js";
+// แก้ไขปัญหา BigInt Serialization ของ JSON ใน JS/TS
+BigInt.prototype.toJSON = function () {
+    return this.toString();
+};
+const popcar = new Hono();
+// ดึงคะแนนทุกคณะ
+popcar.get("/scores", async (c) => {
+    try {
+        const rows = await prisma.departments_score.findMany({
+            orderBy: {
+                total_clicks: "desc",
+            },
+        });
+        return c.json({
+            status: true,
+            data: rows,
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return c.json({
+            status: false,
+            message: "Server Error",
+        }, 500);
+    }
+});
+// ดึงคะแนนคณะเดียว
+popcar.get("/score/:departmentKey", async (c) => {
+    try {
+        const departmentKey = c.req.param("departmentKey");
+        const rows = await prisma.departments_score.findMany({
+            where: {
+                department_key: departmentKey,
+            },
+        });
+        if (rows.length === 0) {
+            return c.json({
+                status: false,
+                message: "Department not found",
+            }, 404);
+        }
+        return c.json({
+            status: true,
+            data: rows[0],
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return c.json({
+            status: false,
+            message: "Server Error",
+        }, 500);
+    }
+});
+popcar.post("/click", async (c) => {
+    try {
+        const { departmentKey } = await c.req.json();
+        if (!departmentKey) {
+            return c.json({
+                status: false,
+                message: "departmentKey is required",
+            }, 400);
+        }
+        const updated = await prisma.departments_score.update({
+            where: {
+                department_key: departmentKey,
+            },
+            data: {
+                total_clicks: {
+                    increment: 1,
+                },
+                updated_at: new Date(),
+            },
+        });
+        return c.json({
+            status: true,
+            data: updated,
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return c.json({
+            status: false,
+            message: "Server Error",
+        }, 500);
+    }
+});
+popcar.post("/click-bulk", async (c) => {
+    try {
+        const { departmentKey, count } = await c.req.json();
+        if (!departmentKey || !count) {
+            return c.json({
+                status: false,
+                message: "departmentKey and count required",
+            }, 400);
+        }
+        const updated = await prisma.departments_score.update({
+            where: {
+                department_key: departmentKey,
+            },
+            data: {
+                total_clicks: {
+                    increment: BigInt(count),
+                },
+                updated_at: new Date(),
+            },
+        });
+        return c.json({
+            status: true,
+            data: updated,
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return c.json({
+            status: false,
+            message: "Server Error",
+        }, 500);
+    }
+});
+popcar.post("/register", async (c) => {
+    try {
+        const { studentId, studentName } = await c.req.json();
+        if (!studentId || !studentName) {
+            return c.json({
+                status: false,
+                message: "studentId and studentName required",
+            }, 400);
+        }
+        const user = await prisma.popcat_users.upsert({
+            where: {
+                student_id: studentId,
+            },
+            update: {
+                student_name: studentName,
+            },
+            create: {
+                student_id: studentId,
+                student_name: studentName,
+            },
+        });
+        return c.json({
+            status: true,
+            data: user,
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return c.json({
+            status: false,
+            message: "Server Error",
+        }, 500);
+    }
+});
+popcar.post("/click-bulk-user", async (c) => {
+    try {
+        const body = await c.req.json();
+        const { departmentKey, count, studentId } = body;
+        // validate
+        if (!departmentKey || !count || !studentId) {
+            return c.json({
+                status: false,
+                message: "departmentKey, count and studentId required",
+            }, 400);
+        }
+        // 1. get user
+        const user = await prisma.popcat_users.findUnique({
+            where: {
+                student_id: studentId,
+            },
+        });
+        if (!user) {
+            return c.json({
+                status: false,
+                message: "User not found",
+            }, 404);
+        }
+        // 2. insert / update player using upsert
+        const player = await prisma.popcat_players.upsert({
+            where: {
+                student_id_department_key: {
+                    student_id: user.student_id,
+                    department_key: departmentKey,
+                },
+            },
+            update: {
+                student_name: user.student_name,
+                total_clicks: {
+                    increment: BigInt(count),
+                },
+                updated_at: new Date(),
+            },
+            create: {
+                student_id: user.student_id,
+                student_name: user.student_name,
+                department_key: departmentKey,
+                total_clicks: BigInt(count),
+            },
+        });
+        return c.json({
+            status: true,
+            data: player,
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return c.json({
+            status: false,
+            message: "Server Error",
+        }, 500);
+    }
+});
+popcar.get("/top-departments", async (c) => {
+    try {
+        const rows = await prisma.$queryRaw `
+      SELECT student_id, student_name, department_key, total_clicks, updated_at
+      FROM (
+        SELECT 
+          student_id,
+          student_name,
+          department_key,
+          total_clicks,
+          updated_at,
+          ROW_NUMBER() OVER (PARTITION BY department_key ORDER BY total_clicks DESC) as rn
+        FROM popcat_players
+      ) t
+      WHERE rn = 1
+      ORDER BY total_clicks DESC;
+    `;
+        return c.json({
+            status: true,
+            data: rows,
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return c.json({
+            status: false,
+            message: "Server Error",
+        }, 500);
+    }
+});
+export default popcar;

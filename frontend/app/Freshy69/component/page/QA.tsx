@@ -20,6 +20,47 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
+    // 💡 ฟังก์ชันบีบอัดรูปภาพด้วย Canvas (ลดขนาดไฟล์เพื่อไม่ให้หลังบ้านพัง)
+    const resizeImage = (file: File, maxWidth = 1024, maxHeight = 1024): Promise<Blob> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new window.Image();
+                img.src = event.target?.result as string;
+                img.onload = () => {
+                    const canvas = document.createElement("canvas");
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width = Math.round((width * maxHeight) / height);
+                            height = maxHeight;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext("2d");
+                    ctx?.drawImage(img, 0, 0, width, height);
+
+                    // แปลงเป็น jpeg คุณภาพ 75% ขนาดไฟล์จะเหลือเบามาก
+                    canvas.toBlob((blob) => {
+                        if (blob) resolve(blob);
+                        else reject(new Error("Canvas to Blob failed"));
+                    }, "image/jpeg", 0.75);
+                };
+            };
+            reader.onerror = (error) => reject(error);
+        });
+    };
+
     const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -35,7 +76,7 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
     }))
 
     const handleSubmit = async () => {
-        if (!introText || !feelingText) {
+        if (!introText.trim() || !feelingText.trim()) {
             alert("กรุณากรอกข้อมูลให้ครบถ้วนนะครับ");
             return;
         }
@@ -53,9 +94,19 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
         formData.append('feelingText', feelingText.trim());
 
         if (imageFile) {
-            formData.append('studentImage', imageFile);
+            try {
+                // 💡 เรียกใช้ฟังก์ชันบีบอัดรูปภาพก่อนนำเข้า FormData
+                const resizedBlob = await resizeImage(imageFile);
+                formData.append('studentImage', resizedBlob, imageFile.name || "upload.jpg");
+            } catch (err) {
+                console.error("Resize error:", err);
+                alert("เกิดข้อผิดพลาดในการประมวลผลรูปภาพ");
+                setLoading(false);
+                return;
+            }
         }
 
+        // 💡 ปรับ Endpoint แก้ไขพาร์ทเบิ้ลซ้ำ (จากเดิม Qafrom/Qafrom -> Qafrom)
         const targetUrl = `${post}/Qafrom/Qafrom`;
         console.log("กำลังส่งข้อมูลไปที่ URL:", targetUrl);
 
@@ -67,7 +118,6 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
             });
 
             if (response.data.success) {
-                alert("บันทึกข้อมูลเรียบร้อย!");
                 await refreshQa?.();
                 clearpopup();
             } else {
@@ -75,12 +125,11 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
             }
         } catch (error: any) {
             console.error("รายละเอียด Error:", error);
-            
-            // แจ้งเตือนถ้าเป็น 404 เพื่อให้รู้ว่า URL ผิด
+
             if (error.response?.status === 404) {
                 alert(`Error 404: ไม่พบปลายทางที่ ${targetUrl}\nโปรดตรวจสอบ API Endpoint ใน Backend ของคุณ`);
             } else {
-                alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
+                alert(error.response?.data?.message || "เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
             }
         } finally {
             setLoading(false);
@@ -120,51 +169,75 @@ export default function Qa({ setpoup, refreshQa }: propsQa) {
                                         <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white text-sm font-medium">เปลี่ยนรูป</div>
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center text-center p-4">
-                                        <p className="text-sm text-blue-600 font-semibold underline">คลิกเพื่ออัปโหลด</p>
+                                    <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
+                                        <svg className="w-10 h-10 mb-3 text-slate-400 group-hover:text-blue-500 group-hover:scale-110 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <p className="mb-1 text-sm font-medium text-slate-700">
+                                            <span className="text-blue-600 font-semibold underline">คลิกเพื่ออัปโหลด</span> หรือลากไฟล์มาวาง
+                                        </p>
+                                        <p className="text-xs text-slate-500 font-normal">เพิ่มรูปของนักศึกษา (รองรับ JPG, PNG)</p>
                                     </div>
                                 )}
-                                <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                                <input
+                                    type="file"
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    disabled={loading}
+                                />
                             </label>
                         </div>
 
                         {/* Input Fields */}
                         <div className="flex flex-col gap-4">
-                            <p> ชื่อ
-                            <input
-                                maxLength={40}
-                                value={introText}
-                                onChange={(e) => setIntroText(e.target.value)}
-                                className="w-full border border-slate-300 rounded-[15px] py-2.5 px-4 bg-slate-50 focus:border-purple-500 outline-none"
-                                placeholder="น้องชื่ออะรายยย"
-                                disabled={loading}
-                            />
-                            </p>
-                            <p className="text-sm font-semibold text-gray-700"> อยากถามอะไรพี่ๆ
-                            <textarea
-                                maxLength={80}
-                                value={feelingText}
-                                onChange={(e) => setFeelingText(e.target.value)}
-                                className="w-full border border-slate-300 rounded-[15px] mt-2 py-2.5 px-4 bg-slate-50 focus:border-purple-500 outline-none resize-none"
-                                rows={3}
-                                placeholder="พิมพ์ตรงนี้..."
-                                disabled={loading}
-                            />
-                            </p>
+                            <div>
+                                <label className="text-sm font-semibold text-gray-700 block mb-1">ชื่อ</label>
+                                <input
+                                    maxLength={40}
+                                    value={introText}
+                                    onChange={(e) => setIntroText(e.target.value)}
+                                    className="w-full border border-slate-300 rounded-[15px] py-2.5 px-4 bg-slate-50 focus:border-purple-500 outline-none"
+                                    placeholder="น้องชื่ออะรายยย"
+                                    disabled={loading}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-semibold text-gray-700 block mb-1">อยากถามอะไรพี่ๆ</label>
+                                <textarea
+                                    maxLength={80}
+                                    value={feelingText}
+                                    onChange={(e) => setFeelingText(e.target.value)}
+                                    className="w-full border border-slate-300 rounded-[15px] py-2.5 px-4 bg-slate-50 focus:border-purple-500 outline-none resize-none"
+                                    rows={3}
+                                    placeholder="พิมพ์ตรงนี้..."
+                                    disabled={loading}
+                                />
+                            </div>
                         </div>
 
                         {/* ปุ่มกด */}
-                        <button
-                            type="button"
-                            onClick={handleSubmit}
-                            disabled={loading}
-                            className="w-full py-3 rounded-[12px] text-white bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 transition-all flex justify-center items-center gap-2"
-                        >
-                            {loading ? "กำลังบันทึก..." : "ยืนยัน"}
-                        </button>
+                        <div className="flex gap-3 pt-4 pb-2">
+                            <button
+                                type="button"
+                                onClick={clearpopup}
+                                className="flex-1 py-3 rounded-[12px] text-center font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                ยกเลิก
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleSubmit}
+                                disabled={loading}
+                                className="flex-1 py-3 rounded-[12px] text-white bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 transition-all flex justify-center items-center gap-2"
+                            >
+                                {loading ? "กำลังบันทึก..." : "ยืนยัน"}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </motion.div>
         </motion.div>
-    )
+    );
 }

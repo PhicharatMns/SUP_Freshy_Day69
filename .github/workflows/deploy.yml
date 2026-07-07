@@ -1,0 +1,83 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploying Backend & Frontend to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          script: |
+            # 1. เข้าโฟลเดอร์โปรเจค (สมมติว่าไว้ที่ /var/www/spu69)
+            cd /var/www/spu69 || { echo "Project directory not found, cloning..."; git clone https://github.com/PhicharatMns/SUP_Freshy_Day69.git /var/www/spu69 && cd /var/www/spu69; }
+
+            # 2. ล้างการเปลี่ยนแปลงชั่วคราวบนเซิร์ฟเวอร์ และอัปเดตโค้ดล่าสุด
+            git reset --hard
+            git pull origin main
+
+            # 3. จัดการ Backend
+            cd backend
+            npm install
+            npx prisma generate
+            npm run build
+            pm2 restart backend || pm2 start dist/index.js --name "backend"
+
+            # 4. จัดการ Frontend
+            cd ../frontend
+            npm install
+            npm run build
+            pm2 restart frontend || pm2 start npm --name "frontend" -- start
+
+            # 5. บันทึกสถานะ PM2 ให้รันอัตโนมัติถ้า Server รีบูต
+            pm2 save
+
+      - name: Send Discord Notification on Success
+        if: success()
+        run: |
+          curl -H "Content-Type: application/json" \
+            -d '{
+              "username": "GitHub Deploy Bot",
+              "embeds": [{
+                "title": "🟢 Deploy to VPS Successful!",
+                "description": "การอัปเดตระบบและบิลด์โค้ดบน VPS ทำงานเรียบร้อยแล้ว",
+                "color": 562176,
+                "fields": [
+                  { "name": "Repository", "value": "${{ github.repository }}", "inline": true },
+                  { "name": "Branch", "value": "main", "inline": true },
+                  { "name": "Commit Message", "value": "${{ github.event.head_commit.message }}", "inline": false }
+                ]
+              }]
+            }' \
+            "${{ secrets.DISCORD_WEBHOOK }}"
+
+      - name: Send Discord Notification on Failure
+        if: failure()
+        run: |
+          curl -H "Content-Type: application/json" \
+            -d '{
+              "username": "GitHub Deploy Bot",
+              "embeds": [{
+                "title": "🔴 Deploy to VPS Failed!",
+                "description": "พบข้อผิดพลาดในระหว่างกระบวนการ Deploy หรือ Build บนเซิร์ฟเวอร์",
+                "color": 16729144,
+                "fields": [
+                  { "name": "Repository", "value": "${{ github.repository }}", "inline": true },
+                  { "name": "Branch", "value": "main", "inline": true },
+                  { "name": "Commit Message", "value": "${{ github.event.head_commit.message }}", "inline": false }
+                ]
+              }]
+            }' \
+            "${{ secrets.DISCORD_WEBHOOK }}"

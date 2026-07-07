@@ -5,9 +5,9 @@ import { useState, useEffect } from "react";
 import Myself from "./component/page/myself";
 import IG from "./component/page/IG";
 import { motion, AnimatePresence } from "framer-motion";
-import { div } from "framer-motion/client";
 import Qa from "./component/page/QA";
-import Link from "next/link";
+import Popuppopcat from "./component/page/popuppopcat";
+import { useRouter } from "next/navigation";
 
 // Interface สำหรับข้อมูลฟองสบู่
 interface Bubble {
@@ -22,20 +22,21 @@ interface Bubble {
 export interface propspopup {
   myself: boolean;
   myopenpopypIG: boolean;
-  myQa: boolean
+  myQa: boolean;
+  popcat: boolean;
 }
 
 export default function Formsup() {
   const [popup, setpoup] = useState({
     myself: false,
     myopenpopypIG: false,
-    myQa: false
+    myQa: false,
+    popcat: false
   });
 
 
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
-
-
+  const router = useRouter(); 
   // ฟองสบู่
   const bubbleColors = [
     "bg-white",
@@ -72,10 +73,12 @@ export default function Formsup() {
       transition: {
         duration: 1.8,
         repeat: Infinity,
-        ease: "easeInOut" 
+        ease: "easeInOut"
       },
     },
   };
+
+  
 
   const openpopupMyselt = () => setpoup(prev => ({
     ...prev,
@@ -87,17 +90,29 @@ export default function Formsup() {
     myopenpopypIG: true
   }))
 
-  const openpopupQa = () => setpoup(prve => ({
-    ...prve,
-    myQa: true
-  }))
+  const openpopupQa = () => setpoup(prev => ({ ...prev, myQa: true }))
+
+const openPopcat = () => {
+  const user = localStorage.getItem("popcat_user");
+
+  if (user) {
+    router.replace("/games");
+    return;
+  }
+
+  setpoup((prev) => ({
+    ...prev,
+    popcat: true,
+  }));
+};
+
 
   const Social = [
-    {
-      title: 'แนะนำตัว',
-      popup: openpopupMyselt,
-      gradient: 'from-amber-400 via-pink-500 to-purple-600',
-    },
+    // {
+    //   title: 'แนะนำตัว',
+    //   popup: openpopupMyselt,
+    //   gradient: 'from-amber-400 via-pink-500 to-purple-600',
+    // },
     {
       title: 'IG ไอใจ',
       popup: openpopypIG,
@@ -109,8 +124,8 @@ export default function Formsup() {
       gradient: 'from-purple-600 via-rose-500 to-amber-500',
     },
     {
-      title: 'PopCat',
-      lnik: '/games',
+      title: 'PopSPU',
+      popup: openPopcat,
       gradient: 'from-purple-600 via-rose-500 to-amber-500',
     }
   ]
@@ -160,18 +175,29 @@ export default function Formsup() {
           </motion.span>
         </motion.div>
 
-        <div className="grid grid-cols-2 gap-4 w-full max-w-2xl p-4">
+        <div className="grid grid-cols-3 gap-4 w-full max-w-2xl p-4">
           {Social.map((e, i) => {
             const buttonStyle = `w-full text-2xl h-40 z-50 hover:scale-105 flex items-center justify-center rounded-[20px] font-bold text-white shadow-lg bg-gradient-to-tr ${e.gradient} animate-gentle-bounce transition-all duration-300 cursor-pointer`;
-            return i === 3 ? (
-              <Link
-                href={e.lnik || "/"}
-                className={buttonStyle}
-                key={i}
-              >
-                {e.title}
-              </Link>
-            ) : (
+
+            // เปลี่ยนมาเช็คว่าถ้ามี link ให้ใช้คอมโพเนนต์ <Link>
+            // return e.lnik ? (
+            //   <Link
+            //     href={e.lnik}
+            //     className={buttonStyle}
+            //     key={i}
+            //   >
+            //     {e.title}
+            //   </Link>
+            // ) : (
+            //   <div
+            //     onClick={e.popup}
+            //     className={buttonStyle}
+            //     key={i}
+            //   >
+            //     {e.title}
+            //   </div>
+            // );
+            return (
               <div
                 onClick={e.popup}
                 className={buttonStyle}
@@ -179,7 +205,7 @@ export default function Formsup() {
               >
                 {e.title}
               </div>
-            );
+            )
           })}
         </div>
       </div>
@@ -211,6 +237,15 @@ export default function Formsup() {
           </div>
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {popup.popcat && (
+          <Popuppopcat
+            setpoup={setpoup}
+          />
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
