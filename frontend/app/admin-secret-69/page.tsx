@@ -13,10 +13,18 @@ interface IGData {
   type?: string;
 }
 
+// 🔐 รหัสผ่านเข้าใช้งาน (สามารถแก้ไขตรงนี้ได้ตามต้องการ)
+const ADMIN_PASSWORD = "spu69admin";
+
 export default function AdminControlPanel() {
   const [data, setData] = useState<IGData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  // สิทธิ์การเข้าใช้งานหน้าเว็บ
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [passwordInput, setPasswordInput] = useState<string>("");
+  const [loginError, setLoginError] = useState<string>("");
 
   // 🛠️ ตรวจสอบความถูกต้องของรูปภาพและฟอลแบ็ก
   const normalizeImageUrl = (url: string | null | undefined) => {
@@ -71,7 +79,30 @@ export default function AdminControlPanel() {
     }
   };
 
+  // ฟังก์ชันกดยืนยันรหัสผ่านเข้าหน้าเว็บ
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      sessionStorage.setItem("admin_auth_spu69", "true");
+      setLoginError("");
+    } else {
+      setLoginError("❌ รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง");
+      setPasswordInput("");
+    }
+  };
+
   useEffect(() => {
+    // เช็กหน่วยความจำเพื่อความสะดวกรีเฟรชหน้า
+    const isAuthed = sessionStorage.getItem("admin_auth_spu69");
+    if (isAuthed === "true") {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
     // โหลดครั้งแรกสุดพร้อมแสดงตัวหมุนโหลด
     fetchPosts(true);
 
@@ -81,8 +112,52 @@ export default function AdminControlPanel() {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isAuthenticated]);
 
+  // ================= 🚪 หน้าต่างล็อกอินผ่านรหัสผ่านลับ (Authentication UI) =================
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black text-slate-100 flex items-center justify-center p-6">
+        <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] rounded-full bg-violet-600/5 blur-[80px] pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] rounded-full bg-pink-600/5 blur-[90px] pointer-events-none" />
+
+        <div className="max-w-md w-full rounded-3xl bg-white/5 backdrop-blur-xl p-8 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6)] space-y-8 z-10">
+          <div className="text-center space-y-2">
+            <span className="text-5xl block animate-pulse">🔐</span>
+            <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">ผู้ดูแลระบบ SPU69</h2>
+            <p className="text-slate-400 text-xs md:text-sm">กรุณากรอกรหัสผ่านเพื่อเข้าใช้งานระบบสกรีนภาพขึ้นจอหลัก</p>
+          </div>
+
+          <form onSubmit={handleLoginSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <input
+                type="password"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                placeholder="กรอกรหัสผ่านเข้าสู่ระบบ..."
+                className="w-full px-4 py-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-center font-bold tracking-widest transition-all"
+                autoFocus
+              />
+              {loginError && (
+                <p className="text-red-400 text-xs text-center font-semibold animate-shake">
+                  {loginError}
+                </p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white font-bold text-sm tracking-wider transition-all shadow-[0_10px_20px_rgba(99,102,241,0.2)]"
+            >
+              🔑 ยืนยันรหัสผ่าน
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // ================= 🛡️ แผงควบคุมจริงหลังผ่านการกรอกรหัสผ่าน =================
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-12">
       {/* Header */}
