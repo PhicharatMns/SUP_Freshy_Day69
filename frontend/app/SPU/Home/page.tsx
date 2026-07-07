@@ -2,37 +2,28 @@
 
 import { useState, useEffect } from "react";
 import BK from "./page/Bk";
-import Cdweb from "./page/Cdweb";
+import Cdweb from "./page/Cdweb"; // 👈 SCAN HERE และ QR Code อยู่ในนี้ทั้งหมด!
 import Message from "./page/Message";
 import { post } from "@/app/Post";
 import Popcar from "./page/Popcar";
 
-// 🛠️ 1. อย่าลืม Import Scan และ AnimatePresence กลับมาด้วยนะครับ
-import Scan from "./page/scan"; 
-import { AnimatePresence } from "framer-motion"; 
-
 export default function HomePage() {
     const [isOpen, setIsOpen] = useState<boolean>(true);
-    const [loading, setLoading] = useState<boolean>(true);
-    
-    // State สำหรับควบคุมการแสดงผลของ Popcar
     const [showPopcar, setShowPopcar] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         const checkStatus = async () => {
             try {
                 const res = await fetch(`${post}/apinext/control`, {
                     method: "GET",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     cache: "no-store" 
                 });
                 const data = await res.json();
 
                 if (data.success && data.data) {
                     setIsOpen(data.data.type);
-                    
                     if (data.data.popcar !== undefined) {
                         setShowPopcar(data.data.popcar);
                     }
@@ -55,39 +46,37 @@ export default function HomePage() {
 
     return (
         <div className="relative w-full h-screen overflow-hidden">
-
-            {/* BK (ฉากหลัง) แสดงผลตลอดเวลา */}
+            
+            {/* 1. BK ฉากหลังสุด (z-0) */}
             <div className="absolute inset-0 z-0">
                 <BK />
             </div>
             
-            {/* ควบคุมหน้าหลัก */}
+            {/* 2. กลุ่มหน้าหลัก (Message, QR Code, Scan Here) */}
             {isOpen && (
                 <>
-                    <div className="absolute inset-0 z-0">
-                        <Cdweb />
+                    {/* Cdweb (QR Code หมุนๆ) ต้องอยู่เลเยอร์ที่สูงกว่าพื้นหลัง (z-10) */}
+                    {/* 🛠️ เปลี่ยน pointer-events เป็น auto เผื่อมันบังการคลิกของกล่อง Message */}
+                    <div className="absolute inset-0 z-10 pointer-events-none">
+                        <div className="pointer-events-auto w-full h-full">
+                            <Cdweb />
+                        </div>
                     </div>
 
+                    {/* Message (กล่องข้อความนักศึกษา) ให้อยู่สูงสุดในกลุ่มนี้ (z-20) */}
                     <div className="absolute inset-0 z-20 pointer-events-none">
                         <Message />
                     </div>
                 </>
             )}
 
-            {/* ควบคุม Popcar */}
+            {/* 3. Popcar รถป๊อป (z-30) (จะแสดงก็ต่อเมื่อกด "เรียกใช้ Popcar" ที่รีโมท) */}
             {showPopcar && (
                 <div className="absolute inset-0 z-30 pointer-events-none">
                     <Popcar />
                 </div>
             )}
 
-            {/* 🛠️ 2. นำ QR Code (Scan) กลับมาแล้วครับ! */}
-            <div className="absolute inset-0 z-40 pointer-events-none">
-                <AnimatePresence>
-                    <Scan />
-                </AnimatePresence>
-            </div>
-            
         </div>
     );
 }

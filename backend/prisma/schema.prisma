@@ -10,9 +10,8 @@ generator client {
 model control {
   id   Int      @id @default(autoincrement())
   type Boolean? @db.TinyInt
-  popcar  Boolean  @default(false)
+ popcar Boolean @default(false)
 }
-
 model quotes {
   id           Int       @id @default(autoincrement())
   student_name String    @db.VarChar(255)

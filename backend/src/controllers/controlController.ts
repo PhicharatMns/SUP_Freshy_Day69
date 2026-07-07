@@ -35,7 +35,7 @@ export const updateControl = async (c: Context) => {
             where: { id: 1 },
             update: { 
                 type: type, 
-                popcar: popcar 
+                popcar: popcar
             },
             create: {
                 id: 1, // บังคับสร้างแถวที่ id = 1
