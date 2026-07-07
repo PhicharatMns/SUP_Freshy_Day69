@@ -198,3 +198,24 @@ export const deleteIg = async (c: Context) => {
     );
   }
 };
+
+export const checkExistsIg = async (c: Context) => {
+  try {
+    const id = Number(c.req.param("id"));
+    if (!id) {
+      return c.json({ success: false, exists: false }, 400);
+    }
+    const item = await prisma.ig_quotes.findUnique({
+      where: {
+        id: id,
+      },
+    });
+    return c.json({
+      success: true,
+      exists: item !== null,
+    }, 200);
+  } catch (error) {
+    console.error("❌ Check Exists Error:", error);
+    return c.json({ success: false, exists: false }, 500);
+  }
+};

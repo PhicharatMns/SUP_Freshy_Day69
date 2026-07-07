@@ -30,55 +30,12 @@ export default function Scan({ onActivePostChange }: ScanProps) {
   const [historyLoop, setHistoryLoop] = useState<IGData[]>([]);
   
   const shownIds = useRef<Set<number>>(new Set());
-  const historyIndex = useRef<number>(0);
   const isDisplayingPriority = useRef<boolean>(false);
 
   const [trigger, setTrigger] = useState(0);
   const forceRotate = () => setTrigger((t) => t + 1);
 
-  // ================= 1. FETCH HISTORICAL DATA (ดึงภาพเก่ามาวนลูป) =================
-  const fetchHistory = async () => {
-    try {
-      const res = await fetch(`${post}/ig_my/select-ig?t=${Date.now()}`);
-      const result = await res.json();
-      if (result.success && result.data) {
-        const rawPosts: IGData[] = result.data;
-        
-        // ⏱️ คัดกรองเอาเฉพาะโพสต์ที่มีอายุมากกว่า 5 วินาทีแล้วเท่านั้น สำหรับแสดงผลบนจอหลัก
-        const fetchedPosts = rawPosts.filter((p) => {
-          if (!p.created_at) return true;
-          // แปลงช่องว่างระหว่างวันที่และเวลาเป็น T เพื่อให้อ่านวันที่ใน JS ได้อย่างเสถียร
-          const timeStr = p.created_at.replace(" ", "T");
-          const parsedTime = new Date(timeStr).getTime();
-          if (isNaN(parsedTime)) return true; // หากแยกแยะเวลาไม่ได้ ปล่อยผ่านทันที
-          
-          return Date.now() - parsedTime >= 5000;
-        });
-
-        setHistoryLoop(fetchedPosts);
-
-        // 🚨 CLEAR DELETED: หากแอดมินลบภาพไปแล้ว ให้กวาดล้างออกจากคิวที่กักเวลารออยู่ด้วย
-        setActiveQueue((prev) => prev.filter((p) => rawPosts.some((r) => r.id === p.id)));
-
-        // 🚨 REAL-TIME CHECK: ตรวจสอบว่ารูปที่กำลังเปิดอยู่หน้าจอ ณ วินาทีนี้ โดนแอนิเมชันลบออกแล้วหรือยัง?
-        setCurrent((prevCurrent) => {
-          if (prevCurrent) {
-            const exists = rawPosts.some((p) => p.id === prevCurrent.id);
-            if (!exists) {
-              // ถ้าไม่อยู่แล้ว แปลว่าโดนลบ ➔ ให้สั่งหมุนสไลด์เปลี่ยนเป็นรูปอื่นทันที!
-              setTimeout(forceRotate, 50);
-              return null;
-            }
-          }
-          return prevCurrent;
-        });
-      }
-    } catch (err) {
-      console.error("Fetch history error:", err);
-    }
-  };
-
-  // ================= 2. POLL NEW POPUPS (คอยดึงรูปใหม่ที่เพิ่งแอดมินอนุมัติ) =================
+  // ================= 1. POLL NEW POPUPS (คอยดึงรูปใหม่ที่เพิ่งแอดมินอนุมัติ) =================
   const checkNewPopup = async () => {
     try {
       const res = await fetch(`${post}/ig_my/next-popup?t=${Date.now()}`);
@@ -107,17 +64,35 @@ export default function Scan({ onActivePostChange }: ScanProps) {
 
   // ดึงประวัติครั้งแรก และตั้งช่วงเวลาตรวจสอบโพสต์ใหม่
   useEffect(() => {
-    fetchHistory();
     const popupInterval = setInterval(checkNewPopup, 3000);
-    const historyInterval = setInterval(fetchHistory, 3000);
-
     return () => {
       clearInterval(popupInterval);
-      clearInterval(historyInterval);
     };
   }, []);
 
-  // ================= 3. LOOP ROTATION (จัดการสลับสไลด์ทุกๆ 8 วินาที) =================
+  // 🚨 REAL-TIME CHECK: ตรวจสอบสถานะการโดนลบราย ID เดี่ยวที่กำลังแสดงอยู่ ณ ขณะนั้น
+  useEffect(() => {
+    if (!current) return;
+
+    const checkExists = async () => {
+      try {
+        const res = await fetch(`${post}/ig_my/check-exists/${current.id}?t=${Date.now()}`);
+        const result = await res.json();
+        if (result.success && result.exists === false) {
+          // รูปนี้โดนลบไปจากระบบหลังบ้านแล้ว ➔ สั่งข้ามเปลี่ยนทันที
+          setTimeout(forceRotate, 50);
+          setCurrent(null);
+        }
+      } catch (err) {
+        console.error("เช็คสถานะการมีอยู่ล้มเหลว:", err);
+      }
+    };
+
+    const intervalId = setInterval(checkExists, 2000);
+    return () => clearInterval(intervalId);
+  }, [current]);
+
+  // ================= 2. LOOP ROTATION (จัดการสลับสไลด์ทุกๆ 8 วินาที) =================
   useEffect(() => {
     const rotateSlide = () => {
       setActiveQueue((prevQueue) => {
@@ -127,14 +102,6 @@ export default function Scan({ onActivePostChange }: ScanProps) {
 
           isDisplayingPriority.current = true;
           setCurrent(nextPost);
-
-          setHistoryLoop((prevHistory) => {
-            if (!prevHistory.some((item) => item.id === nextPost.id)) {
-              return [nextPost, ...prevHistory];
-            }
-            return prevHistory;
-          });
-
           return remainingQueue;
         } else {
           // 🚨 ไม่ต้องเล่นรูปเก่าวนซ้ำ: เมื่อไม่มีโพสต์ใหม่ในคิว ให้สลับกลับหน้า QR Code ทันที
@@ -148,7 +115,7 @@ export default function Scan({ onActivePostChange }: ScanProps) {
     rotateSlide();
     const slideInterval = setInterval(rotateSlide, 8000);
     return () => clearInterval(slideInterval);
-  }, [historyLoop.length, trigger]);
+  }, [trigger]);
 
   // แจ้งเตือนบอร์ดหลักว่าตอนนี้มีรูปภาพขึ้นจอบ้างหรือไม่
   useEffect(() => {
