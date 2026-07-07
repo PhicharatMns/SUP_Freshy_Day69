@@ -28,13 +28,30 @@ export default function Scan() {
   const historyIndex = useRef<number>(0);
   const isDisplayingPriority = useRef<boolean>(false);
 
+  const [trigger, setTrigger] = useState(0);
+  const forceRotate = () => setTrigger((t) => t + 1);
+
   // ================= 1. FETCH HISTORICAL DATA (ดึงภาพเก่ามาวนลูป) =================
   const fetchHistory = async () => {
     try {
       const res = await fetch(`${post}/ig_my/select-ig?t=${Date.now()}`);
       const result = await res.json();
       if (result.success && result.data) {
-        setHistoryLoop(result.data);
+        const fetchedPosts: IGData[] = result.data;
+        setHistoryLoop(fetchedPosts);
+
+        // 🚨 REAL-TIME CHECK: ตรวจสอบว่ารูปที่กำลังเปิดอยู่หน้าจอ ณ วินาทีนี้ โดนแอนิเมชันลบออกแล้วหรือยัง?
+        setCurrent((prevCurrent) => {
+          if (prevCurrent) {
+            const exists = fetchedPosts.some((p) => p.id === prevCurrent.id);
+            if (!exists) {
+              // ถ้าไม่อยู่แล้ว แปลว่าโดนลบ ➔ ให้สั่งหมุนสไลด์เปลี่ยนเป็นรูปอื่นทันที!
+              setTimeout(forceRotate, 50);
+              return null;
+            }
+          }
+          return prevCurrent;
+        });
       }
     } catch (err) {
       console.error("Fetch history error:", err);
@@ -66,8 +83,8 @@ export default function Scan() {
     fetchHistory();
     // คอยตรวจคิวโพสต์ใหม่ทุก 3 วินาที
     const popupInterval = setInterval(checkNewPopup, 3000);
-    // อัปเดตประวัติสไลด์โชว์ทุกๆ 30 วินาที
-    const historyInterval = setInterval(fetchHistory, 30000);
+    // อัปเดตประวัติสไลด์โชว์เพื่อตรวจจับการลบแบบ Real-time ทุกๆ 3 วินาที
+    const historyInterval = setInterval(fetchHistory, 3000);
 
     return () => {
       clearInterval(popupInterval);
@@ -117,7 +134,7 @@ export default function Scan() {
     rotateSlide();
     const slideInterval = setInterval(rotateSlide, 8000); // สไลด์เปลี่ยนทุกๆ 8 วินาที
     return () => clearInterval(slideInterval);
-  }, [historyLoop.length]);
+  }, [historyLoop.length, trigger]);
 
   // ================= 4. GENERATE QR CODE AUTOMATICALLY =================
   useEffect(() => {
