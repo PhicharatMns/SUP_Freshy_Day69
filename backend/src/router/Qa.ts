@@ -59,19 +59,18 @@ Qa.post('/Qafrom', async (c) => {
             uploadedImageUrl = urlData.publicUrl;
         }
 
-        // บันทึกเข้า PostgreSQL
+        // บันทึกเข้า MySQL
         const queryText = `
             INSERT INTO quotes (student_name, feeling_text, image_url) 
-            VALUES ($1, $2, $3) 
-            RETURNING id;
+            VALUES (?, ?, ?);
         `;
         const values = [studentName, feelingText, uploadedImageUrl];
-        const result = await pool.query(queryText, values);
+        const [insertResult]: any = await pool.query(queryText, values);
 
         return c.json({
             success: true,
             message: "บันทึกข้อมูลและแปลงรูปภาพเป็น WebP สำเร็จเรียบร้อย!",
-            data: { id: result.rows[0].id, imageUrl: uploadedImageUrl }
+            data: { id: insertResult.insertId, imageUrl: uploadedImageUrl }
         }, 201);
 
     } catch (error) {
@@ -83,17 +82,17 @@ Qa.post('/Qafrom', async (c) => {
 Qa.get('/select-qa', async (c) => {
     try {
         const sql = `
-        SELECT id ,student_name,feeling_text,image_url , created_at
+        SELECT id, student_name, feeling_text, image_url, created_at
         FROM quotes 
         ORDER BY id DESC
         LIMIT 25;
         `
 
-        const result = await pool.query(sql)
+        const [rows]: any = await pool.query(sql)
         return c.json({
             success: true,
             message: "ดึงข้อมูลคำถามสำเร็จ",
-            data: result.rows
+            data: rows
         }, 200);
 
     } catch (error) {

@@ -74,19 +74,18 @@ ig_my.post('/insert-ig', async (c) => {
             uploadedImageUrl = urlData.publicUrl;
         }
 
-        // บันทึกเข้า PostgreSQL (สมมติชื่อตารางว่า ig_quotes)
+        // บันทึกเข้า MySQL
         const queryText = `
             INSERT INTO ig_quotes (name, quote_text, image_url, ig_account) 
-            VALUES ($1, $2, $3, $4) 
-            RETURNING id;
+            VALUES (?, ?, ?, ?);
         `;
         const values = [name, quoteText, uploadedImageUrl, igAccount];
-        const result = await pool.query(queryText, values);
+        const [insertResult]: any = await pool.query(queryText, values);
 
         return c.json({
             success: true,
             message: "บันทึกข้อมูลตาราง IG และแปลงรูปภาพสำเร็จเรียบร้อย!",
-            data: { id: result.rows[0].id, imageUrl: uploadedImageUrl }
+            data: { id: insertResult.insertId, imageUrl: uploadedImageUrl }
         }, 201);
 
     } catch (error) {
@@ -98,17 +97,17 @@ ig_my.post('/insert-ig', async (c) => {
 ig_my.get('/select-ig', async (c) => {
     try {
         const sql = `
-            SELECT id, name, quote_text, image_url, ig_account , popup
+            SELECT id, name, quote_text, image_url, ig_account, popup
             FROM ig_quotes 
             ORDER BY id DESC
             LIMIT 50;
         `;
 
-        const result = await pool.query(sql);
+        const [rows]: any = await pool.query(sql);
         return c.json({
             success: true,
             message: "ดึงข้อมูลจากตาราง IG สำเร็จ",
-            data: result.rows
+            data: rows
         }, 200);
 
     } catch (error) {
@@ -123,7 +122,7 @@ ig_my.get('/select-ig', async (c) => {
 ig_my.get('/next-popup', async (c) => {
     try {
 
-        const popup = await pool.query(`
+        const [rows]: any = await pool.query(`
             SELECT *
             FROM ig_quotes
             WHERE popup = true
@@ -131,19 +130,19 @@ ig_my.get('/next-popup', async (c) => {
             LIMIT 1
         `);
 
-        if (popup.rows.length === 0) {
+        if (rows.length === 0) {
             return c.json({
                 success: true,
                 data: null
             });
         }
 
-        const item = popup.rows[0];
+        const item = rows[0];
 
         await pool.query(`
             UPDATE ig_quotes
             SET popup = false
-            WHERE id = $1
+            WHERE id = ?
         `, [item.id]);
 
         return c.json({

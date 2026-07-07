@@ -3,11 +3,10 @@ import { pool } from "../DB/DB.js";
 
 const popcar = new Hono();
 
-
-//  ดึงคะแนนทุกคณะ
+// ดึงคะแนนทุกคณะ
 popcar.get("/scores", async (c) => {
   try {
-    const result = await pool.query(`
+    const [rows]: any = await pool.query(`
       SELECT *
       FROM departments_score
       ORDER BY total_clicks DESC
@@ -15,7 +14,7 @@ popcar.get("/scores", async (c) => {
 
     return c.json({
       status: true,
-      data: result.rows,
+      data: rows,
     });
   } catch (error) {
     console.error(error);
@@ -30,22 +29,21 @@ popcar.get("/scores", async (c) => {
   }
 });
 
-
-//  ดึงคะแนนคณะเดียว
+// ดึงคะแนนคณะเดียว
 popcar.get("/score/:departmentKey", async (c) => {
   try {
     const departmentKey = c.req.param("departmentKey");
 
-    const result = await pool.query(
+    const [rows]: any = await pool.query(
       `
       SELECT *
       FROM departments_score
-      WHERE department_key = $1
+      WHERE department_key = ?
       `,
       [departmentKey]
     );
 
-    if (result.rows.length === 0) {
+    if (rows.length === 0) {
       return c.json(
         {
           status: false,
@@ -57,7 +55,7 @@ popcar.get("/score/:departmentKey", async (c) => {
 
     return c.json({
       status: true,
-      data: result.rows[0],
+      data: rows[0],
     });
   } catch (error) {
     console.error(error);
@@ -86,19 +84,23 @@ popcar.post("/click", async (c) => {
       );
     }
 
-    const result = await pool.query(
+    await pool.query(
       `
       UPDATE departments_score
       SET
         total_clicks = total_clicks + 1,
         updated_at = NOW()
-      WHERE department_key = $1
-      RETURNING *
+      WHERE department_key = ?
       `,
       [departmentKey]
     );
 
-    if (result.rows.length === 0) {
+    const [rows]: any = await pool.query(
+      `SELECT * FROM departments_score WHERE department_key = ?`,
+      [departmentKey]
+    );
+
+    if (rows.length === 0) {
       return c.json(
         {
           status: false,
@@ -110,7 +112,7 @@ popcar.post("/click", async (c) => {
 
     return c.json({
       status: true,
-      data: result.rows[0],
+      data: rows[0],
     });
   } catch (error) {
     console.error(error);
@@ -139,21 +141,25 @@ popcar.post("/click-bulk", async (c) => {
       );
     }
 
-    const result = await pool.query(
+    await pool.query(
       `
       UPDATE departments_score
       SET
-        total_clicks = total_clicks + $2,
+        total_clicks = total_clicks + ?,
         updated_at = NOW()
-      WHERE department_key = $1
-      RETURNING *
+      WHERE department_key = ?
       `,
-      [departmentKey, count]
+      [count, departmentKey]
+    );
+
+    const [rows]: any = await pool.query(
+      `SELECT * FROM departments_score WHERE department_key = ?`,
+      [departmentKey]
     );
 
     return c.json({
       status: true,
-      data: result.rows[0],
+      data: rows[0],
     });
   } catch (error) {
     console.error(error);
@@ -185,26 +191,27 @@ popcar.post("/register", async (c) => {
       );
     }
 
-    const result = await pool.query(
+    await pool.query(
       `
       INSERT INTO popcat_users (
         student_id,
         student_name
       )
-      VALUES ($1,$2)
-
-      ON CONFLICT (student_id)
-      DO UPDATE
-      SET student_name = EXCLUDED.student_name
-
-      RETURNING *
+      VALUES (?, ?)
+      ON DUPLICATE KEY UPDATE
+      student_name = VALUES(student_name)
       `,
       [studentId, studentName]
     );
 
+    const [rows]: any = await pool.query(
+      `SELECT * FROM popcat_users WHERE student_id = ?`,
+      [studentId]
+    );
+
     return c.json({
       status: true,
-      data: result.rows[0],
+      data: rows[0],
     });
   } catch (error) {
     console.error(error);
@@ -222,7 +229,6 @@ popcar.post("/register", async (c) => {
 popcar.post("/click-bulk-user", async (c) => {
   try {
     const body = await c.req.json();
-
     const { departmentKey, count, studentId } = body;
 
     // validate
@@ -236,17 +242,17 @@ popcar.post("/click-bulk-user", async (c) => {
       );
     }
 
-    // 1. get user (SOURCE OF TRUTH)
-    const userResult = await pool.query(
+    // 1. get user
+    const [userRows]: any = await pool.query(
       `
       SELECT student_id, student_name
       FROM popcat_users
-      WHERE student_id = $1
+      WHERE student_id = ?
       `,
       [studentId]
     );
 
-    if (userResult.rows.length === 0) {
+    if (userRows.length === 0) {
       return c.json(
         {
           status: false,
@@ -256,10 +262,10 @@ popcar.post("/click-bulk-user", async (c) => {
       );
     }
 
-    const user = userResult.rows[0];
+    const user = userRows[0];
 
     // 2. insert / update player
-    const playerResult = await pool.query(
+    await pool.query(
       `
       INSERT INTO popcat_players (
         student_id,
@@ -267,14 +273,11 @@ popcar.post("/click-bulk-user", async (c) => {
         department_key,
         total_clicks
       )
-      VALUES ($1, $2, $3, $4)
-      ON CONFLICT (student_id, department_key)
-      DO UPDATE
-      SET
-        student_name = EXCLUDED.student_name,
-        total_clicks = popcat_players.total_clicks + EXCLUDED.total_clicks,
+      VALUES (?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE
+        student_name = VALUES(student_name),
+        total_clicks = total_clicks + VALUES(total_clicks),
         updated_at = NOW()
-      RETURNING *;
       `,
       [
         user.student_id,
@@ -284,9 +287,17 @@ popcar.post("/click-bulk-user", async (c) => {
       ]
     );
 
+    const [playerRows]: any = await pool.query(
+      `
+      SELECT * FROM popcat_players
+      WHERE student_id = ? AND department_key = ?
+      `,
+      [user.student_id, departmentKey]
+    );
+
     return c.json({
       status: true,
-      data: playerResult.rows[0],
+      data: playerRows[0],
     });
 
   } catch (error) {
@@ -304,24 +315,26 @@ popcar.post("/click-bulk-user", async (c) => {
 
 popcar.get("/top-departments", async (c) => {
   try {
-    const result = await pool.query(`
- SELECT *
-FROM (
-  SELECT DISTINCT ON (department_key)
-    student_id,
-    student_name,
-    department_key,
-    total_clicks,
-    updated_at
-  FROM popcat_players
-  ORDER BY department_key, total_clicks DESC
-) t
-ORDER BY total_clicks DESC;
+    // ใช้ ROW_NUMBER() OVER ในการหาตัวท็อปแทน DISTINCT ON ใน PostgreSQL
+    const [rows]: any = await pool.query(`
+      SELECT student_id, student_name, department_key, total_clicks, updated_at
+      FROM (
+        SELECT 
+          student_id,
+          student_name,
+          department_key,
+          total_clicks,
+          updated_at,
+          ROW_NUMBER() OVER (PARTITION BY department_key ORDER BY total_clicks DESC) as rn
+        FROM popcat_players
+      ) t
+      WHERE rn = 1
+      ORDER BY total_clicks DESC;
     `);
 
     return c.json({
       status: true,
-      data: result.rows,
+      data: rows,
     });
 
   } catch (error) {
