@@ -21,11 +21,43 @@ export default function Scan() {
   const [show, setShow] = useState(false);
   const [qr, setQr] = useState("");
 
+<<<<<<< HEAD
   const runningRef = useRef(false);
 
   // ================= FETCH POPUP =================
   const getPopup = async () => {
     if (runningRef.current) return;
+=======
+  const [trigger, setTrigger] = useState(0);
+  const forceRotate = () => setTrigger((t) => t + 1);
+
+  // ================= 1. FETCH HISTORICAL DATA (ดึงภาพเก่ามาวนลูป) =================
+  const fetchHistory = async () => {
+    try {
+      const res = await fetch(`${post}/ig_my/select-ig?t=${Date.now()}`);
+      const result = await res.json();
+      if (result.success && result.data) {
+        const fetchedPosts: IGData[] = result.data;
+        setHistoryLoop(fetchedPosts);
+
+        // 🚨 REAL-TIME CHECK: ตรวจสอบว่ารูปที่กำลังเปิดอยู่หน้าจอ ณ วินาทีนี้ โดนแอนิเมชันลบออกแล้วหรือยัง?
+        setCurrent((prevCurrent) => {
+          if (prevCurrent) {
+            const exists = fetchedPosts.some((p) => p.id === prevCurrent.id);
+            if (!exists) {
+              // ถ้าไม่อยู่แล้ว แปลว่าโดนลบ ➔ ให้สั่งหมุนสไลด์เปลี่ยนเป็นรูปอื่นทันที!
+              setTimeout(forceRotate, 50);
+              return null;
+            }
+          }
+          return prevCurrent;
+        });
+      }
+    } catch (err) {
+      console.error("Fetch history error:", err);
+    }
+  };
+>>>>>>> c1e1204c4449068275a2f575c3ca9a6e3d3ba7a0
 
     try {
       const res = await fetch(`${post}/ig_my/next-popup?t=${Date.now()}`);
@@ -43,7 +75,15 @@ export default function Scan() {
   };
 
   useEffect(() => {
+<<<<<<< HEAD
     getPopup();
+=======
+    fetchHistory();
+    // คอยตรวจคิวโพสต์ใหม่ทุก 3 วินาที
+    const popupInterval = setInterval(checkNewPopup, 3000);
+    // อัปเดตประวัติสไลด์โชว์เพื่อตรวจจับการลบแบบ Real-time ทุกๆ 3 วินาที
+    const historyInterval = setInterval(fetchHistory, 3000);
+>>>>>>> c1e1204c4449068275a2f575c3ca9a6e3d3ba7a0
 
     const interval = setInterval(() => {
       if (!runningRef.current) {
@@ -58,9 +98,50 @@ export default function Scan() {
   useEffect(() => {
     if (!show) return;
 
+<<<<<<< HEAD
     const timer = setTimeout(() => {
       setShow(false);
       setCurrent(null);
+=======
+          isDisplayingPriority.current = true;
+          setCurrent(nextPost);
+
+          // อัปเดตเข้ารายการประวัติ (เพื่อไว้เล่นวนซ้ำทีหลัง)
+          setHistoryLoop((prevHistory) => {
+            if (!prevHistory.some((item) => item.id === nextPost.id)) {
+              return [nextPost, ...prevHistory];
+            }
+            return prevHistory;
+          });
+
+          return remainingQueue;
+        } else {
+          // B. ไม่มีรูปใหม่: เล่นรูปประวัติเก่าวนลูปไปเรื่อยๆ
+          isDisplayingPriority.current = false;
+          setHistoryLoop((prevHistory) => {
+            if (prevHistory.length > 0) {
+              if (historyIndex.current >= prevHistory.length) {
+                historyIndex.current = 0; // ย้อนกลับมาตัวแรกสุดเมื่อครบลูป
+              }
+              setCurrent(prevHistory[historyIndex.current]);
+              historyIndex.current += 1;
+            }
+            return prevHistory;
+          });
+          return prevQueue;
+        }
+      });
+    };
+
+    rotateSlide();
+    const slideInterval = setInterval(rotateSlide, 8000); // สไลด์เปลี่ยนทุกๆ 8 วินาที
+    return () => clearInterval(slideInterval);
+  }, [historyLoop.length, trigger]);
+
+  // ================= 4. GENERATE QR CODE AUTOMATICALLY =================
+  useEffect(() => {
+    if (!current?.ig_account) {
+>>>>>>> c1e1204c4449068275a2f575c3ca9a6e3d3ba7a0
       setQr("");
       runningRef.current = false;
     }, 5000); // 👈 แก้จาก 10000 เป็น 6000 (6 วินาที)
