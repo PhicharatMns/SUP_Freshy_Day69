@@ -2,21 +2,15 @@
 
 import { useState, useEffect } from "react";
 import BK from "./page/Bk";
-import Cdweb from "./page/Cdweb"; // 👈 SCAN HERE และ QR Code อยู่ในนี้ทั้งหมด!
-import Message from "./page/Message";
-import Scan from "./page/scan"; // 👈 อิมพอร์ตระบบสไลด์โชว์คิวรุ่นใหม่เข้ามา
-import { AnimatePresence } from "framer-motion"; // อิมพอร์ตตัวจัดการสลับแอนิเมชัน
-import { post } from "@/app/Post";
+import Cdweb from "./page/Cdweb";
 import Popcar from "./page/Popcar";
+import { post } from "@/app/Post";
 
-export default function HomePage() {
-  const [isOpen, setIsOpen] = useState<boolean>(true);
+export default function PortraitQRPage() {
   const [showPopcar, setShowPopcar] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // ⚡ สถานะเช็กว่าขณะนี้มีสไลด์รูปคนแสดงอยู่หรือไม่
-  const [hasActivePost, setHasActivePost] = useState<boolean>(false);
-
+  // ระบบดึงสถานะจาก API (เหมือนใน HomePage)
   useEffect(() => {
     const checkStatus = async () => {
       try {
@@ -28,73 +22,47 @@ export default function HomePage() {
         const data = await res.json();
 
         if (data.success && data.data) {
-          // 🛠️ บังคับให้เป็น true เสมอสำหรับการทดสอบและการแสดงผลที่แน่นอน
-          setIsOpen(true);
+          // ดึงเฉพาะสถานะ popcar มาใช้
           if (data.data.popcar !== undefined) {
             setShowPopcar(data.data.popcar);
           }
-        } else {
-          setIsOpen(true);
         }
       } catch (error) {
-        console.error("โหลดข้อมูลสถานะระบบล้มเหลว:", error);
-        setIsOpen(true); // ปล่อยผ่านเป็น true เพื่อไม่ให้จอดับ
+        console.error("โหลดข้อมูลระบบล้มเหลว:", error);
       } finally {
         setLoading(false);
       }
     };
 
     checkStatus();
-    const intervalId = setInterval(checkStatus, 5000);
+    const intervalId = setInterval(checkStatus, 5000); // เช็คทุก 5 วิ
     return () => clearInterval(intervalId);
   }, []);
 
   if (loading) {
-    return (
-      <div className="w-full h-screen bg-black text-white flex items-center justify-center">
-        กำลังตรวจสอบสถานะระบบ...
-      </div>
-    );
+    return <div className="w-full h-screen bg-slate-950 flex items-center justify-center text-white">กำลังโหลดระบบ...</div>;
   }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
-      {/* 1. BK ฉากหลังสุด (z-0) */}
-      <div className="absolute inset-0 z-0">
+    <div className="relative w-full h-screen overflow-hidden bg-slate-950">
+      
+      {/* 1. BK ฉากหลัง - z-0 */}
+      <div className="absolute inset-0 z-0 opacity-80">
         <BK />
       </div>
 
-      {/* 2. กลุ่มหน้าหลัก (Message, QR Code, Scan Here) */}
-      {isOpen && (
-        <>
-          {/* Cdweb (QR Code หมุนๆ) ต้องอยู่เลเยอร์ที่สูงกว่าพื้นหลัง (z-10) และแสดงเมื่อไม่มีรูปสไลด์เปิดอยู่ */}
-          {!hasActivePost && (
-            <div className="absolute inset-0 z-10 pointer-events-none">
-              <div className="pointer-events-auto w-full h-full">
-                <Cdweb />
-              </div>
-            </div>
-          )}
-
-          <div className="absolute inset-0 z-20 pointer-events-none">
-            <Message />
-          </div>
-        </>
-      )}
-
-      {/* 📸 เปิดการทำงานระบบสไลด์โชว์คิว IG ขึ้นจอใหญ่อย่างเป็นทางการ (z-40) */}
-      <div className="absolute inset-0 z-40 pointer-events-none">
-        <AnimatePresence mode="wait">
-          <Scan onActivePostChange={setHasActivePost} />
-        </AnimatePresence>
+      {/* 2. Cdweb (QR Code) - z-10 */}
+      <div className="absolute inset-0 z-10">
+        <Cdweb speed="slow" />
       </div>
 
-      {/* 3. Popcar รถป๊อป (z-30) (จะแสดงก็ต่อเมื่อกด "เรียกใช้ Popcar" ที่รีโมท) */}
+      {/* 3. Popcar (จะโชว์ก็ต่อเมื่อ Database สั่งให้โชว์) - z-30 */}
       {showPopcar && (
         <div className="absolute inset-0 z-30 pointer-events-none">
           <Popcar />
         </div>
       )}
+
     </div>
   );
 }
