@@ -23,6 +23,7 @@ app.use('*', cors({
 
 app.options("*", cors());
 
+app.get('/', (c) => c.json({ message: 'API is running' }));
 
 app.route('/Qafrom', qaRoutes);
 app.route('/ig_my', igMyRoutes);
