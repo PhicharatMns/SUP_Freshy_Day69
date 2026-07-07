@@ -13,7 +13,7 @@ interface IGData {
   ig_account?: string;
   image_url?: string;
   quote_text?: string;
-  type : string
+  type: string
 }
 
 export default function Scan() {
@@ -88,6 +88,8 @@ export default function Scan() {
 
     generateQR();
   }, [current]);
+
+  console.log("POST URL =", post);
 
   // ================= RENDER =================
   return (
@@ -191,114 +193,114 @@ export default function Scan() {
     //     </motion.div>
     //   )}
     // </AnimatePresence>
-   <AnimatePresence mode="wait">
-  {show && current && (
-    <motion.div
-      key={current.id}
-      className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto h-full"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{
-        opacity: 0,
-        backdropFilter: "blur(0px)",
-      }}
-      transition={{
-        duration: 0.2,
-        ease: "linear",
-      }}
-    >
-      <div className="grid grid-cols-2">
+    <AnimatePresence mode="wait">
+      {show && current && (
+        <motion.div
+          key={current.id}
+          className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto h-full"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{
+            opacity: 0,
+            backdropFilter: "blur(0px)",
+          }}
+          transition={{
+            duration: 0.2,
+            ease: "linear",
+          }}
+        >
+          <div className="grid grid-cols-2">
 
-        {/* ================= รูปภาพ ================= */}
-        <div className="w-full h-full">
-          <div className="flex justify-center md:justify-end relative w-full h-full">
+            {/* ================= รูปภาพ ================= */}
+            <div className="w-full h-full">
+              <div className="flex justify-center md:justify-end relative w-full h-full">
 
-            <motion.div
-              className="relative w-[700px] h-[700px] shrink-0 rounded-3xl overflow-hidden"
-              initial={{ rotate: -1, scale: 0.98, opacity: 0 }}
-              animate={{ rotate: 0, scale: 1, opacity: 1 }}
-              exit={{ rotate: -1, scale: 0.98, opacity: 0 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-            >
-              <Image
-                fill
-                priority
-                quality={80}
-                src={
-                  current.image_url ||
-                  "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp"
-                }
-                alt={current.name}
-                className="object-cover rounded-3xl"
-              />
-            </motion.div>
-
-          </div>
-        </div>
-
-        <div>
-          <div className="flex flex-col items-center justify-center rounded-3xl overflow-hidden md:ml-6">
-
-            {/* QR */}
-            {qr && (
-              <motion.div
-                className="relative w-[800px] h-[600px] bg-gradient-to-br from-white/10 to-white/5 rounded-2xl border border-white/10 shadow-inner mb-8"
-                initial={{ rotate: 1, scale: 0.98, opacity: 0 }}
-                animate={{ rotate: 0, scale: 1, opacity: 1 }}
-                exit={{ rotate: 1, scale: 0.98, opacity: 0 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-              >
-                <Image
-                  fill
-                  priority
-                  quality={80}
-                  src={qr}
-                  alt="QR"
-                  className="object-contain p-10 w-fullw h-[600px]"
-                />
-              </motion.div>
-            )}
-
-            {/* Information */}
-            <div className="w-full text-center">
-
-              <motion.span
-                className="text-[60px] font-bold text-white uppercase tracking-wider block mb-1"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, delay: 0.05 }}
-              >
-                IG : {current.ig_account}
-              </motion.span>
-
-              <motion.span
-                className="text-4xl font-medium text-white uppercase tracking-wider block mb-6"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, delay: 0.08 }}
-              >
-                คณะ : {current.type}
-              </motion.span>
-
-              {current.quote_text && (
-                <motion.span
-                  className="text-4xl font-medium text-white uppercase tracking-wider block"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.2, delay: 0.12 }}
+                <motion.div
+                  className="relative w-[700px] h-[700px] shrink-0 rounded-3xl overflow-hidden"
+                  initial={{ rotate: -1, scale: 0.98, opacity: 0 }}
+                  animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                  exit={{ rotate: -1, scale: 0.98, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
                 >
-                  "{current.quote_text}"
-                </motion.span>
-              )}
+                  <Image
+                    fill
+                    priority
+                    quality={80}
+                    src={
+                      current.image_url ||
+                      "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp"
+                    }
+                    alt={current.name}
+                    className="object-cover rounded-3xl"
+                  />
+                </motion.div>
 
+              </div>
+            </div>
+
+            <div>
+              <div className="flex flex-col items-center justify-center rounded-3xl overflow-hidden md:ml-6">
+
+                {/* QR */}
+                {qr && (
+                  <motion.div
+                    className="relative w-[800px] h-[600px] bg-gradient-to-br from-white/10 to-white/5 rounded-2xl border border-white/10 shadow-inner mb-8"
+                    initial={{ rotate: 1, scale: 0.98, opacity: 0 }}
+                    animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                    exit={{ rotate: 1, scale: 0.98, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                  >
+                    <Image
+                      fill
+                      priority
+                      quality={80}
+                      src={qr}
+                      alt="QR"
+                      className="object-contain p-10 w-fullw h-[600px]"
+                    />
+                  </motion.div>
+                )}
+
+                {/* Information */}
+                <div className="w-full text-center">
+
+                  <motion.span
+                    className="text-[60px] font-bold text-white uppercase tracking-wider block mb-1"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, delay: 0.05 }}
+                  >
+                    IG : {current.ig_account}
+                  </motion.span>
+
+                  <motion.span
+                    className="text-4xl font-medium text-white uppercase tracking-wider block mb-6"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, delay: 0.08 }}
+                  >
+                    คณะ : {current.type}
+                  </motion.span>
+
+                  {current.quote_text && (
+                    <motion.span
+                      className="text-4xl font-medium text-white uppercase tracking-wider block"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.2, delay: 0.12 }}
+                    >
+                      "{current.quote_text}"
+                    </motion.span>
+                  )}
+
+                </div>
+
+              </div>
             </div>
 
           </div>
-        </div>
-
-      </div>
-    </motion.div>
-  )}
-</AnimatePresence>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
