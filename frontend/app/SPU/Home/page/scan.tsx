@@ -15,7 +15,11 @@ interface IGData {
   type?: string; // คณะ
 }
 
-export default function Scan() {
+interface ScanProps {
+  onActivePostChange?: (active: boolean) => void;
+}
+
+export default function Scan({ onActivePostChange }: ScanProps) {
   const [current, setCurrent] = useState<IGData | null>(null);
   const [qr, setQr] = useState("");
   
@@ -136,6 +140,13 @@ export default function Scan() {
     return () => clearInterval(slideInterval);
   }, [historyLoop.length, trigger]);
 
+  // แจ้งเตือนบอร์ดหลักว่าตอนนี้มีรูปภาพขึ้นจอบ้างหรือไม่
+  useEffect(() => {
+    if (onActivePostChange) {
+      onActivePostChange(current !== null);
+    }
+  }, [current, onActivePostChange]);
+
   // ================= 4. GENERATE QR CODE AUTOMATICALLY =================
   useEffect(() => {
     if (!current?.ig_account) {
@@ -177,99 +188,99 @@ export default function Scan() {
   };
 
   // ================= RENDER PREMIUM INTERFACE =================
+  if (!current) return null; // 👈 หากไม่มีข้อมูลในคิว ให้ไม่แสดงอะไรเลย เพื่อปล่อยให้พื้นหลัง BK แสดงผลปกติ
+
   return (
-    <div className="fixed inset-0 z-[99999] bg-gradient-to-br from-gray-950 via-slate-900 to-black flex items-center justify-center p-6 md:p-12 overflow-hidden h-full w-full">
+    <div className="fixed inset-0 z-[99999] bg-black/40 backdrop-blur-md flex items-center justify-center p-6 md:p-12 overflow-hidden h-full w-full">
       {/* เอฟเฟกต์แสงไฟพื้นหลังแบบเกรเดียนท์ขยับเบาๆ */}
       <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] rounded-full bg-violet-600/10 blur-[100px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-[450px] h-[450px] rounded-full bg-pink-600/10 blur-[120px] pointer-events-none" />
 
       <AnimatePresence mode="wait">
-        {current && (
-          <motion.div
-            key={current.id}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center justify-center max-w-7xl w-full h-full max-h-[85vh] z-10"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
-          >
-            {/* ================= ฝั่งซ้าย: รูปภาพนักศึกษา (6 Cols) ================= */}
-            <div className="lg:col-span-7 flex justify-center items-center w-full h-full min-h-[300px] md:min-h-[500px]">
-              <div className="relative w-full h-full max-h-[550px] aspect-[4/3] md:aspect-square lg:aspect-[4/4] rounded-3xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.8)] border border-white/10 group">
-                <Image
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 700px"
-                  quality={85}
-                  priority={true}
-                  src={normalizeImageUrl(current.image_url)}
-                  alt={current.name}
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                
-                {/* ลายเส้นเงาสะท้อนระดับพรีเมียมด้านล่างภาพ */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent pointer-events-none" />
-              </div>
-            </div>
-
-            {/* ================= ฝั่งขวา: QR Code & ข้อมูลการ์ด IG (5 Cols) ================= */}
-            <div className="lg:col-span-5 flex flex-col items-center lg:items-start justify-center w-full space-y-8">
+        <motion.div
+          key={current.id}
+          className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center justify-center max-w-7xl w-full h-full max-h-[85vh] z-10"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -15 }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
+        >
+          {/* ================= ฝั่งซ้าย: รูปภาพนักศึกษา (6 Cols) ================= */}
+          <div className="lg:col-span-7 flex justify-center items-center w-full h-full min-h-[300px] md:min-h-[500px]">
+            <div className="relative w-full h-full max-h-[550px] aspect-[4/3] md:aspect-square lg:aspect-[4/4] rounded-3xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.8)] border border-white/10 group">
+              <Image
+                fill
+                sizes="(max-width: 1024px) 100vw, 700px"
+                quality={85}
+                priority={true}
+                src={normalizeImageUrl(current.image_url)}
+                alt={current.name}
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+              />
               
-              {/* การ์ดแก้วโปร่งใส (Glassmorphism) หุ้ม QR Code */}
-              <div className="relative w-[280px] h-[280px] md:w-[320px] md:h-[320px] rounded-3xl bg-white/10 backdrop-blur-md p-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center">
-                {qr ? (
-                  <div className="relative w-full h-full rounded-2xl overflow-hidden bg-white p-4 shadow-inner">
-                    <Image
-                      fill
-                      src={qr}
-                      alt="Instagram QR Link"
-                      className="object-contain"
-                      priority
-                    />
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center space-y-3 text-white/40">
-                    <svg className="w-12 h-12 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v1m0 11v3m8-7h-1m-11 0H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span className="text-sm font-medium">กำลังเตรียม QR Code...</span>
-                  </div>
-                )}
-              </div>
-
-              {/* ข้อมูลข้อความการ์ดผู้โพสต์ */}
-              <div className="text-center lg:text-left w-full space-y-4 px-2">
-                <div className="space-y-1">
-                  {/* คณะ / สาขา */}
-                  <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-pink-400 bg-pink-500/10 border border-pink-500/20">
-                    {current.type || "นักศึกษา SPU"}
-                  </span>
-                  
-                  {/* ชื่อเล่น/ชื่อจริง */}
-                  <h2 className="text-white/70 text-lg font-medium tracking-wide">
-                    {current.name || "Anonymous"}
-                  </h2>
-                </div>
-
-                {/* บัญชี IG */}
-                <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 text-3xl md:text-5xl font-black tracking-tight drop-shadow-md break-all">
-                  {current.ig_account ? (
-                    current.ig_account.startsWith("@") ? current.ig_account : `@${current.ig_account}`
-                  ) : (
-                    "@no_account"
-                  )}
-                </h1>
-
-                {/* คำคม / ความในใจ */}
-                {current.quote_text && (
-                  <p className="text-slate-300 text-base md:text-xl font-medium leading-relaxed italic max-w-md pt-2 border-t border-white/5">
-                    “ {current.quote_text} ”
-                  </p>
-                )}
-              </div>
-
+              {/* ลายเส้นเงาสะท้อนระดับพรีเมียมด้านล่างภาพ */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent pointer-events-none" />
             </div>
-          </motion.div>
-        )}
+          </div>
+
+          {/* ================= ฝั่งขวา: QR Code & ข้อมูลการ์ด IG (5 Cols) ================= */}
+          <div className="lg:col-span-5 flex flex-col items-center lg:items-start justify-center w-full space-y-8">
+            
+            {/* การ์ดแก้วโปร่งใส (Glassmorphism) หุ้ม QR Code */}
+            <div className="relative w-[280px] h-[280px] md:w-[320px] md:h-[320px] rounded-3xl bg-white/10 backdrop-blur-md p-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center">
+              {qr ? (
+                <div className="relative w-full h-full rounded-2xl overflow-hidden bg-white p-4 shadow-inner">
+                  <Image
+                    fill
+                    src={qr}
+                    alt="Instagram QR Link"
+                    className="object-contain"
+                    priority
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center space-y-3 text-white/40">
+                  <svg className="w-12 h-12 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v1m0 11v3m8-7h-1m-11 0H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm font-medium">กำลังเตรียม QR Code...</span>
+                </div>
+              )}
+            </div>
+
+            {/* ข้อมูลข้อความการ์ดผู้โพสต์ */}
+            <div className="text-center lg:text-left w-full space-y-4 px-2">
+              <div className="space-y-1">
+                {/* คณะ / สาขา */}
+                <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-pink-400 bg-pink-500/10 border border-pink-500/20">
+                  {current.type || "นักศึกษา SPU"}
+                </span>
+                
+                {/* ชื่อเล่น/ชื่อจริง */}
+                <h2 className="text-white/70 text-lg font-medium tracking-wide">
+                  {current.name || "Anonymous"}
+                </h2>
+              </div>
+
+              {/* บัญชี IG */}
+              <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 text-3xl md:text-5xl font-black tracking-tight drop-shadow-md break-all">
+                {current.ig_account ? (
+                  current.ig_account.startsWith("@") ? current.ig_account : `@${current.ig_account}`
+                ) : (
+                  "@no_account"
+                )}
+              </h1>
+
+              {/* คำคม / ความในใจ */}
+              {current.quote_text && (
+                <p className="text-slate-300 text-base md:text-xl font-medium leading-relaxed italic max-w-md pt-2 border-t border-white/5">
+                  “ {current.quote_text} ”
+                </p>
+              )}
+            </div>
+
+          </div>
+        </motion.div>
       </AnimatePresence>
     </div>
   );
