@@ -85,13 +85,18 @@ const fetchQaData = async () => {
                                 }}
                             >
                                 {/* รูปโปรไฟล์ */}
-                                <div className="w-12 h-12 relative rounded-full overflow-hidden flex-shrink-0">
+                            <div className="w-12 h-12 relative rounded-full overflow-hidden flex-shrink-0">
                                     <Image
                                         fill
                                         priority={true}
                                         quality={70}
                                         sizes="48px"
-                                        src={e.image_url ? e.image_url : 'https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp'}
+                                        /* 💡 แก้ไขตรง src ด้านล่างนี้ครับ */
+                                        src={
+                                            e.image_url
+                                                ? 'https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/${e.image_url}'
+                                                : 'https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/DEK69.webp'
+                                        }
                                         alt={e.student_name || "Student Profile"}
                                         className="object-cover"
                                     />
