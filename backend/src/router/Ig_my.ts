@@ -23,8 +23,9 @@ ig_my.post('/insert-ig', async (c) => {
         const name = String(formData.get("name") || "");
         const quoteText = String(formData.get("quoteText") || "");
         const igAccount = String(formData.get("igAccount") || "");
+        const type = String(formData.get("type") || "");
 
-        if (!quoteText ) {
+        if (!quoteText) {
             return c.json(
                 {
                     success: false,
@@ -76,10 +77,10 @@ ig_my.post('/insert-ig', async (c) => {
 
         // บันทึกเข้า MySQL
         const queryText = `
-            INSERT INTO ig_quotes (name, quote_text, image_url, ig_account) 
-            VALUES (?, ?, ?, ?);
+            INSERT INTO ig_quotes (name, quote_text, image_url, ig_account, type) 
+            VALUES (?, ?, ?, ?, ?);
         `;
-        const values = [name, quoteText, uploadedImageUrl, igAccount];
+        const values = [name, quoteText, uploadedImageUrl, igAccount, type];
         const [insertResult]: any = await pool.query(queryText, values);
 
         return c.json({
@@ -97,10 +98,10 @@ ig_my.post('/insert-ig', async (c) => {
 ig_my.get('/select-ig', async (c) => {
     try {
         const sql = `
-            SELECT id, name, quote_text, image_url, ig_account, popup
+            SELECT id, name, quote_text, image_url, ig_account, popup, type
             FROM ig_quotes 
             ORDER BY id DESC
-            LIMIT 50;
+            LIMIT 20;
         `;
 
         const [rows]: any = await pool.query(sql);

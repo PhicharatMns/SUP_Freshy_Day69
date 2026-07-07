@@ -5,10 +5,9 @@ import { useState, useEffect } from "react";
 import Myself from "./component/page/myself";
 import IG from "./component/page/IG";
 import { motion, AnimatePresence } from "framer-motion";
-import { div } from "framer-motion/client";
 import Qa from "./component/page/QA";
-import Link from "next/link";
 import Popuppopcat from "./component/page/popuppopcat";
+import { useRouter } from "next/navigation";
 
 // Interface สำหรับข้อมูลฟองสบู่
 interface Bubble {
@@ -37,8 +36,7 @@ export default function Formsup() {
 
 
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
-
-
+  const router = useRouter(); 
   // ฟองสบู่
   const bubbleColors = [
     "bg-white",
@@ -80,6 +78,8 @@ export default function Formsup() {
     },
   };
 
+  
+
   const openpopupMyselt = () => setpoup(prev => ({
     ...prev,
     myself: true
@@ -92,10 +92,20 @@ export default function Formsup() {
 
   const openpopupQa = () => setpoup(prev => ({ ...prev, myQa: true }))
 
-  const openPopcat = () => setpoup(prev => ({
+const openPopcat = () => {
+  const user = localStorage.getItem("popcat_user");
+
+  if (user) {
+    router.replace("/games");
+    return;
+  }
+
+  setpoup((prev) => ({
     ...prev,
-    popcat: true
-  }))
+    popcat: true,
+  }));
+};
+
 
   const Social = [
     // {
