@@ -42,7 +42,8 @@ export const insertIg = async (c) => {
                 quote_text: quoteText,
                 image_url: uploadedImageUrl,
                 ig_account: igAccount,
-                type
+                type,
+                popup: true // ⚡ กำหนดเป็น true เพื่อให้ดึงขึ้นสไลด์จอใหญ่อัตโนมัติทันที
             }
         });
         return c.json({
