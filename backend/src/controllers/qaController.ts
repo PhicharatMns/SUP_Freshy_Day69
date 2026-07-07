@@ -32,9 +32,14 @@ export const submitQa = async (c: Context) => {
             // อัปโหลดเข้า Cloudflare R2 Storage
             try {
                 uploadedImageUrl = await uploadToR2(filePath, webpBuffer, 'image/webp');
-            } catch (storageError) {
+            } catch (storageError: any) {
                 console.error("❌ R2 Storage Upload Error:", storageError);
-                return c.json({ success: false, message: "ไม่สามารถอัปโหลดรูปภาพได้" }, 500);
+                return c.json({ 
+                    success: false, 
+                    message: "ไม่สามารถอัปโหลดรูปภาพได้",
+                    error: storageError.message,
+                    stack: storageError.stack
+                }, 500);
             }
         }
 

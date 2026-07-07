@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧪 Test API — Upload Image to R2 + Save DB</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; padding: 2rem; }
+    h1 { color: #38bdf8; margin-bottom: 2rem; font-size: 1.5rem; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    h2 { color: #94a3b8; font-size: 1rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+    label { display: block; margin-bottom: 0.4rem; font-size: 0.875rem; color: #94a3b8; }
+    input, textarea, select { width: 100%; padding: 0.6rem 0.8rem; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #e2e8f0; font-size: 0.9rem; margin-bottom: 1rem; }
+    input[type="file"] { padding: 0.4rem; }
+    button { background: #0ea5e9; color: white; border: none; padding: 0.7rem 1.5rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; width: 100%; }
+    button:hover { background: #0284c7; }
+    button:disabled { background: #334155; cursor: not-allowed; }
+    .result { background: #0f172a; border-radius: 8px; padding: 1rem; margin-top: 1rem; font-family: monospace; font-size: 0.8rem; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; border: 1px solid #1e293b; }
+    .success { border-color: #22c55e; color: #86efac; }
+    .error { border-color: #ef4444; color: #fca5a5; }
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .tab { padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; background: #1e293b; border: 1px solid #334155; font-size: 0.85rem; }
+    .tab.active { background: #0ea5e9; border-color: #0ea5e9; color: white; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .api-url { font-size: 0.75rem; color: #64748b; margin-bottom: 1rem; font-family: monospace; }
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #fff3; border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 0.5rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <h1>🧪 Test API — spu69.online Backend</h1>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('qa')">📝 Q&A Upload</div>
+    <div class="tab" onclick="switchTab('ig')">📸 IG Upload</div>
+    <div class="tab" onclick="switchTab('popcat')">🐱 Popcat</div>
+    <div class="tab" onclick="switchTab('get')">📋 GET Data</div>
+  </div>
+
+  <!-- ===== Q&A ===== -->
+  <div class="section active" id="tab-qa">
+    <div class="card">
+      <h2>📝 POST /Qafrom/Qafrom — ส่งแบบฟอร์ม Q&A + อัปโหลดรูป</h2>
+      <p class="api-url" id="qa-url">POST http://localhost:5000/Qafrom/Qafrom</p>
+      <label>ชื่อนักศึกษา</label>
+      <input type="text" id="qa-name" value="ทดสอบ สุดยอด" />
+      <label>ความรู้สึก</label>
+      <textarea id="qa-feeling" rows="3">ทดสอบระบบอัปโหลดรูปภาพผ่าน Cloudflare R2</textarea>
+      <label>รูปภาพ (ไม่บังคับ)</label>
+      <input type="file" id="qa-image" accept="image/*" />
+      <button onclick="testQA()" id="btn-qa">🚀 ส่ง Q&A</button>
+      <div class="result" id="result-qa" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- ===== IG ===== -->
+  <div class="section" id="tab-ig">
+    <div class="card">
+      <h2>📸 POST /ig_my/insert-ig — บันทึก IG Quote + อัปโหลดรูป</h2>
+      <p class="api-url" id="ig-url">POST http://localhost:5000/ig_my/insert-ig</p>
+      <label>ชื่อ</label>
+      <input type="text" id="ig-name" value="IG ทดสอบ" />
+      <label>คำพูด / ความในใจ</label>
+      <textarea id="ig-quote" rows="3">คำพูดทดสอบจากระบบ Prisma ORM</textarea>
+      <label>IG Account</label>
+      <input type="text" id="ig-account" value="@test_account" />
+      <label>Type</label>
+      <input type="text" id="ig-type" value="quote" />
+      <label>รูปภาพ (ไม่บังคับ)</label>
+      <input type="file" id="ig-image" accept="image/*" />
+      <button onclick="testIG()" id="btn-ig">🚀 ส่ง IG Quote</button>
+      <div class="result" id="result-ig" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- ===== Popcat ===== -->
+  <div class="section" id="tab-popcat">
+    <div class="card">
+      <h2>🐱 POST /popcar/click — บวกคะแนน Popcat</h2>
+      <p class="api-url" id="popcat-url">POST http://localhost:5000/popcar/click</p>
+      <label>Department Key</label>
+      <input type="text" id="pop-dept" value="engineering" />
+      <button onclick="testClick()" id="btn-click">🖱️ Click +1</button>
+      <div class="result" id="result-click" style="display:none"></div>
+    </div>
+    <div class="card">
+      <h2>🐱 GET /popcar/scores — ดูคะแนนทั้งหมด</h2>
+      <button onclick="testScores()">📊 ดูคะแนนทุกคณะ</button>
+      <div class="result" id="result-scores" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- ===== GET ===== -->
+  <div class="section" id="tab-get">
+    <div class="card">
+      <h2>📋 GET Data จาก Database</h2>
+      <p class="api-url" id="get-url">http://localhost:5000</p>
+      <label>เลือก Endpoint ที่ต้องการดูข้อมูล</label>
+      <select id="get-endpoint">
+        <option value="/Qafrom/select-qa">GET /Qafrom/select-qa — ดูข้อมูล Q&A ทั้งหมด</option>
+        <option value="/ig_my/select-ig">GET /ig_my/select-ig — ดูข้อมูล IG ทั้งหมด</option>
+        <option value="/popcar/scores">GET /popcar/scores — ดูคะแนน Popcat ทั้งหมด</option>
+        <option value="/popcar/top-departments">GET /popcar/top-departments — อันดับผู้เล่นสูงสุดต่อคณะ</option>
+        <option value="/apinext/control">GET /apinext/control — ดูสถานะ Control</option>
+        <option value="/">GET / — Health Check</option>
+      </select>
+      <button onclick="testGet()">📥 ดึงข้อมูล</button>
+      <div class="result" id="result-get" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- API Base URL Switcher -->
+  <div class="card">
+    <h2>⚙️ API Base URL</h2>
+    <label>เลือก Environment</label>
+    <select id="base-url-select" onchange="updateBaseUrl()">
+      <option value="http://localhost:5000">🖥️ Local (localhost:5000)</option>
+      <option value="https://api.spu69.online">🌐 Production (api.spu69.online)</option>
+    </select>
+  </div>
+
+  <script>
+    let BASE_URL = 'http://localhost:5000';
+
+    function updateBaseUrl() {
+      BASE_URL = document.getElementById('base-url-select').value;
+      document.getElementById('qa-url').textContent = `POST ${BASE_URL}/Qafrom/Qafrom`;
+      document.getElementById('ig-url').textContent = `POST ${BASE_URL}/ig_my/insert-ig`;
+      document.getElementById('popcat-url').textContent = `POST ${BASE_URL}/popcar/click`;
+      document.getElementById('get-url').textContent = BASE_URL;
+    }
+
+    function switchTab(name) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(`tab-${name}`).classList.add('active');
+    }
+
+    function showResult(id, data, isError = false) {
+      const el = document.getElementById(id);
+      el.style.display = 'block';
+      el.className = `result ${isError ? 'error' : 'success'}`;
+      el.textContent = JSON.stringify(data, null, 2);
+    }
+
+    function setLoading(btnId, loading) {
+      const btn = document.getElementById(btnId);
+      if (loading) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>กำลังส่ง...';
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = btn.id === 'btn-qa' ? '🚀 ส่ง Q&A' :
+                        btn.id === 'btn-ig' ? '🚀 ส่ง IG Quote' : '🖱️ Click +1';
+      }
+    }
+
+    async function testQA() {
+      setLoading('btn-qa', true);
+      try {
+        const form = new FormData();
+        form.append('studentName', document.getElementById('qa-name').value);
+        form.append('feelingText', document.getElementById('qa-feeling').value);
+        const img = document.getElementById('qa-image').files[0];
+        if (img) form.append('studentImage', img);
+
+        const res = await fetch(`${BASE_URL}/Qafrom/Qafrom`, { method: 'POST', body: form });
+        const data = await res.json();
+        showResult('result-qa', data, !data.success);
+      } catch (e) {
+        showResult('result-qa', { error: e.message }, true);
+      } finally { setLoading('btn-qa', false); }
+    }
+
+    async function testIG() {
+      setLoading('btn-ig', true);
+      try {
+        const form = new FormData();
+        form.append('name', document.getElementById('ig-name').value);
+        form.append('quoteText', document.getElementById('ig-quote').value);
+        form.append('igAccount', document.getElementById('ig-account').value);
+        form.append('type', document.getElementById('ig-type').value);
+        const img = document.getElementById('ig-image').files[0];
+        if (img) form.append('image', img);
+
+        const res = await fetch(`${BASE_URL}/ig_my/insert-ig`, { method: 'POST', body: form });
+        const data = await res.json();
+        showResult('result-ig', data, !data.success);
+      } catch (e) {
+        showResult('result-ig', { error: e.message }, true);
+      } finally { setLoading('btn-ig', false); }
+    }
+
+    async function testClick() {
+      setLoading('btn-click', true);
+      try {
+        const res = await fetch(`${BASE_URL}/popcar/click`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ departmentKey: document.getElementById('pop-dept').value })
+        });
+        const data = await res.json();
+        showResult('result-click', data, !data.status);
+      } catch (e) {
+        showResult('result-click', { error: e.message }, true);
+      } finally { setLoading('btn-click', false); }
+    }
+
+    async function testScores() {
+      try {
+        const res = await fetch(`${BASE_URL}/popcar/scores`);
+        const data = await res.json();
+        showResult('result-scores', data, !data.status);
+      } catch (e) {
+        showResult('result-scores', { error: e.message }, true);
+      }
+    }
+
+    async function testGet() {
+      const endpoint = document.getElementById('get-endpoint').value;
+      try {
+        const res = await fetch(`${BASE_URL}${endpoint}`);
+        const data = await res.json();
+        showResult('result-get', data, false);
+      } catch (e) {
+        showResult('result-get', { error: e.message }, true);
+      }
+    }
+  </script>
+</body>
+</html>
