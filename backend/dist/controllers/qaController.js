@@ -27,7 +27,12 @@ export const submitQa = async (c) => {
             }
             catch (storageError) {
                 console.error("❌ R2 Storage Upload Error:", storageError);
-                return c.json({ success: false, message: "ไม่สามารถอัปโหลดรูปภาพได้" }, 500);
+                return c.json({
+                    success: false,
+                    message: "ไม่สามารถอัปโหลดรูปภาพได้",
+                    error: storageError.message,
+                    stack: storageError.stack
+                }, 500);
             }
         }
         // บันทึกเข้า MySQL ผ่าน Prisma
