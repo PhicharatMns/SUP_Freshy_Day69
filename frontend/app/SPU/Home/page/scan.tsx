@@ -5,7 +5,6 @@ import { post } from "@/app/Post";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { div } from "framer-motion/client";
 
 interface IGData {
   id: number;
@@ -13,216 +12,231 @@ interface IGData {
   ig_account?: string;
   image_url?: string;
   quote_text?: string;
+  type?: string; // คณะ
 }
 
 export default function Scan() {
   const [current, setCurrent] = useState<IGData | null>(null);
-  const [show, setShow] = useState(false);
   const [qr, setQr] = useState("");
+  
+  // คิวสำหรับรูปใหม่ที่รอการแจ้งเตือน (Approve แล้ว)
+  const [activeQueue, setActiveQueue] = useState<IGData[]>([]);
+  // รายการประวัติรูปเก่าทั้งหมด (สำหรับวนลูปสไลด์โชว์เวลาไม่มีรูปใหม่)
+  const [historyLoop, setHistoryLoop] = useState<IGData[]>([]);
+  
+  const shownIds = useRef<Set<number>>(new Set());
+  const historyIndex = useRef<number>(0);
+  const isDisplayingPriority = useRef<boolean>(false);
 
-  const runningRef = useRef(false);
-
-  // ================= FETCH POPUP =================
-  const getPopup = async () => {
-    if (runningRef.current) return;
-
+  // ================= 1. FETCH HISTORICAL DATA (ดึงภาพเก่ามาวนลูป) =================
+  const fetchHistory = async () => {
     try {
-      const res = await fetch(
-        `${post}/ig_my/next-popup?t=${Date.now()}`
-      );
-
+      const res = await fetch(`${post}/ig_my/select-ig?t=${Date.now()}`);
       const result = await res.json();
-
       if (result.success && result.data) {
-        runningRef.current = true;
-        setCurrent(result.data);
-        setShow(true);
+        setHistoryLoop(result.data);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Fetch history error:", err);
     }
   };
 
-  useEffect(() => {
-    getPopup();
+  // ================= 2. POLL NEW POPUPS (คอยดึงรูปใหม่ที่เพิ่งแอดมินอนุมัติ) =================
+  const checkNewPopup = async () => {
+    try {
+      const res = await fetch(`${post}/ig_my/next-popup?t=${Date.now()}`);
+      const result = await res.json();
 
-    const interval = setInterval(() => {
-      if (!runningRef.current) {
-        getPopup();
+      if (result.success && result.data) {
+        const newPost: IGData = result.data;
+        // ป้องกันการแอดซ้ำซ้อน
+        if (!shownIds.current.has(newPost.id)) {
+          shownIds.current.add(newPost.id);
+          // ใส่เข้าคิวใหม่ทันที
+          setActiveQueue((prev) => [...prev, newPost]);
+        }
       }
-    }, 3000);
+    } catch (err) {
+      console.error("Fetch new popup error:", err);
+    }
+  };
 
-    return () => clearInterval(interval);
+  // ดึงประวัติครั้งแรก และตั้งช่วงเวลาตรวจสอบโพสต์ใหม่
+  useEffect(() => {
+    fetchHistory();
+    // คอยตรวจคิวโพสต์ใหม่ทุก 3 วินาที
+    const popupInterval = setInterval(checkNewPopup, 3000);
+    // อัปเดตประวัติสไลด์โชว์ทุกๆ 30 วินาที
+    const historyInterval = setInterval(fetchHistory, 30000);
+
+    return () => {
+      clearInterval(popupInterval);
+      clearInterval(historyInterval);
+    };
   }, []);
 
-  // ================= AUTO CLOSE (ปรับเหลือ 6 วินาที) =================
+  // ================= 3. LOOP ROTATION (จัดการสลับสไลด์ทุกๆ 8 วินาที) =================
   useEffect(() => {
-    if (!show) return;
+    const rotateSlide = () => {
+      setActiveQueue((prevQueue) => {
+        if (prevQueue.length > 0) {
+          // A. มีคิวรูปใหม่: หยิบรูปแรกขึ้นมาแสดงทันที
+          const nextPost = prevQueue[0];
+          const remainingQueue = prevQueue.slice(1);
 
-    const timer = setTimeout(() => {
-      setShow(false);
-      setCurrent(null);
+          isDisplayingPriority.current = true;
+          setCurrent(nextPost);
+
+          // อัปเดตเข้ารายการประวัติ (เพื่อไว้เล่นวนซ้ำทีหลัง)
+          setHistoryLoop((prevHistory) => {
+            if (!prevHistory.some((item) => item.id === nextPost.id)) {
+              return [nextPost, ...prevHistory];
+            }
+            return prevHistory;
+          });
+
+          return remainingQueue;
+        } else {
+          // B. ไม่มีรูปใหม่: เล่นรูปประวัติเก่าวนลูปไปเรื่อยๆ
+          isDisplayingPriority.current = false;
+          setHistoryLoop((prevHistory) => {
+            if (prevHistory.length > 0) {
+              if (historyIndex.current >= prevHistory.length) {
+                historyIndex.current = 0; // ย้อนกลับมาตัวแรกสุดเมื่อครบลูป
+              }
+              setCurrent(prevHistory[historyIndex.current]);
+              historyIndex.current += 1;
+            }
+            return prevHistory;
+          });
+          return prevQueue;
+        }
+      });
+    };
+
+    rotateSlide();
+    const slideInterval = setInterval(rotateSlide, 8000); // สไลด์เปลี่ยนทุกๆ 8 วินาที
+    return () => clearInterval(slideInterval);
+  }, [historyLoop.length]);
+
+  // ================= 4. GENERATE QR CODE AUTOMATICALLY =================
+  useEffect(() => {
+    if (!current?.ig_account) {
       setQr("");
-      runningRef.current = false;
-    }, 5000); // 👈 แก้จาก 10000 เป็น 6000 (6 วินาที)
-
-    return () => clearTimeout(timer);
-  }, [show]);
-
-  // ================= GENERATE QR =================
-  useEffect(() => {
-    if (!current?.ig_account) return;
+      return;
+    }
 
     const generateQR = async () => {
       try {
-        const username = (current.ig_account ?? "").replace("@", "");
-
-        const url = await QRCode.toDataURL(
-          `https://www.instagram.com/${username}`
-        );
-
+        const username = current.ig_account!.replace("@", "").trim();
+        const url = await QRCode.toDataURL(`https://www.instagram.com/${username}`);
         setQr(url);
       } catch (err) {
-        console.error("QR error:", err);
+        console.error("QR Generate error:", err);
       }
     };
 
     generateQR();
   }, [current]);
 
-  // ================= RENDER =================
+  // ================= RENDER PREMIUM INTERFACE =================
   return (
-    // <AnimatePresence mode="wait">
-    //   {show && current && (
-    //     <motion.div
-    //       key={current.id}
-    //       className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto"
-    //       initial={{ opacity: 0 }}
-    //       animate={{ opacity: 1 }}
-    //       exit={{
-    //         opacity: 0,
-    //         backdropFilter: "blur(0px)",
-    //       }}
-    //       transition={{
-    //         duration: 0.2,
-    //         ease: "linear",
-    //       }}
-    //     >
-    //       {/* Container หลักแบ่งเป็น 2 ฝั่ง ซ้าย-ขวา */}
-    //       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center justify-center max-w-6xl w-full max-h-screen p-4">
+    <div className="fixed inset-0 z-[99999] bg-gradient-to-br from-gray-950 via-slate-900 to-black flex items-center justify-center p-6 md:p-12 overflow-hidden h-full w-full">
+      {/* เอฟเฟกต์แสงไฟพื้นหลังแบบเกรเดียนท์ขยับเบาๆ */}
+      <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] rounded-full bg-violet-600/10 blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-[450px] h-[450px] rounded-full bg-pink-600/10 blur-[120px] pointer-events-none" />
 
-    //         {/* ================= ฝั่งซ้าย: รูปภาพหลัก ================= */}
-    //         <div className="flex justify-center md:justify-end w-full">
-    //           <motion.div
-    //             className="relative w-[340px] h-[340px] sm:w-[380px] sm:h-[380px] lg:w-[450px] lg:h-[450px] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10"
-    //             initial={{ rotate: -1, scale: 0.98, opacity: 0 }}
-    //             animate={{ rotate: 0, scale: 1, opacity: 1 }}
-    //             exit={{ rotate: -1, scale: 0.98, opacity: 0 }}
-    //             transition={{ duration: 0.25, ease: "easeOut" }}
-    //           >
-    //             <Image
-    //               fill
-    //               sizes="(max-width: 768px) 100vw, 450px"
-    //               quality={75}
-    //               priority={true}
-    //               src={
-    //                 current.image_url ||
-    //                 "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp"
-    //               }
-    //               alt={current.name}
-    //               className="object-cover"
-    //             />
-    //           </motion.div>
-    //         </div>
-
-    //         {/* ================= ฝั่งขวา: QR Code + ข้อมูลด้านล่าง ================= */}
-    //         <div className="flex flex-col items-center md:items-start w-full space-y-6">
-
-    //           {/* QR CODE */}
-    //           {qr && (current.ig_account ?? "").trim() !== "" && (
-    //             <motion.div
-    //               className="relative w-[340px] h-[340px] sm:w-[380px] sm:h-[380px] lg:w-[450px] lg:h-[450px] rounded-2xl overflow-hidden bg-white p-8 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-center border border-white/10"
-    //               initial={{ rotate: 1, opacity: 0, scale: 0.98 }}
-    //               animate={{ rotate: 0, opacity: 1, scale: 1 }}
-    //               exit={{ rotate: 1, opacity: 0, scale: 0.98 }}
-    //               transition={{ duration: 0.25, ease: "easeOut" }}
-    //             >
-    //               <div className="relative w-full h-full">
-    //                 <Image
-    //                   fill
-    //                   sizes="(max-width: 768px) 100vw, 450px"
-    //                   src={qr}
-    //                   alt="Instagram QR"
-    //                   quality={75}
-    //                   priority={true}
-    //                   className="object-contain"
-    //                 />
-    //               </div>
-    //             </motion.div>
-    //           )}
-
-    //           {/* รายละเอียดข้อความ (จะอยู่ใต้ QR Code เสมอ) */}
-    //           <div className="text-center md:text-left w-full max-w-[380px] lg:max-w-[450px] space-y-3 px-2">
-    //             {/* ชื่อบัญชี IG */}
-    //             <motion.h1
-    //               className="text-white text-3xl md:text-5xl lg:text-6xl font-black tracking-tight drop-shadow-md break-all"
-    //               initial={{ opacity: 0, y: 10 }}
-    //               animate={{ opacity: 1, y: 0 }}
-    //               transition={{ duration: 0.2, delay: 0.05 }}
-    //             >
-    //               {current.ig_account || "No Account"}
-    //             </motion.h1>
-
-    //             {/* คำคม / แนะนำตัว */}
-    //             {current.quote_text && (
-    //               <motion.p
-    //                 className="text-white/80 text-base md:text-lg font-medium leading-relaxed drop-shadow-sm"
-    //                 initial={{ opacity: 0 }}
-    //                 animate={{ opacity: 1 }}
-    //                 transition={{ duration: 0.2, delay: 0.1 }}
-    //               >
-    //                 “ {current.quote_text} ”
-    //               </motion.p>
-    //             )}
-    //           </div>
-
-    //         </div>
-
-    //       </div>
-    //     </motion.div>
-    //   )}
-    // </AnimatePresence>
-    <div className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto h-full">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center justify-center w-full  p-4 h-full">
-        <div className="w-full h-full  rounded-2xl overflow-hidden">
-          <div className="relative w-full h-full ">
-            <Image
-              fill
-              sizes="(max-width: 768px) 100vw, 450px"
-              quality={75}
-              priority={true}
-              src={'https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp'}
-              alt='1'
-              className="object-cover "
-            />
-          </div>
-        </div>
-        <div className="w-full h-full bg-white rounded-2xl overflow-hidden">
-          {/* qr */}
-          <div>
-            <div className="relative w-full aspect-square  bg-gray-50 rounded-xl p-4 flex items-center justify-center border border-gray-100">
-              {/* ใส่ <Image src={qr} fill className="object-contain" /> ตรงนี้ */}
-              <span className="text-gray-400 text-sm">[ QR Code Area ]</span>
+      <AnimatePresence mode="wait">
+        {current && (
+          <motion.div
+            key={current.id}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center justify-center max-w-7xl w-full h-full max-h-[85vh] z-10"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+          >
+            {/* ================= ฝั่งซ้าย: รูปภาพนักศึกษา (6 Cols) ================= */}
+            <div className="lg:col-span-7 flex justify-center items-center w-full h-full min-h-[300px] md:min-h-[500px]">
+              <div className="relative w-full h-full max-h-[550px] aspect-[4/3] md:aspect-square lg:aspect-[4/4] rounded-3xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.8)] border border-white/10 group">
+                <Image
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 700px"
+                  quality={85}
+                  priority={true}
+                  src={
+                    current.image_url ||
+                    "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp"
+                  }
+                  alt={current.name}
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                
+                {/* ลายเส้นเงาสะท้อนระดับพรีเมียมด้านล่างภาพ */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent pointer-events-none" />
+              </div>
             </div>
-          </div>
 
-          <div>
-            <p>    คณะ</p>
-            <p>IG : </p>
-            <p>ความในใจ</p>
-          </div>
-        </div>
-      </div>
+            {/* ================= ฝั่งขวา: QR Code & ข้อมูลการ์ด IG (5 Cols) ================= */}
+            <div className="lg:col-span-5 flex flex-col items-center lg:items-start justify-center w-full space-y-8">
+              
+              {/* การ์ดแก้วโปร่งใส (Glassmorphism) หุ้ม QR Code */}
+              <div className="relative w-[280px] h-[280px] md:w-[320px] md:h-[320px] rounded-3xl bg-white/10 backdrop-blur-md p-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center">
+                {qr ? (
+                  <div className="relative w-full h-full rounded-2xl overflow-hidden bg-white p-4 shadow-inner">
+                    <Image
+                      fill
+                      src={qr}
+                      alt="Instagram QR Link"
+                      className="object-contain"
+                      priority
+                    />
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center space-y-3 text-white/40">
+                    <svg className="w-12 h-12 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v1m0 11v3m8-7h-1m-11 0H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm font-medium">กำลังเตรียม QR Code...</span>
+                  </div>
+                )}
+              </div>
+
+              {/* ข้อมูลข้อความการ์ดผู้โพสต์ */}
+              <div className="text-center lg:text-left w-full space-y-4 px-2">
+                <div className="space-y-1">
+                  {/* คณะ / สาขา */}
+                  <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-pink-400 bg-pink-500/10 border border-pink-500/20">
+                    {current.type || "นักศึกษา SPU"}
+                  </span>
+                  
+                  {/* ชื่อเล่น/ชื่อจริง */}
+                  <h2 className="text-white/70 text-lg font-medium tracking-wide">
+                    {current.name || "Anonymous"}
+                  </h2>
+                </div>
+
+                {/* บัญชี IG */}
+                <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 text-3xl md:text-5xl font-black tracking-tight drop-shadow-md break-all">
+                  {current.ig_account ? (
+                    current.ig_account.startsWith("@") ? current.ig_account : `@${current.ig_account}`
+                  ) : (
+                    "@no_account"
+                  )}
+                </h1>
+
+                {/* คำคม / ความในใจ */}
+                {current.quote_text && (
+                  <p className="text-slate-300 text-base md:text-xl font-medium leading-relaxed italic max-w-md pt-2 border-t border-white/5">
+                    “ {current.quote_text} ”
+                  </p>
+                )}
+              </div>
+
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
