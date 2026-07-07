@@ -22,6 +22,21 @@ interface ScanProps {
 
 export default function Scan({ onActivePostChange }: ScanProps) {
   const [current, setCurrent] = useState<IGData | null>(null);
+
+  // 🛠️ ปรับเปลี่ยนพาธและโดเมนรูปภาพให้ถูกต้องปลอดภัย 100% (ป้องกันโดเมนซ้ำซ้อน)
+  const normalizeImageUrl = (url: string | null | undefined) => {
+    if (!url) return 'https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp';
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      if (url.includes('894df2ee46e1279e8499573d3c22949b.r2.cloudflarestorage.com/sup69')) {
+        return url.replace('https://894df2ee46e1279e8499573d3c22949b.r2.cloudflarestorage.com/sup69', 'https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev');
+      }
+      return url;
+    }
+    if (url.startsWith('Image69/') || url.startsWith('IG_Images/')) {
+      return `https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/${url}`;
+    }
+    return url.startsWith('/') ? url : `/${url}`;
+  };
   const [qr, setQr] = useState("");
   
   // คิวสำหรับรูปใหม่ที่รอการแจ้งเตือน (Approve แล้ว)
@@ -179,13 +194,7 @@ export default function Scan({ onActivePostChange }: ScanProps) {
                   fill
                   priority
                   quality={80}
-                  src={
-                    current.image_url
-                      ? (current.image_url.startsWith("http")
-                          ? current.image_url
-                          : `https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/${current.image_url}`)
-                      : "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp"
-                  }
+                  src={normalizeImageUrl(current.image_url)}
                   alt={current.name}
                   className="object-cover rounded-3xl"
                 />
