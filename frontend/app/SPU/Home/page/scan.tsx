@@ -194,11 +194,33 @@ export default function Scan() {
     // </AnimatePresence>
     <div className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto h-full">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center justify-center w-full  p-4 h-full">
-        <div className="w-full h-full bg-white">
-          5
+        <div className="w-full h-full  rounded-2xl overflow-hidden">
+          <div className="relative w-full h-full ">
+            <Image
+              fill
+              sizes="(max-width: 768px) 100vw, 450px"
+              quality={75}
+              priority={true}
+              src={'https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp'}
+              alt='1'
+              className="object-cover "
+            />
+          </div>
         </div>
-        <div className="w-full h-full bg-white">
-          5
+        <div className="w-full h-full bg-white rounded-2xl overflow-hidden">
+          {/* qr */}
+          <div>
+            <div className="relative w-full aspect-square  bg-gray-50 rounded-xl p-4 flex items-center justify-center border border-gray-100">
+              {/* ใส่ <Image src={qr} fill className="object-contain" /> ตรงนี้ */}
+              <span className="text-gray-400 text-sm">[ QR Code Area ]</span>
+            </div>
+          </div>
+
+          <div>
+            <p>    คณะ</p>
+            <p>IG : </p>
+            <p>ความในใจ</p>
+          </div>
         </div>
       </div>
     </div>
