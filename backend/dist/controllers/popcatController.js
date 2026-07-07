@@ -202,33 +202,61 @@ export const clickBulkUser = async (c) => {
         }, 500);
     }
 };
+
 export const getTopDepartments = async (c) => {
     try {
-        const rows = await prisma.$queryRaw `
-      SELECT student_id, student_name, department_key, total_clicks, updated_at
+        const rows = await prisma.$queryRaw`
+      SELECT
+        student_id,
+        student AS student_name,
+        department_key,
+        total_clicks,
+        updated_at
       FROM (
-        SELECT 
+        SELECT
           student_id,
-          student_name,
+          student,
           department_key,
           total_clicks,
           updated_at,
-          ROW_NUMBER() OVER (PARTITION BY department_key ORDER BY total_clicks DESC) as rn
+          ROW_NUMBER() OVER (
+            PARTITION BY department_key
+            ORDER BY COALESCE(CAST(total_clicks AS INTEGER), 0) DESC
+          ) AS rn
         FROM popcat_players
       ) t
       WHERE rn = 1
-      ORDER BY total_clicks DESC;
+      ORDER BY COALESCE(CAST(total_clicks AS INTEGER), 0) DESC;
     `;
+
+        console.log("Top Departments:", rows);
+        console.log(rows);
+        console.log(typeof rows[0].total_clicks);
+
+        const safeRows = JSON.parse(
+            JSON.stringify(
+                rows,
+                (_, value) =>
+                    typeof value === "bigint"
+                        ? value.toString()
+                        : value
+            )
+        );
+
         return c.json({
             status: true,
-            data: rows,
+            count: safeRows.length,
+            data: safeRows,
         });
-    }
-    catch (error) {
-        console.error(error);
-        return c.json({
-            status: false,
-            message: "Server Error",
-        }, 500);
+    } catch (error) {
+        console.error("getTopDepartments error:", error);
+
+        return c.json(
+            {
+                status: false,
+                message: error instanceof Error ? error.message : "Unknown error",
+            },
+            500
+        );
     }
 };

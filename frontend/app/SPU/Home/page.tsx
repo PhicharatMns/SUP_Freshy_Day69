@@ -92,10 +92,6 @@ export default function HomePage() {
           <Scan onActivePostChange={setHasActivePost} />
         </AnimatePresence>
       </div>
-
-      {/* <div className="absolute inset-0 z-30 pointer-events-none">
-                <Popcar />
-            </div> */}
     </div>
   );
 }

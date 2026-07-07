@@ -221,12 +221,10 @@ import { useEffect, useState, useMemo } from "react";
 // ===== TYPE ใหม่จาก API /top-departments =====
 interface Department {
   department_key: string;
-  total_clicks: number;
-  student_name: string
-  student_id: number
+  total_clicks: string;
+  student_name: string;
+  student_id: string;
 }
-
-
 
 export default function Popcar() {
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -293,7 +291,7 @@ export default function Popcar() {
                       <div className="font-bold text-[16px] mb-4 leading-tight text-slate-800 whitespace-normal line-clamp-2">
                         {enrichedDepartments[1]?.name}
                       </div>
-                    
+
                       {/* Student Tag */}
                       <div className="text-[14px] text-left  text-white bg-slate-600 rounded px-1 py-0.5 mt-1 truncate">
                         <p className=" truncate">N : {enrichedDepartments[1]?.student_name}</p>
@@ -324,7 +322,7 @@ export default function Popcar() {
                       <div className="font-black text-[16px] mb-4 leading-tight text-amber-950 whitespace-normal line-clamp-2">
                         {enrichedDepartments[0]?.name}
                       </div>
-                      
+
                       {/* Student Tag */}
                       <div className="text-[14px] text-left  text-white bg-yellow-700 rounded px-1 py-0.5 mt-1 truncate border border-yellow-300">
                         <p className=" truncate">N : {enrichedDepartments[0]?.student_name}</p>
