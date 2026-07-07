@@ -34,9 +34,9 @@ export default function AdminControlPanel() {
   };
 
   // ดึงรายการโพสต์ทั้งหมด
-  const fetchPosts = async () => {
+  const fetchPosts = async (isInitial = false) => {
     try {
-      setLoading(true);
+      if (isInitial) setLoading(true);
       const res = await fetch(`${post}/ig_my/select-ig?t=${Date.now()}`);
       const result = await res.json();
       if (result.success && result.data) {
@@ -45,7 +45,7 @@ export default function AdminControlPanel() {
     } catch (err) {
       console.error("Failed to load posts", err);
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
     }
   };
 
@@ -63,7 +63,7 @@ export default function AdminControlPanel() {
       if (result.success) {
         alert("ลบข้อมูลสำเร็จแล้ว!");
         // โหลดข้อมูลล่าสุดมาอัปเดต UI
-        fetchPosts();
+        fetchPosts(false);
       } else {
         alert(`เกิดข้อผิดพลาด: ${result.message}`);
       }
@@ -76,7 +76,15 @@ export default function AdminControlPanel() {
   };
 
   useEffect(() => {
-    fetchPosts();
+    // โหลดครั้งแรกสุดพร้อมแสดงตัวหมุนโหลด
+    fetchPosts(true);
+
+    // ทำการดึงข้อมูลอัปเดตแบบเงียบๆ เบื้องหลัง (Silent Polling) ทุกๆ 3 วินาที เพื่อให้ขึ้นข้อมูลใหม่เรียลไทม์
+    const interval = setInterval(() => {
+      fetchPosts(false);
+    }, 3000);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -90,7 +98,7 @@ export default function AdminControlPanel() {
           <p className="text-slate-400 text-sm mt-1">คัดกรองและลบโพสต์ IG ที่ไม่เหมาะสมสำหรับจอใหญ่มหาวิทยาลัย</p>
         </div>
         <button
-          onClick={fetchPosts}
+          onClick={() => fetchPosts(true)}
           disabled={loading}
           className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-sm font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
