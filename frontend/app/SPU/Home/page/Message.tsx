@@ -60,6 +60,26 @@ const fetchQaData = async () => {
             hour12: false
         }).format(date);
     };
+
+    // 🛠️ ปรับเปลี่ยนพาธและโดเมนรูปภาพให้ถูกต้องปลอดภัย 100%
+    const normalizeImageUrl = (url: string | null) => {
+        if (!url) return 'https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp';
+        
+        // แปลง URL ตัวเก่าที่เป็น Private Storage ให้ใช้ Public CDN แทน
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            if (url.includes('894df2ee46e1279e8499573d3c22949b.r2.cloudflarestorage.com/sup69')) {
+                return url.replace('https://894df2ee46e1279e8499573d3c22949b.r2.cloudflarestorage.com/sup69', 'https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev');
+            }
+            return url;
+        }
+        
+        // กรณีเป็นพาธสั้นๆ ใน R2
+        if (url.startsWith('Image69/') || url.startsWith('IG_Images/')) {
+            return `https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/${url}`;
+        }
+        
+        return url.startsWith('/') ? url : `/${url}`;
+    };
     return (
         // ตัวนอกสุด: ล็อกความสูงหน้าจอ และห้ามล้นออกนอกจอใหญ่
         <div className="w-full h-full md:flex hidden md:justify-end overflow-hidden pointer-events-none">
@@ -91,7 +111,7 @@ const fetchQaData = async () => {
                                         priority={true}
                                         quality={70}
                                         sizes="48px"
-                                        src={e.image_url ? e.image_url : 'https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp'}
+                                        src={normalizeImageUrl(e.image_url)}
                                         alt={e.student_name || "Student Profile"}
                                         className="object-cover"
                                     />
