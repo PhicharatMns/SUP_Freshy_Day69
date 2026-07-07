@@ -23,7 +23,7 @@ app.use('*', cors({
 
 app.options("*", cors());
 
-// ลงทะเบียนเส้นทางเดินระบบ (Endpoints)
+
 app.route('/Qafrom', qaRoutes);
 app.route('/ig_my', igMyRoutes);
 app.route('/popcar', popcatRoutes);
