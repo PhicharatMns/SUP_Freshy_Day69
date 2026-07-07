@@ -12,12 +12,11 @@
     "dotenv": "^17.4.2",
     "hono": "^4.12.27",
     "motion": "^12.42.2",
-    "pg": "^8.22.0",
+    "mysql2": "^3.22.5",
     "sharp": "^0.35.3"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
-    "@types/pg": "^8.20.0",
     "tsx": "^4.7.1",
     "typescript": "^5.8.3"
   }
