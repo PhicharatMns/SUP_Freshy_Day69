@@ -26,16 +26,18 @@ app.use('*', rateLimiter({
     keyGenerator: (c) => c.req.header('cf-connecting-ip') ?? // IP จริงจาก Cloudflare
         c.req.header('x-forwarded-for') ??
         'unknown',
-    message: { success: false, message: 'ส่งคำขอมากเกินไป กรุณารอสักครู่แล้วลองใหม่' }
+    message: { success: false, message: 'ส่งคำขอมากเกินไป กรุณารอสักครู่แล้วลองใหม่' },
+    skip: (c) => c.req.header('x-bypass-limit') === 'true' // 🔑 แนบ header ลับเพื่อ bypass สำหรับ load test
 }));
-// จำกัด: POST (ส่งข้อมูล/อัปโหลด) 20 ครั้ง/นาที ต่อ IP
+// จำกัด: POST (ส่งข้อมูล/อัปโหลด) 20 ครั้ง/นาที  IP
 app.use('*/Qafrom', rateLimiter({
     windowMs: 60 * 1000,
     limit: 20,
     keyGenerator: (c) => c.req.header('cf-connecting-ip') ??
         c.req.header('x-forwarded-for') ??
         'unknown',
-    message: { success: false, message: 'ส่งฟอร์มมากเกินไป กรุณารอสักครู่แล้วลองใหม่' }
+    message: { success: false, message: 'ส่งฟอร์มมากเกินไป กรุณารอสักครู่แล้วลองใหม่' },
+    skip: (c) => c.req.header('x-bypass-limit') === 'true' // 🔑 แนบ header ลับเพื่อ bypass สำหรับ load test
 }));
 app.get('/', (c) => c.json({ message: 'API is running' }));
 app.route('/Qafrom', qaRoutes);
