@@ -14,7 +14,7 @@ interface IGData {
 }
 
 // 🔐 รหัสผ่านเข้าใช้งาน (สามารถแก้ไขตรงนี้ได้ตามต้องการ)
-const ADMIN_PASSWORD = "spu69admin";
+const ADMIN_PASSWORD = "beerfolklifthomas";
 
 export default function AdminControlPanel() {
   const [data, setData] = useState<IGData[]>([]);
