@@ -1,13 +1,10 @@
-import { Hono } from "hono";
-import { pool } from "../DB/DB.js";
+import { Context } from "hono";
+import { prisma } from "../config/database.js";
 import { uploadToR2 } from "../utils/r2.js";
 import sharp from 'sharp';
 
-const Qa = new Hono();
-
-Qa.post('/Qafrom', async (c) => {
+export const submitQa = async (c: Context) => {
     try {
-        // 💡 เปลี่ยนจาก c.req.parseBody() มาใช้ c.req.formData() แทน เพื่อป้องกันอาการค้าง
         const formData = await c.req.formData();
 
         const studentName = formData.get('studentName') as string;
@@ -22,11 +19,9 @@ Qa.post('/Qafrom', async (c) => {
 
         // ตรวจสอบโครงสร้างไฟล์ภาพ
         if (imageFile && imageFile.size > 0) {
-
             const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.webp`;
             const filePath = `Image69/${fileName}`;
 
-            // ดึง ArrayBuffer ออกมาแปลงเป็น Buffer ส่งให้ sharp ทำงาน
             const arrayBuffer = await imageFile.arrayBuffer();
             const inputBuffer = Buffer.from(arrayBuffer);
 
@@ -43,36 +38,36 @@ Qa.post('/Qafrom', async (c) => {
             }
         }
 
-        // บันทึกเข้า MySQL
-        const queryText = `
-            INSERT INTO quotes (student_name, feeling_text, image_url) 
-            VALUES (?, ?, ?);
-        `;
-        const values = [studentName, feelingText, uploadedImageUrl];
-        const [insertResult]: any = await pool.query(queryText, values);
+        // บันทึกเข้า MySQL ผ่าน Prisma
+        const quote = await prisma.quotes.create({
+            data: {
+                student_name: studentName,
+                feeling_text: feelingText,
+                image_url: uploadedImageUrl
+            }
+        });
 
         return c.json({
             success: true,
             message: "บันทึกข้อมูลและแปลงรูปภาพเป็น WebP สำเร็จเรียบร้อย!",
-            data: { id: insertResult.insertId, imageUrl: uploadedImageUrl }
+            data: { id: quote.id, imageUrl: uploadedImageUrl }
         }, 201);
 
     } catch (error) {
         console.error("❌ Server Error:", error);
         return c.json({ success: false, message: "เกิดข้อผิดพลาดภายในระบบหลังบ้าน" }, 500);
     }
-});
+};
 
-Qa.get('/select-qa', async (c) => {
+export const getQa = async (c: Context) => {
     try {
-        const sql = `
-        SELECT id, student_name, feeling_text, image_url, created_at
-        FROM quotes 
-        ORDER BY id DESC
-        LIMIT 25;
-        `
+        const rows = await prisma.quotes.findMany({
+            orderBy: {
+                id: 'desc'
+            },
+            take: 25
+        });
 
-        const [rows]: any = await pool.query(sql)
         return c.json({
             success: true,
             message: "ดึงข้อมูลคำถามสำเร็จ",
@@ -85,7 +80,4 @@ Qa.get('/select-qa', async (c) => {
             message: "เกิดข้อผิดพลาดในการดึงข้อมูลจากเซิร์ฟเวอร์"
         }, 500);
     }
-
-})
-
-export default Qa;
+};

@@ -1,14 +1,11 @@
-import { Hono } from "hono";
-import { prisma } from "../DB/DB.js";
+import { Context } from "hono";
+import { prisma } from "../config/database.js";
 import { uploadToR2 } from "../utils/r2.js";
 import sharp from 'sharp';
-const ig_my = new Hono();
-// 1. Route สำหรับบันทึกข้อมูลตารางใหม่ (POST)
-ig_my.post('/insert-ig', async (c) => {
+export const insertIg = async (c) => {
     try {
         const formData = await c.req.formData();
         const imageFile = formData.get('image');
-        // Validation เบื้องต้น (เช็กว่ากรอกข้อมูลจำเป็นครบไหม)
         const name = String(formData.get("name") || "");
         const quoteText = String(formData.get("quoteText") || "");
         const igAccount = String(formData.get("igAccount") || "");
@@ -20,21 +17,17 @@ ig_my.post('/insert-ig', async (c) => {
             }, 400);
         }
         let uploadedImageUrl = null;
-        // ตรวจสอบและจัดการไฟล์รูปภาพ
         if (imageFile && imageFile.size > 0) {
-            // เช็กประเภทไฟล์เพื่อความปลอดภัย
             if (!imageFile.type.startsWith('image/')) {
                 return c.json({ success: false, message: "กรุณาอัปโหลดไฟล์รูปภาพที่ถูกต้อง" }, 400);
             }
             const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.webp`;
-            const filePath = `IG_Images/${fileName}`; // แยก Folder ใน Bucket ให้ชัดเจน
-            // แปลงไฟล์เป็น WebP คุณภาพ 60% ด้วย sharp
+            const filePath = `IG_Images/${fileName}`;
             const arrayBuffer = await imageFile.arrayBuffer();
             const inputBuffer = Buffer.from(arrayBuffer);
             const webpBuffer = await sharp(inputBuffer)
                 .webp({ quality: 60 })
                 .toBuffer();
-            // อัปโหลดเข้า Cloudflare R2 Storage
             try {
                 uploadedImageUrl = await uploadToR2(filePath, webpBuffer, 'image/webp');
             }
@@ -43,7 +36,6 @@ ig_my.post('/insert-ig', async (c) => {
                 return c.json({ success: false, message: "ไม่สามารถอัปโหลดรูปภาพได้" }, 500);
             }
         }
-        // บันทึกเข้า MySQL ผ่าน Prisma
         const quote = await prisma.ig_quotes.create({
             data: {
                 name,
@@ -63,8 +55,8 @@ ig_my.post('/insert-ig', async (c) => {
         console.error("❌ Server Error (ig_my):", error);
         return c.json({ success: false, message: "เกิดข้อผิดพลาดภายในระบบหลังบ้าน" }, 500);
     }
-});
-ig_my.get('/select-ig', async (c) => {
+};
+export const selectIg = async (c) => {
     try {
         const rows = await prisma.ig_quotes.findMany({
             orderBy: {
@@ -85,8 +77,8 @@ ig_my.get('/select-ig', async (c) => {
             message: "เกิดข้อผิดพลาดในการดึงข้อมูลจากเซิร์ฟเวอร์"
         }, 500);
     }
-});
-ig_my.get('/next-popup', async (c) => {
+};
+export const nextPopup = async (c) => {
     try {
         const item = await prisma.ig_quotes.findFirst({
             where: {
@@ -122,5 +114,4 @@ ig_my.get('/next-popup', async (c) => {
             message: 'Server Error'
         }, 500);
     }
-});
-export default ig_my;
+};

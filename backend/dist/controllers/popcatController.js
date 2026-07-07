@@ -1,17 +1,11 @@
-import { Hono } from "hono";
-import { prisma } from "../DB/DB.js";
-// แก้ไขปัญหา BigInt Serialization ของ JSON ใน JS/TS
-BigInt.prototype.toJSON = function () {
-    return this.toString();
-};
-const popcar = new Hono();
-// ดึงคะแนนทุกคณะ
-popcar.get("/scores", async (c) => {
+import { Context } from "hono";
+import { prisma } from "../config/database.js";
+export const getScores = async (c) => {
     try {
         const rows = await prisma.departments_score.findMany({
             orderBy: {
-                total_clicks: "desc",
-            },
+                total_clicks: 'desc'
+            }
         });
         return c.json({
             status: true,
@@ -25,15 +19,14 @@ popcar.get("/scores", async (c) => {
             message: "Server Error",
         }, 500);
     }
-});
-// ดึงคะแนนคณะเดียว
-popcar.get("/score/:departmentKey", async (c) => {
+};
+export const getScoreByDepartment = async (c) => {
     try {
         const departmentKey = c.req.param("departmentKey");
         const rows = await prisma.departments_score.findMany({
             where: {
-                department_key: departmentKey,
-            },
+                department_key: departmentKey
+            }
         });
         if (rows.length === 0) {
             return c.json({
@@ -53,8 +46,8 @@ popcar.get("/score/:departmentKey", async (c) => {
             message: "Server Error",
         }, 500);
     }
-});
-popcar.post("/click", async (c) => {
+};
+export const click = async (c) => {
     try {
         const { departmentKey } = await c.req.json();
         if (!departmentKey) {
@@ -65,14 +58,14 @@ popcar.post("/click", async (c) => {
         }
         const updated = await prisma.departments_score.update({
             where: {
-                department_key: departmentKey,
+                department_key: departmentKey
             },
             data: {
                 total_clicks: {
-                    increment: 1,
+                    increment: 1
                 },
-                updated_at: new Date(),
-            },
+                updated_at: new Date()
+            }
         });
         return c.json({
             status: true,
@@ -86,8 +79,8 @@ popcar.post("/click", async (c) => {
             message: "Server Error",
         }, 500);
     }
-});
-popcar.post("/click-bulk", async (c) => {
+};
+export const clickBulk = async (c) => {
     try {
         const { departmentKey, count } = await c.req.json();
         if (!departmentKey || !count) {
@@ -98,14 +91,14 @@ popcar.post("/click-bulk", async (c) => {
         }
         const updated = await prisma.departments_score.update({
             where: {
-                department_key: departmentKey,
+                department_key: departmentKey
             },
             data: {
                 total_clicks: {
-                    increment: BigInt(count),
+                    increment: BigInt(count)
                 },
-                updated_at: new Date(),
-            },
+                updated_at: new Date()
+            }
         });
         return c.json({
             status: true,
@@ -119,10 +112,10 @@ popcar.post("/click-bulk", async (c) => {
             message: "Server Error",
         }, 500);
     }
-});
-popcar.post("/register", async (c) => {
+};
+export const registerUser = async (c) => {
     try {
-        const { studentId, studentName } = await c.req.json();
+        const { studentId, studentName, } = await c.req.json();
         if (!studentId || !studentName) {
             return c.json({
                 status: false,
@@ -131,15 +124,15 @@ popcar.post("/register", async (c) => {
         }
         const user = await prisma.popcat_users.upsert({
             where: {
-                student_id: studentId,
+                student_id: studentId
             },
             update: {
-                student_name: studentName,
+                student_name: studentName
             },
             create: {
                 student_id: studentId,
-                student_name: studentName,
-            },
+                student_name: studentName
+            }
         });
         return c.json({
             status: true,
@@ -153,23 +146,21 @@ popcar.post("/register", async (c) => {
             message: "Server Error",
         }, 500);
     }
-});
-popcar.post("/click-bulk-user", async (c) => {
+};
+export const clickBulkUser = async (c) => {
     try {
         const body = await c.req.json();
         const { departmentKey, count, studentId } = body;
-        // validate
         if (!departmentKey || !count || !studentId) {
             return c.json({
                 status: false,
                 message: "departmentKey, count and studentId required",
             }, 400);
         }
-        // 1. get user
         const user = await prisma.popcat_users.findUnique({
             where: {
-                student_id: studentId,
-            },
+                student_id: studentId
+            }
         });
         if (!user) {
             return c.json({
@@ -177,27 +168,26 @@ popcar.post("/click-bulk-user", async (c) => {
                 message: "User not found",
             }, 404);
         }
-        // 2. insert / update player using upsert
         const player = await prisma.popcat_players.upsert({
             where: {
                 student_id_department_key: {
                     student_id: user.student_id,
-                    department_key: departmentKey,
-                },
+                    department_key: departmentKey
+                }
             },
             update: {
                 student_name: user.student_name,
                 total_clicks: {
-                    increment: BigInt(count),
+                    increment: BigInt(count)
                 },
-                updated_at: new Date(),
+                updated_at: new Date()
             },
             create: {
                 student_id: user.student_id,
                 student_name: user.student_name,
                 department_key: departmentKey,
-                total_clicks: BigInt(count),
-            },
+                total_clicks: BigInt(count)
+            }
         });
         return c.json({
             status: true,
@@ -211,8 +201,8 @@ popcar.post("/click-bulk-user", async (c) => {
             message: "Server Error",
         }, 500);
     }
-});
-popcar.get("/top-departments", async (c) => {
+};
+export const getTopDepartments = async (c) => {
     try {
         const rows = await prisma.$queryRaw `
       SELECT student_id, student_name, department_key, total_clicks, updated_at
@@ -241,5 +231,4 @@ popcar.get("/top-departments", async (c) => {
             message: "Server Error",
         }, 500);
     }
-});
-export default popcar;
+};

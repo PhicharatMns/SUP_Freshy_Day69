@@ -1,11 +1,9 @@
-import { Hono } from "hono";
-import { prisma } from "../DB/DB.js";
+import { Context } from "hono";
+import { prisma } from "../config/database.js";
 import { uploadToR2 } from "../utils/r2.js";
 import sharp from 'sharp';
-const Qa = new Hono();
-Qa.post('/Qafrom', async (c) => {
+export const submitQa = async (c) => {
     try {
-        // 💡 เปลี่ยนจาก c.req.parseBody() มาใช้ c.req.formData() แทน เพื่อป้องกันอาการค้าง
         const formData = await c.req.formData();
         const studentName = formData.get('studentName');
         const feelingText = formData.get('feelingText');
@@ -18,7 +16,6 @@ Qa.post('/Qafrom', async (c) => {
         if (imageFile && imageFile.size > 0) {
             const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.webp`;
             const filePath = `Image69/${fileName}`;
-            // ดึง ArrayBuffer ออกมาแปลงเป็น Buffer ส่งให้ sharp ทำงาน
             const arrayBuffer = await imageFile.arrayBuffer();
             const inputBuffer = Buffer.from(arrayBuffer);
             const webpBuffer = await sharp(inputBuffer)
@@ -51,8 +48,8 @@ Qa.post('/Qafrom', async (c) => {
         console.error("❌ Server Error:", error);
         return c.json({ success: false, message: "เกิดข้อผิดพลาดภายในระบบหลังบ้าน" }, 500);
     }
-});
-Qa.get('/select-qa', async (c) => {
+};
+export const getQa = async (c) => {
     try {
         const rows = await prisma.quotes.findMany({
             orderBy: {
@@ -72,5 +69,4 @@ Qa.get('/select-qa', async (c) => {
             message: "เกิดข้อผิดพลาดในการดึงข้อมูลจากเซิร์ฟเวอร์"
         }, 500);
     }
-});
-export default Qa;
+};

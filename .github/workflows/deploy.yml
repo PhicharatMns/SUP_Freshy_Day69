@@ -30,6 +30,7 @@ jobs:
             # 3. จัดการ Backend
             cd backend
             npm install
+            npx prisma generate
             npm run build
             pm2 restart backend || pm2 start dist/index.js --name "backend"
 
