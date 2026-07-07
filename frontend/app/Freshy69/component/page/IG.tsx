@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import axios from "axios";
 import { post } from "@/app/Post";
 import Image from "next/image";
+import { DEPARTMENTS_CONFIG } from "@/app/games/pop-cat/page";
 
 interface propsMyslt {
     setpoup: React.Dispatch<SetStateAction<propspopup>>;
@@ -18,6 +19,7 @@ export default function IG({ setpoup }: propsMyslt) {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false); // 👈 เพิ่ม State สำหรับจัดการการ Loading
+    const [selectedDept, setSelectedDept] = useState("digital-media");
 
     const clearpopup = () => setpoup(prev => ({
         ...prev,
@@ -73,43 +75,46 @@ export default function IG({ setpoup }: propsMyslt) {
         }
     };
 
-  const handleSubmit = async () => {
-    if (!introText.trim() || !feelingText.trim()) {
-        alert("กรุณากรอก IG และความในใจ");
-        return;
-    }
-
-    setIsLoading(true);
-
-    const formData = new FormData();
-    formData.append("name", "");
-    formData.append("igAccount", introText.trim());
-    formData.append("quoteText", feelingText.trim());
-
-    if (imageFile) {
-        try {
-            // บีบอัดรูปถ่ายให้เล็กก่อนยิงไปหา Host
-            const resizedBlob = await resizeImage(imageFile);
-            formData.append("image", resizedBlob, imageFile.name || "upload.jpg");
-        } catch (err) {
-            console.error("Resize error:", err);
-            alert("เกิดข้อผิดพลาดในการประมวลผลรูปภาพ");
-            setIsLoading(false);
+    const handleSubmit = async () => {
+        if (!introText.trim() || !feelingText.trim()) {
+            alert("กรุณากรอก IG และความในใจ");
             return;
         }
-    }
 
-    try {
-        const response = await axios.post(`${post}/ig_my/insert-ig`, formData);
-        if (response.data.success) {
-            clearpopup();
+        setIsLoading(true);
+
+        const formData = new FormData();
+
+        formData.append("name", "");
+        formData.append("igAccount", introText.trim());
+        formData.append("quoteText", feelingText.trim());
+        formData.append("type",DEPARTMENTS_CONFIG[selectedDept].name);
+
+
+        if (imageFile) {
+            try {
+                // บีบอัดรูปถ่ายให้เล็กก่อนยิงไปหา Host
+                const resizedBlob = await resizeImage(imageFile);
+                formData.append("image", resizedBlob, imageFile.name || "upload.jpg");
+            } catch (err) {
+                console.error("Resize error:", err);
+                alert("เกิดข้อผิดพลาดในการประมวลผลรูปภาพ");
+                setIsLoading(false);
+                return;
+            }
         }
-    } catch (error: any) {
-        alert(error.response?.data?.message || "ส่งข้อมูลไม่สำเร็จ");
-    } finally {
-        setIsLoading(false);
-    }
-};
+
+        try {
+            const response = await axios.post(`${post}/ig_my/insert-ig`, formData);
+            if (response.data.success) {
+                clearpopup();
+            }
+        } catch (error: any) {
+            alert(error.response?.data?.message || "ส่งข้อมูลไม่สำเร็จ");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <motion.div
@@ -185,6 +190,32 @@ export default function IG({ setpoup }: propsMyslt) {
                         </div>
 
                         <div className="flex flex-col gap-5 pt-6 w-full">
+
+                            <div className="flex flex-col gap-2 w-full max-w-md">
+                                <label className="text-sm font-medium text-gray-700 pl-1 tracking-wide">
+                                    เลือกคณะ หรือ วิทยาลัย
+                                </label>
+                                <div className="relative">
+                                    <select
+                                        value={selectedDept}
+                                        onChange={(e) => setSelectedDept(e.target.value)}
+                                        className="w-full bg-slate-50 border border-gray-300 rounded-xl p-3 pr-10 text-gray-800 text-sm appearance-none transition-all duration-200 cursor-pointer  placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 shadow-sm"
+                                    >
+                                        {Object.entries(DEPARTMENTS_CONFIG).map(([key, dept]) => (
+                                            <option key={key} value={key} className="text-gray-700">
+                                                {dept.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {/* ไอคอนลูกศรชี้ลงแบบ Custom (เรียบหรูขึ้น) */}
+                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500">
+                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* ช่อง IG */}
                             <div className="flex flex-col gap-2">
                                 <div className="flex gap-1 items-center justify-between pr-1">

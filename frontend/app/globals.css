@@ -19,3 +19,30 @@
         100% { transform: translateY(-135vh) translateX(0); }
     }
 }
+
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Firefox */
+html {
+  scrollbar-width: none;
+}
+
+/* IE, Edge รุ่นเก่า */
+body {
+  -ms-overflow-style: none;
+}
+
+html,
+body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
