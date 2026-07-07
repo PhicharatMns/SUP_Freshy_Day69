@@ -34,6 +34,17 @@ export default function IG({ setpoup }: propsMyslt) {
         myopenpopypIG: false
     }));
 
+    // 📱 สร้าง / ดึง Device ID จาก localStorage เพื่อใช้แทน IP ใน Rate Limit
+    const getOrCreateDeviceId = (): string => {
+        const key = 'spu69_device_id';
+        let id = localStorage.getItem(key);
+        if (!id) {
+            id = crypto.randomUUID();
+            localStorage.setItem(key, id);
+        }
+        return id;
+    };
+
     const resizeImage = (file: File, maxWidth = 1024, maxHeight = 1024): Promise<Blob> => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -157,7 +168,10 @@ export default function IG({ setpoup }: propsMyslt) {
         }
 
         try {
-            const response = await axios.post(`${post}/ig_my/insert-ig`, formData);
+            const deviceId = getOrCreateDeviceId();
+            const response = await axios.post(`${post}/ig_my/insert-ig`, formData, {
+                headers: { 'x-device-id': deviceId } // 👈 ส่ง Device ID แทน IP เพื่อไม่ติด NAT
+            });
             if (response.data.success) {
                 clearpopup();
             }
