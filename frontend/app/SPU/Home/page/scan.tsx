@@ -180,8 +180,8 @@ export default function Scan() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
             >
-              {current.name || ""}
-              {current.ig_account || ""}
+                {current.name || ""}
+                {current.ig_account || ""}
             </motion.h1>
 
             <motion.p

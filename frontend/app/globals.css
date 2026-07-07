@@ -7,7 +7,9 @@
 .font-luckiest-guy {
   font-family: var(--font-luckiest-guy, "Luckiest Guy", cursive);
 }
-
+@theme {
+  --animate-spin-slow: spin 4s linear infinite;
+}
 @layer utilities {
     @keyframes floatBubble {
         0% { transform: translateY(0) translateX(0); }
