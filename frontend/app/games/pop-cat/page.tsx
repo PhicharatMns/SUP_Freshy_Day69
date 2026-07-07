@@ -964,6 +964,7 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { post } from "@/app/Post";
 import Link from "next/link";
+import PopClose from "../pop-close/page";
 
 interface Bubble {
   color: string;
@@ -1249,6 +1250,8 @@ export default function PopCatGamePage() {
   const [isDropdownOpen, setIsDropdownOpen] =
     useState(false);
 
+  const [isGameOpen, setIsGameOpen] = useState<boolean | null>(null);
+
   const dropdownRef =
     useRef<HTMLDivElement>(null);
 
@@ -1285,9 +1288,51 @@ export default function PopCatGamePage() {
   }, []);
 
   /* =========================
+     load control state
+  ========================= */
+  useEffect(() => {
+    let isActive = true;
+
+    const fetchControlState = async () => {
+      try {
+        const res = await fetch(`${post}/apinext/control`, {
+          cache: "no-store",
+        });
+        const json = await res.json();
+
+        if (!isActive) return;
+
+        if (json?.success && json?.data?.type !== undefined) {
+          setIsGameOpen(Boolean(json.data.type));
+        } else {
+          setIsGameOpen(false);
+        }
+      } catch (err) {
+        console.error("Failed to load popcat control state", err);
+        if (isActive) {
+          setIsGameOpen(false);
+        }
+      }
+    };
+
+    void fetchControlState();
+
+    const interval = window.setInterval(() => {
+      void fetchControlState();
+    }, 10000);
+
+    return () => {
+      isActive = false;
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  /* =========================
      load scores
   ========================= */
   useEffect(() => {
+    if (isGameOpen !== true) return;
+
     const loadScores = async () => {
       try {
         const res = await fetch(`${post}/popcar/scores`);
@@ -1309,12 +1354,14 @@ export default function PopCatGamePage() {
     };
 
     loadScores();
-  }, []);
+  }, [isGameOpen]);
 
   /* =========================
      click handler (NO API CALL)
   ========================= */
   const handlePress = () => {
+    if (isGameOpen !== true) return;
+
     setIsMouthOpen(true);
     setIsBouncing(true);
     setBurstKey((k) => k + 1);
@@ -1362,7 +1409,7 @@ export default function PopCatGamePage() {
 
 
   const flushClicks = async () => {
-    if (isFlushing.current) return;
+    if (isFlushing.current || isGameOpen !== true) return;
 
     const entries = Object.entries(
       pendingClicks.current
@@ -1405,12 +1452,14 @@ export default function PopCatGamePage() {
      flush every 30 seconds
   ========================= */
   useEffect(() => {
+    if (isGameOpen !== true) return;
+
     const interval = setInterval(() => {
       flushClicks();
     }, 15000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isGameOpen]);
 
   const currentDept =
     DEPARTMENTS_CONFIG[selectedDeptId] ??
@@ -1420,6 +1469,8 @@ export default function PopCatGamePage() {
      send last data before close
   ========================= */
   useEffect(() => {
+    if (isGameOpen !== true) return;
+
     const handleBeforeUnload = () => {
       const data = JSON.stringify(pendingClicks.current);
 
@@ -1434,7 +1485,7 @@ export default function PopCatGamePage() {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, []);
+  }, [isGameOpen]);
 
   const departmentsKeys =
     Object.keys(DEPARTMENTS_CONFIG);
@@ -1465,6 +1516,27 @@ export default function PopCatGamePage() {
     setBubbles(generatedBubbles);
   }, []);
 
+
+  if (isGameOpen === false) {
+    return <PopClose />;
+  }
+
+  if (isGameOpen === null) {
+    return (
+      <main
+        className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden font-body"
+        style={{ backgroundColor: PAPER, color: INK }}
+      >
+        <div className="rounded-3xl border-4 px-6 py-8 text-center shadow-[8px_8px_0_0_rgba(32,26,20,0.25)]"
+          style={{ backgroundColor: PAPER_LIGHT, borderColor: INK }}>
+          <p className="font-display text-2xl">กำลังเชื่อมสถานะเกม...</p>
+          <p className="mt-2 text-sm" style={{ color: "rgba(32,26,20,0.65)" }}>
+            กรุณารอสักครู่
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main

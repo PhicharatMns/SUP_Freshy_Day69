@@ -30,6 +30,9 @@ export default function AdminControlPanel() {
   const [qaData, setQaData] = useState<QaData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [gameEnabled, setGameEnabled] = useState<boolean>(false);
+  const [showScoreboard, setShowScoreboard] = useState<boolean>(false);
+  const [controlBusy, setControlBusy] = useState<boolean>(false);
 
   // สิทธิ์การเข้าใช้งานหน้าเว็บ
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -110,6 +113,57 @@ export default function AdminControlPanel() {
     }
   };
 
+  const fetchControlState = async () => {
+    try {
+      const res = await fetch(`${post}/apinext/control`, {
+        cache: "no-store",
+      });
+      const result = await res.json();
+
+      if (result?.success && result?.data) {
+        if (typeof result.data.type === "boolean") {
+          setGameEnabled(Boolean(result.data.type));
+        }
+        if (typeof result.data.popcar === "boolean") {
+          setShowScoreboard(Boolean(result.data.popcar));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load control state", err);
+    }
+  };
+
+  const handleControlToggle = async (field: "type" | "popcar", nextValue: boolean) => {
+    setControlBusy(true);
+    try {
+      const payload =
+        field === "type"
+          ? { type: nextValue, popcar: showScoreboard }
+          : { type: gameEnabled, popcar: nextValue };
+
+      const res = await fetch(`${post}/apinext/control`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await res.json();
+
+      if (result?.success && result?.data) {
+        if (typeof result.data.type === "boolean") {
+          setGameEnabled(Boolean(result.data.type));
+        }
+        if (typeof result.data.popcar === "boolean") {
+          setShowScoreboard(Boolean(result.data.popcar));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to update control state", err);
+      alert("ไม่สามารถอัปเดตสถานะควบคุมได้ในขณะนี้");
+    } finally {
+      setControlBusy(false);
+    }
+  };
+
   // ฟังก์ชันกดยืนยันรหัสผ่านเข้าหน้าเว็บ
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,11 +188,14 @@ export default function AdminControlPanel() {
   useEffect(() => {
     if (!isAuthenticated) return;
 
+    void fetchControlState();
+
     // โหลดครั้งแรกสุดพร้อมแสดงตัวหมุนโหลด
     fetchData(true);
 
     const interval = setInterval(() => {
       fetchData(false);
+      void fetchControlState();
     }, 2000);
 
     return () => clearInterval(interval);
@@ -219,6 +276,53 @@ export default function AdminControlPanel() {
               "🔄 รีเฟรชรายการ"
             )}
           </button>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto mb-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-5 shadow-[0_20px_45px_rgba(0,0,0,0.25)]">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h2 className="text-lg font-black text-white">🎮 ควบคุม Pop Cat</h2>
+            <p className="text-sm text-slate-400 mt-1">
+              เปิด/ปิดเกมและเปิด/ปิดการแสดง Scoreboard จากหน้าเดียวกัน
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 w-full lg:max-w-2xl">
+            <button
+              onClick={() => handleControlToggle("type", !gameEnabled)}
+              disabled={controlBusy}
+              className={`rounded-2xl border px-4 py-3 text-left transition-all ${
+                gameEnabled
+                  ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+                  : "border-rose-500/40 bg-rose-500/10 text-rose-300"
+              } ${controlBusy ? "opacity-60" : "hover:scale-[1.01]"}`}
+            >
+              <div className="text-xs font-semibold uppercase tracking-[0.2em] opacity-70">
+                {gameEnabled ? "เกมกำลังเปิด" : "เกมกำลังปิด"}
+              </div>
+              <div className="mt-1 text-sm font-bold">
+                {gameEnabled ? "ปิดเกม Pop Cat" : "เปิดเกม Pop Cat"}
+              </div>
+            </button>
+
+            <button
+              onClick={() => handleControlToggle("popcar", !showScoreboard)}
+              disabled={controlBusy}
+              className={`rounded-2xl border px-4 py-3 text-left transition-all ${
+                showScoreboard
+                  ? "border-sky-500/40 bg-sky-500/10 text-sky-300"
+                  : "border-slate-600 bg-slate-800/70 text-slate-300"
+              } ${controlBusy ? "opacity-60" : "hover:scale-[1.01]"}`}
+            >
+              <div className="text-xs font-semibold uppercase tracking-[0.2em] opacity-70">
+                {showScoreboard ? "Scoreboard แสดงอยู่" : "Scoreboard ถูกซ่อน"}
+              </div>
+              <div className="mt-1 text-sm font-bold">
+                {showScoreboard ? "ปิดการดู score" : "เปิดการดู score"}
+              </div>
+            </button>
+          </div>
         </div>
       </div>
 
