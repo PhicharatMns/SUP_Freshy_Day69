@@ -51,39 +51,6 @@ export const insertIg = async (c) => {
                 popup: true // ⚡ กำหนดเป็น true เพื่อให้ดึงขึ้นสไลด์จอใหญ่อัตโนมัติทันที
             }
         });
-        // 🚀 ส่งแจ้งเตือน Webhook เข้า Discord แบบ Real-time
-        const sendDiscordNotification = async () => {
-            const webhookUrl = "https://discord.com/api/webhooks/1524086511941849110/aVKQxaj0MvuNrsme8VBue2VBMv8K7d42LqJZti_J4S189_p3Z0F_4n9Y4Q8QVk9J4Zne";
-            const cleanIg = igAccount.replace("@", "").trim();
-            const igLink = `https://www.instagram.com/${cleanIg}`;
-            const payload = {
-                username: "Freshy IG Live Monitor",
-                embeds: [{
-                        title: "📸 มีน้องฝาก IG ใหม่และเตรียมขึ้นจอใหญ่!",
-                        color: 16711820, // สีชมพูไอจี
-                        fields: [
-                            { name: "👤 ชื่อ", value: name || "ไม่ระบุ", inline: true },
-                            { name: "คณะ", value: type || "ไม่ระบุ", inline: true },
-                            { name: "🔗 Instagram", value: `[${igAccount}](${igLink})`, inline: true },
-                            { name: "💬 ความในใจ / คำคม", value: quoteText || "-", inline: false }
-                        ],
-                        image: finalImageUrl ? { url: finalImageUrl } : undefined,
-                        footer: { text: "จัดการลบโพสต์ได้ที่: spu69.online/admin-secret-69" }
-                    }]
-            };
-            try {
-                await fetch(webhookUrl, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                });
-            }
-            catch (err) {
-                console.error("❌ Failed to send Discord Webhook:", err);
-            }
-        };
-        // สั่งให้ทำงานเบื้องหลังโดยไม่ต้องบล็อกการตอบกลับของ User
-        sendDiscordNotification();
         return c.json({
             success: true,
             message: "บันทึกข้อมูลตาราง IG และแปลงรูปภาพสำเร็จเรียบร้อย!",
