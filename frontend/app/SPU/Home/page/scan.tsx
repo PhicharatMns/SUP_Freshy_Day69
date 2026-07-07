@@ -13,6 +13,7 @@ interface IGData {
   image_url?: string;
   quote_text?: string;
   type?: string; // คณะ
+  created_at?: string;
 }
 
 interface ScanProps {
@@ -41,13 +42,23 @@ export default function Scan({ onActivePostChange }: ScanProps) {
       const res = await fetch(`${post}/ig_my/select-ig?t=${Date.now()}`);
       const result = await res.json();
       if (result.success && result.data) {
-        const fetchedPosts: IGData[] = result.data;
+        const rawPosts: IGData[] = result.data;
+        
+        // ⏱️ คัดกรองเอาเฉพาะโพสต์ที่มีอายุมากกว่า 5 วินาทีแล้วเท่านั้น สำหรับแสดงผลบนจอหลัก
+        const fetchedPosts = rawPosts.filter((p) => {
+          const createdAt = p.created_at ? new Date(p.created_at).getTime() : Date.now();
+          return Date.now() - createdAt >= 5000;
+        });
+
         setHistoryLoop(fetchedPosts);
+
+        // 🚨 CLEAR DELETED: หากแอดมินลบภาพไปแล้ว ให้กวาดล้างออกจากคิวที่กักเวลารออยู่ด้วย
+        setActiveQueue((prev) => prev.filter((p) => rawPosts.some((r) => r.id === p.id)));
 
         // 🚨 REAL-TIME CHECK: ตรวจสอบว่ารูปที่กำลังเปิดอยู่หน้าจอ ณ วินาทีนี้ โดนแอนิเมชันลบออกแล้วหรือยัง?
         setCurrent((prevCurrent) => {
           if (prevCurrent) {
-            const exists = fetchedPosts.some((p) => p.id === prevCurrent.id);
+            const exists = rawPosts.some((p) => p.id === prevCurrent.id);
             if (!exists) {
               // ถ้าไม่อยู่แล้ว แปลว่าโดนลบ ➔ ให้สั่งหมุนสไลด์เปลี่ยนเป็นรูปอื่นทันที!
               setTimeout(forceRotate, 50);
@@ -73,8 +84,15 @@ export default function Scan({ onActivePostChange }: ScanProps) {
         // ป้องกันการแอดซ้ำซ้อน
         if (!shownIds.current.has(newPost.id)) {
           shownIds.current.add(newPost.id);
-          // ใส่เข้าคิวใหม่ทันที
-          setActiveQueue((prev) => [...prev, newPost]);
+          
+          // ⏱️ หน่วงเวลารอ 5 วินาทีนับจากช่วงเวลาสร้างโพสต์ (Created At) ก่อนปล่อยให้ไหลเข้าจอใหญ่
+          const createdAt = newPost.created_at ? new Date(newPost.created_at).getTime() : Date.now();
+          const elapsed = Date.now() - createdAt;
+          const delayRemaining = Math.max(0, 5000 - elapsed);
+
+          setTimeout(() => {
+            setActiveQueue((prev) => [...prev, newPost]);
+          }, delayRemaining);
         }
       }
     } catch (err) {
