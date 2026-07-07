@@ -86,3 +86,32 @@ export const getQa = async (c: Context) => {
         }, 500);
     }
 };
+
+export const deleteQa = async (c: Context) => {
+    try {
+        const id = Number(c.req.param('id'));
+        if (!id) {
+            return c.json({ success: false, message: "ระบุ ID ไม่ถูกต้อง" }, 400);
+        }
+
+        // ลบข้อมูล Q&A ออกจากตาราง quotes
+        await prisma.quotes.delete({
+            where: {
+                id: id
+            }
+        });
+
+        return c.json({
+            success: true,
+            message: "ลบข้อความ Q&A เรียบร้อยแล้ว!"
+        }, 200);
+
+    } catch (error: any) {
+        console.error("❌ Delete Q&A Error:", error);
+        return c.json({
+            success: false,
+            message: "เกิดข้อผิดพลาดในการลบข้อมูล",
+            error: error.message
+        }, 500);
+    }
+};
