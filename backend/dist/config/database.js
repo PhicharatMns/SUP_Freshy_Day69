@@ -1,5 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import "dotenv/config";
+// 🇹🇭 โหลด Timezone จากไฟล์ .env (มี Default fallback เป็น Asia/Bangkok)
+process.env.TZ = process.env.TZ || "Asia/Bangkok";
 export const prisma = new PrismaClient();
 export const connectDB = async () => {
     try {
