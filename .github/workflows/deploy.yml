@@ -24,7 +24,8 @@ jobs:
             # 1. เข้าโฟลเดอร์โปรเจค (สมมติว่าไว้ที่ /var/www/spu69)
             cd /var/www/spu69 || { echo "Project directory not found, cloning..."; git clone https://github.com/PhicharatMns/SUP_Freshy_Day69.git /var/www/spu69 && cd /var/www/spu69; }
 
-            # 2. อัปเดตโค้ดล่าสุด
+            # 2. ล้างการเปลี่ยนแปลงชั่วคราวบนเซิร์ฟเวอร์ และอัปเดตโค้ดล่าสุด
+            git reset --hard
             git pull origin main
 
             # 3. จัดการ Backend
