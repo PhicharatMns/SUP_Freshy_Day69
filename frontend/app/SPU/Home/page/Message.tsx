@@ -33,8 +33,12 @@ export default function Message() {
         if (result.success && result.data) {
           // ⏱️ คัดกรองเอาเฉพาะข้อความ Q&A ที่มีอายุการส่งมากกว่า 5 วินาทีขึ้นไปเท่านั้น สำหรับแสดงจอใหญ่หลัก
           const filteredData = result.data.filter((q: QaData) => {
-            const createdAt = q.created_at ? new Date(q.created_at).getTime() : Date.now();
-            return Date.now() - createdAt >= 5000;
+            if (!q.created_at) return true;
+            const timeStr = q.created_at.replace(" ", "T");
+            const parsedTime = new Date(timeStr).getTime();
+            if (isNaN(parsedTime)) return true; // หากแยกแยะเวลาไม่ได้ ปล่อยผ่านทันที
+            
+            return Date.now() - parsedTime >= 5000;
           });
           setData(filteredData);
         }
@@ -63,6 +67,21 @@ export default function Message() {
       minute: "2-digit",
       hour12: false,
     }).format(date);
+  };
+
+  // 🛠️ ปรับเปลี่ยนพาธและโดเมนรูปภาพให้ถูกต้องปลอดภัย 100% (ป้องกันโดเมนซ้ำซ้อน)
+  const normalizeImageUrl = (url: string | null | undefined) => {
+    if (!url) return 'https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp';
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      if (url.includes('894df2ee46e1279e8499573d3c22949b.r2.cloudflarestorage.com/sup69')) {
+        return url.replace('https://894df2ee46e1279e8499573d3c22949b.r2.cloudflarestorage.com/sup69', 'https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev');
+      }
+      return url;
+    }
+    if (url.startsWith('Image69/') || url.startsWith('IG_Images/')) {
+      return `https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/${url}`;
+    }
+    return url.startsWith('/') ? url : `/${url}`;
   };
 
   return (
@@ -94,11 +113,7 @@ export default function Message() {
                     priority={true}
                     quality={70}
                     sizes="48px"
-                    src={
-                      e.image_url
-                        ? `https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/${e.image_url}`
-                        : "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/DEK69.webp"
-                    }
+                    src={normalizeImageUrl(e.image_url)}
                     alt={e.student_name || "Student Profile"}
                     className="object-cover"
                   />

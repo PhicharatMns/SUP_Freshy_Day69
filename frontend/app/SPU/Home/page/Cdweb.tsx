@@ -27,12 +27,14 @@ export default function Cdweb({ speed = "normal" }: CdwebProps) {
   const [pos, setPos] = useState({ x: 100, y: 100 });
   const [boxSize, setBoxSize] = useState(380); // ⚡ เก็บขนาดกล่อง QR Code เพื่อเอาไปวาดแบบไดนามิก
 
+  console.log("💿 [Cdweb เรนเดอร์] src:", src ? "มีข้อมูลภาพ QR" : "ว่างเปล่า", "ตำแหน่ง pos:", pos);
+
   const posRef = useRef({ x: 100, y: 100 });
   
   // ⚡ กำหนดระดับความเร็วในการเด้งชนขอบจอตามพารามิเตอร์ที่ส่งเข้ามา
   const velRef = useRef(
     speed === "slow" 
-      ? { vx: 0.4, vy: 0.2 } // ปรับให้ช้าพิเศษแบบเบาๆ สำหรับจอแคบแนวตั้ง
+      ? { vx: 1.4, vy: 0.9 } // ปรับให้ขยับว่องไวขึ้น เพื่อความสวยงามบนจอใหญ่
       : { vx: 2.2, vy: 1.8 }  // ความเร็วปกติสำหรับจอกลางใหญ่
   );
 
@@ -217,7 +219,6 @@ export default function Cdweb({ speed = "normal" }: CdwebProps) {
         <div className="flex items-center justify-center w-full max-w-[750x] -mt-6 sm:-mt-12 md:-mt-140 -mb-2 sm:-mb-6">
           <svg
             width="100%"
-            height="auto"
             viewBox="0 0 620 260"
             className="drop-shadow-2xl overflow-visible"
           >

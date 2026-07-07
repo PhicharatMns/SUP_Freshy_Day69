@@ -46,8 +46,13 @@ export default function Scan({ onActivePostChange }: ScanProps) {
         
         // ⏱️ คัดกรองเอาเฉพาะโพสต์ที่มีอายุมากกว่า 5 วินาทีแล้วเท่านั้น สำหรับแสดงผลบนจอหลัก
         const fetchedPosts = rawPosts.filter((p) => {
-          const createdAt = p.created_at ? new Date(p.created_at).getTime() : Date.now();
-          return Date.now() - createdAt >= 5000;
+          if (!p.created_at) return true;
+          // แปลงช่องว่างระหว่างวันที่และเวลาเป็น T เพื่อให้อ่านวันที่ใน JS ได้อย่างเสถียร
+          const timeStr = p.created_at.replace(" ", "T");
+          const parsedTime = new Date(timeStr).getTime();
+          if (isNaN(parsedTime)) return true; // หากแยกแยะเวลาไม่ได้ ปล่อยผ่านทันที
+          
+          return Date.now() - parsedTime >= 5000;
         });
 
         setHistoryLoop(fetchedPosts);
@@ -132,17 +137,9 @@ export default function Scan({ onActivePostChange }: ScanProps) {
 
           return remainingQueue;
         } else {
+          // 🚨 ไม่ต้องเล่นรูปเก่าวนซ้ำ: เมื่อไม่มีโพสต์ใหม่ในคิว ให้สลับกลับหน้า QR Code ทันที
           isDisplayingPriority.current = false;
-          setHistoryLoop((prevHistory) => {
-            if (prevHistory.length > 0) {
-              if (historyIndex.current >= prevHistory.length) {
-                historyIndex.current = 0;
-              }
-              setCurrent(prevHistory[historyIndex.current]);
-              historyIndex.current += 1;
-            }
-            return prevHistory;
-          });
+          setCurrent(null);
           return prevQueue;
         }
       });

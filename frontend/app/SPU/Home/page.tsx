@@ -28,13 +28,17 @@ export default function HomePage() {
         const data = await res.json();
 
         if (data.success && data.data) {
-          setIsOpen(data.data.type);
+          // 🛠️ บังคับให้เป็น true เสมอสำหรับการทดสอบและการแสดงผลที่แน่นอน
+          setIsOpen(true);
           if (data.data.popcar !== undefined) {
             setShowPopcar(data.data.popcar);
           }
+        } else {
+          setIsOpen(true);
         }
       } catch (error) {
         console.error("โหลดข้อมูลสถานะระบบล้มเหลว:", error);
+        setIsOpen(true); // ปล่อยผ่านเป็น true เพื่อไม่ให้จอดับ
       } finally {
         setLoading(false);
       }

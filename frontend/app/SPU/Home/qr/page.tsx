@@ -5,7 +5,7 @@ import Cdweb from "../page/Cdweb";
 
 export default function PortraitQRPage() {
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-slate-950">
+    <div className="relative w-full h-screen overflow-hidden bg-slate-300">
       
       {/* BK (ฉากหลังลายสติกเกอร์กราฟฟิตี้) */}
       <div className="absolute inset-0 z-0 opacity-80">
