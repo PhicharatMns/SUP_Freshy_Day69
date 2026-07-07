@@ -49,11 +49,8 @@ export default function AdminControlPanel() {
     }
   };
 
-  // ดำเนินการลบโพสต์
-  const handleDelete = async (id: number, name: string) => {
-    const confirmDelete = window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบโพสต์ของ "${name}" ออกจากหน้าจอถาวร?`);
-    if (!confirmDelete) return;
-
+  // ดำเนินการลบโพสต์ (กดคลิกเดียวลบทันทีไม่มีขัดจังหวะ)
+  const handleDelete = async (id: number) => {
     try {
       setDeletingId(id);
       const res = await fetch(`${post}/ig_my/delete-ig/${id}`, {
@@ -61,8 +58,7 @@ export default function AdminControlPanel() {
       });
       const result = await res.json();
       if (result.success) {
-        alert("ลบข้อมูลสำเร็จแล้ว!");
-        // โหลดข้อมูลล่าสุดมาอัปเดต UI
+        // โหลดข้อมูลล่าสุดมาอัปเดต UI ทันที
         fetchPosts(false);
       } else {
         alert(`เกิดข้อผิดพลาด: ${result.message}`);
@@ -162,7 +158,7 @@ export default function AdminControlPanel() {
 
                   {/* ปุ่มลบ */}
                   <button
-                    onClick={() => handleDelete(post.id, post.name)}
+                    onClick={() => handleDelete(post.id)}
                     disabled={deletingId === post.id}
                     className="w-full py-2.5 rounded-xl bg-red-600/90 hover:bg-red-500 text-white font-bold text-xs tracking-wider uppercase transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5"
                   >
