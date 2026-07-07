@@ -23,7 +23,7 @@ export default function HomePage() {
         const res = await fetch(`${post}/apinext/control`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
-          cache: "no-store" 
+          cache: "no-store",
         });
         const data = await res.json();
 
@@ -59,12 +59,11 @@ export default function HomePage() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      
       {/* 1. BK ฉากหลังสุด (z-0) */}
       <div className="absolute inset-0 z-0">
         <BK />
       </div>
-      
+
       {/* 2. กลุ่มหน้าหลัก (Message, QR Code, Scan Here) */}
       {isOpen && (
         <>
@@ -77,7 +76,6 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* Message (กล่องข้อความนักศึกษา) ให้อยู่สูงสุดในกลุ่มนี้ (z-20) */}
           <div className="absolute inset-0 z-20 pointer-events-none">
             <Message />
           </div>
@@ -97,7 +95,6 @@ export default function HomePage() {
           <Popcar />
         </div>
       )}
-
     </div>
   );
 }

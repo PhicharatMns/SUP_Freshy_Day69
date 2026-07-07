@@ -7,6 +7,7 @@ import axios from "axios";
 import { post } from "@/app/Post";
 import Image from "next/image";
 import { DEPARTMENTS_CONFIG } from "@/app/games/pop-cat/page";
+import Cropper from "react-easy-crop";
 
 interface propsMyslt {
     setpoup: React.Dispatch<SetStateAction<propspopup>>;
@@ -20,6 +21,13 @@ export default function IG({ setpoup }: propsMyslt) {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false); // 👈 เพิ่ม State สำหรับจัดการการ Loading
     const [selectedDept, setSelectedDept] = useState("digital-media");
+
+    // ⚡ สถานะตัวแปรสำหรับการครอปรูปภาพ 1:1
+    const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+    const [isCropping, setIsCropping] = useState(false);
 
     const clearpopup = () => setpoup(prev => ({
         ...prev,
@@ -70,8 +78,61 @@ export default function IG({ setpoup }: propsMyslt) {
     const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            setImageFile(file);
-            setImagePreview(URL.createObjectURL(file));
+            // ส่งลิงก์ชั่วคราวไปเปิดในโมดอลครอป
+            setTempImageSrc(URL.createObjectURL(file));
+        }
+    };
+
+    const onCropComplete = (croppedArea: any, croppedAreaPixels: any) => {
+        setCroppedAreaPixels(croppedAreaPixels);
+    };
+
+    const handleCropSave = async () => {
+        if (!tempImageSrc || !croppedAreaPixels) return;
+        setIsCropping(true);
+        try {
+            const image = new window.Image();
+            image.src = tempImageSrc;
+            await new Promise((resolve) => (image.onload = resolve));
+
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            if (!ctx) throw new Error("Canvas context is null");
+
+            // ⚡ บังคับครอบตัดและปรับขนาดเป็น 1:1 ขนาด 800px เพื่อความคมชัดสูงสุดบนจอใหญ่ และประหยัดแบนด์วิดท์
+            const targetSize = Math.min(800, croppedAreaPixels.width);
+            canvas.width = targetSize;
+            canvas.height = targetSize;
+
+            ctx.drawImage(
+                image,
+                croppedAreaPixels.x,
+                croppedAreaPixels.y,
+                croppedAreaPixels.width,
+                croppedAreaPixels.height,
+                0,
+                0,
+                targetSize,
+                targetSize
+            );
+
+            canvas.toBlob(
+                (blob) => {
+                    if (blob) {
+                        const file = new File([blob], "cropped_student.jpg", { type: "image/jpeg" });
+                        setImageFile(file);
+                        setImagePreview(URL.createObjectURL(blob));
+                        setTempImageSrc(null); // ปิดโมดอลครอป
+                    }
+                    setIsCropping(false);
+                },
+                "image/jpeg",
+                0.75
+            );
+        } catch (error) {
+            console.error("Cropping error:", error);
+            alert("ไม่สามารถครอบตัดรูปภาพได้");
+            setIsCropping(false);
         }
     };
 
@@ -88,20 +149,11 @@ export default function IG({ setpoup }: propsMyslt) {
         formData.append("name", "");
         formData.append("igAccount", introText.trim());
         formData.append("quoteText", feelingText.trim());
-        formData.append("type",DEPARTMENTS_CONFIG[selectedDept].name);
-
+        formData.append("type", DEPARTMENTS_CONFIG[selectedDept].name);
 
         if (imageFile) {
-            try {
-                // บีบอัดรูปถ่ายให้เล็กก่อนยิงไปหา Host
-                const resizedBlob = await resizeImage(imageFile);
-                formData.append("image", resizedBlob, imageFile.name || "upload.jpg");
-            } catch (err) {
-                console.error("Resize error:", err);
-                alert("เกิดข้อผิดพลาดในการประมวลผลรูปภาพ");
-                setIsLoading(false);
-                return;
-            }
+            // ไฟล์รูปได้รับการบีบอัดเป็น 1:1 (800x800px) ผ่าน Canvas เรียบร้อยแล้ว ยิงส่งได้ทันที
+            formData.append("image", imageFile, "upload.jpg");
         }
 
         try {
@@ -291,6 +343,65 @@ export default function IG({ setpoup }: propsMyslt) {
                     </motion.div>
                 </div>
             </motion.div>
+
+            {/* ⚡ โมดอลครอบรูปภาพ 1:1 แบบเต็มจอพรีเมียม */}
+            {tempImageSrc && (
+                <div className="fixed inset-0 bg-black/95 z-[9999] flex flex-col items-center justify-between p-6">
+                    <div className="w-full text-center text-white py-2 font-bold text-lg tracking-wide mt-4">
+                        ปรับแต่งตำแหน่งรูปภาพ (อัตราส่วน 1:1)
+                    </div>
+                    
+                    <div className="relative w-full h-[55vh] max-w-md bg-zinc-950 rounded-2xl overflow-hidden shadow-2xl border border-zinc-800">
+                        <Cropper
+                            image={tempImageSrc}
+                            crop={crop}
+                            zoom={zoom}
+                            aspect={1}
+                            onCropChange={setCrop}
+                            onZoomChange={setZoom}
+                            onCropComplete={onCropComplete}
+                        />
+                    </div>
+
+                    <div className="w-full max-w-md space-y-5 pb-8">
+                        <div className="flex items-center gap-4 text-white px-2">
+                            <span className="text-xs font-semibold tracking-wider text-zinc-400">ซูม:</span>
+                            <input
+                                type="range"
+                                min={1}
+                                max={3}
+                                step={0.05}
+                                value={zoom}
+                                onChange={(e) => setZoom(Number(e.target.value))}
+                                className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                            />
+                        </div>
+
+                        <div className="flex gap-4 w-full px-2">
+                            <button
+                                type="button"
+                                onClick={() => setTempImageSrc(null)}
+                                disabled={isCropping}
+                                className="flex-1 py-3.5 rounded-xl bg-zinc-800 text-white font-semibold cursor-pointer active:scale-95 transition-all text-sm hover:bg-zinc-700 disabled:opacity-50"
+                            >
+                                ยกเลิก
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleCropSave}
+                                disabled={isCropping}
+                                className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold cursor-pointer active:scale-95 transition-all text-sm hover:from-purple-500 hover:to-indigo-500 flex items-center justify-center gap-2"
+                            >
+                                {isCropping ? (
+                                    <span className="w-4.5 h-4.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    "เสร็จสิ้น"
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </motion.div>
     );
 }
