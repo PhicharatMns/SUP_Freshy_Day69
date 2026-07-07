@@ -35,7 +35,7 @@ app.use('*', rateLimiter({
   message: { success: false, message: 'ส่งคำขอมากเกินไป กรุณารอสักครู่แล้วลองใหม่' }
 }));
 
-// จำกัด: POST (ส่งข้อมูล/อัปโหลด) 20 ครั้ง/นาที ต่อ IP
+// จำกัด: POST (ส่งข้อมูล/อัปโหลด) 20 ครั้ง/นาที  IP
 app.use('*/Qafrom', rateLimiter({
   windowMs: 60 * 1000,
   limit: 20,
