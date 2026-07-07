@@ -103,6 +103,8 @@ export default function Scan({ onActivePostChange }: ScanProps) {
       }
     };
 
+    checkExists(); // ⚡ ตรวจสอบทันทีตั้งแต่เริ่มแสดงรูป เพื่อให้หายไปทันทีหากถูกลบขณะอยู่ในคิว
+
     const intervalId = setInterval(checkExists, 2000);
     return () => clearInterval(intervalId);
   }, [current]);
