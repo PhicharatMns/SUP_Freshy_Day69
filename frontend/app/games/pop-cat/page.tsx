@@ -1950,7 +1950,26 @@ export default function PopCatGamePage() {
                   <li key={key}>
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={async () => {
+                        // 🔄 flush คลิกที่ค้างอยู่ของคณะเก่าออกก่อน แล้วค่อยเปลี่ยนคณะ
+                        if (pendingClicks.current[selectedDeptId] && pendingClicks.current[selectedDeptId] > 0) {
+                          const user = JSON.parse(localStorage.getItem("popcat_user") || "{}");
+                          if (user.studentId) {
+                            try {
+                              await fetch(`${post}/popcar/click-bulk-user`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                  departmentKey: selectedDeptId,
+                                  count: pendingClicks.current[selectedDeptId],
+                                  studentId: user.studentId,
+                                }),
+                              });
+                            } catch (e) { console.error(e); }
+                          }
+                          // ล้าง buffer ของคณะเก่า
+                          pendingClicks.current[selectedDeptId] = 0;
+                        }
                         setSelectedDeptId(key);
                         setIsDropdownOpen(false);
                       }}
