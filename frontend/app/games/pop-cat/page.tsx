@@ -1,4 +1,4 @@
-//  "use client";
+"use client";
 
 // import { useState, useRef, useEffect } from "react";
 // import Image from "next/image";
@@ -1391,6 +1391,7 @@ export default function PopCatGamePage() {
   ========================= */
 
   const [user, setUser] = useState<{
+    id?: number;
     studentId?: string;
     studentName?: string;
   }>({});
@@ -1406,6 +1407,8 @@ export default function PopCatGamePage() {
       console.error("Invalid popcat_user");
     }
   }, []);
+
+  const hasUserData = Boolean(user.studentId || user.studentName);
 
 
   const flushClicks = async () => {
@@ -1885,8 +1888,34 @@ export default function PopCatGamePage() {
           </div>
         </div>
 
+        <div
+          className="w-full rounded-2xl border-2 px-4 py-3 mt-2 mb-5"
+          style={{
+            backgroundColor: PAPER_LIGHT,
+            borderColor: INK,
+            boxShadow: `3px 3px 0 0 ${INK}`,
+          }}
+        >
+          <div className="flex items-start justify-between gap-3 ">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.2em]" style={{ color: "#6b5c46" }}>
+                ผู้เล่น
+              </p>
+              <p className="mt-1 font-display text-lg sm:text-xl truncate" style={{ color: INK }}>
+                {hasUserData ? user.studentName || "ไม่พบชื่อ" : "ยังไม่มีข้อมูลผู้เล่น"}
+              </p>
+              <p className="text-sm font-semibold" style={{ color: "#6b5c46" }}>
+                {hasUserData ? `รหัสนักศึกษา: ${user.studentId || "—"} • ID: ${user.id ?? "—"}` : "กรุณาลงทะเบียนก่อนเข้าหน้าเกม"}
+              </p>
+            </div>
+            <div className="shrink-0 rounded-full border-2 px-2.5 py-1 text-xs font-extrabold" style={{ borderColor: INK, color: INK }}>
+              👤
+            </div>
+          </div>
+        </div>
+
         {/* เลือกคณะ — Custom Cartoon Dropdown */}
-        <div className="w-full space-y-2.5 relative z-10" ref={dropdownRef}>
+        <div className="w-full space-y-2.5 relative z-10 " ref={dropdownRef}>
           <label
             className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider block"
             style={{ color: "#6b5c46" }}

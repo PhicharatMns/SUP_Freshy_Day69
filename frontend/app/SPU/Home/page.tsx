@@ -56,6 +56,8 @@ export default function PortraitQRPage() {
         <Cdweb speed="slow" />
       </div>
 
+      
+
       {/* 3. Popcar (จะโชว์ก็ต่อเมื่อ Database สั่งให้โชว์) - z-30 */}
       {showPopcar && (
         <div className="absolute inset-0 z-30 pointer-events-none">
