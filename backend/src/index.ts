@@ -4,6 +4,7 @@ import { Hono } from 'hono';
 import { connectDB } from './config/database.js';
 import { cors } from 'hono/cors';
 import { rateLimiter } from 'hono-rate-limiter';
+import { logger } from 'hono/logger';
 
 // นำเข้า Routes โครงสร้างใหม่
 import qaRoutes from './routes/qaRoutes.js';
@@ -15,6 +16,8 @@ const app = new Hono();
 
 // เชื่อมต่อฐานข้อมูล
 await connectDB();
+
+app.use('*', logger());
 
 app.use('*', cors({
   origin: '*',
