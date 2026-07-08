@@ -215,7 +215,7 @@ export default function Cdweb({ speed = "normal" }: CdwebProps) {
 
       <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-4xl px-4 gap-4 sm:gap-6">
 
-        <div className="flex items-center justify-center w-full max-w-[750x] -mt-6 sm:-mt-12 md:-mt-140 -mb-2 sm:-mb-6">
+        <div className="flex items-center justify-center w-full max-w-[750x] -mt-6 sm:-mt-12 md:-mt-120 -mb-2 sm:-mb-6">
           <svg
             width="100%"
             viewBox="0 0 620 260"

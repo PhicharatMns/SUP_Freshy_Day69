@@ -1641,8 +1641,8 @@ export default function PopCatGamePage() {
       `}</style>
 
       <div className="p-4 flex gap-3 items-center z-[999]">
-        <button
-          onClick={() => window.history.back()}
+        <Link href={'/Freshy69'}
+
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition-all duration-200"
         >
           <svg
@@ -1660,7 +1660,7 @@ export default function PopCatGamePage() {
             />
           </svg>
           ย้อนกลับ
-        </button>
+        </Link>
       </div>
 
       {/* พื้นผิวฮาล์ฟโทน (จุดจางๆ) ให้ความรู้สึกงานพิมพ์การ์ตูน */}
@@ -1951,12 +1951,7 @@ export default function PopCatGamePage() {
         >
           <div className="flex items-start justify-between gap-3 ">
             <div className="min-w-0">
-              <p
-                className="text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.2em]"
-                style={{ color: "#6b5c46" }}
-              >
-                ผู้เล่น
-              </p>
+
               <p
                 className="mt-1 font-display text-lg sm:text-xl truncate"
                 style={{ color: INK }}
@@ -1967,7 +1962,7 @@ export default function PopCatGamePage() {
               </p>
               <p className="text-sm font-semibold" style={{ color: "#6b5c46" }}>
                 {hasUserData
-                  ? `รหัสนักศึกษา: ${user.studentId || "—"} • ID: ${user.id ?? "—"}`
+                  ? `รหัสนักศึกษา: 69${user.studentId || "—"} • ID: ${user.id ?? "—"}`
                   : "กรุณาลงทะเบียนก่อนเข้าหน้าเกม"}
               </p>
             </div>

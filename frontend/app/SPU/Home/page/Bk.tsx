@@ -10,6 +10,8 @@ export default function BK() {
           }
           alt="bk"
           fill
+          sizes="(max-width: 768px) 100vw, 50vw"
+          priority={true}
           className="object-cover"
         />
 
@@ -21,6 +23,7 @@ export default function BK() {
             }
             alt="bk"
             fill
+            sizes="(max-width: 768px) 100vw, 50vw"
             className="object-contain"
           />
         </div>
@@ -33,6 +36,7 @@ export default function BK() {
             }
             alt="bk"
             fill
+            sizes="(max-width: 768px) 100vw, 50vw"
             className="object-contain"
           />
         </div>
@@ -45,9 +49,27 @@ export default function BK() {
             }
             alt="bk"
             fill
+            sizes="(max-width: 768px) 100vw, 50vw"
             className="object-contain"
           />
         </div>
+        {/* https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/bk/6-removebg-preview.webp */}
+        {/* losomo */}
+        <div className="absolute flex justify-center items-start w-full h-fit  ">
+          <div className=" ">
+            <Image
+              src="https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/bk/5-removebg-preview-_1_.webp"
+              alt="bk"
+              width={650}
+              height={400}
+              priority
+              sizes="(max-width: 768px) 100vw"
+              className="object-contain "
+            />
+          </div>
+        </div>
+
+
 
         {/* รูป PNG (1) */}
         <div className="absolute bottom-4 right-7 w-56 h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 animate-spin-slow">
@@ -57,6 +79,7 @@ export default function BK() {
             }
             alt="bk"
             fill
+            sizes="(max-width: 768px) 100vw, 50vw"
             className="object-contain"
           />
         </div>
@@ -69,6 +92,8 @@ export default function BK() {
           }
           alt="bk"
           fill
+          sizes="(max-width: 768px) 100vw, 50vw"
+          priority={true}
           className="object-cover"
         />
       </div>
@@ -80,8 +105,23 @@ export default function BK() {
           }
           alt="bk"
           fill
+          sizes="(max-width: 768px) 100vw, 50vw"
+          priority={true}
           className="object-cover"
         />
+        <div className="absolute flex justify-center items-start w-full h-fit  ">
+          <div className="">
+            <Image
+              src="https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/bk/6-removebg-preview.webp"
+              alt="bk"
+              width={600}
+              height={400}
+              sizes="(max-width: 768px) 100vw, 50vw"
+              priority={true}
+              className=""
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
