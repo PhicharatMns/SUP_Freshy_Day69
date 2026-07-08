@@ -308,48 +308,36 @@ export const getTopDepartments = async (c: Context) => {
   }
 };
 
-// 🏆 Leaderboard รวม: คะแนนทั้งคณะ (departments_score) + top player ของแต่ละคณะ
+// 🏆 Leaderboard รวม: aggregate จาก popcat_players โดยตรง (รองรับกรณี departments_score ว่าง)
 export const getLeaderboard = async (c: Context) => {
   try {
-    // ดึง departments_score ทั้งหมด (คะแนนรวมทุกคนในคณะ + รูปสัตว์)
-    const deptScores = await prisma.departments_score.findMany({
-      orderBy: { total_clicks: 'desc' }
-    });
-
-    // ดึง top player ของแต่ละคณะ
-    const topPlayers: any[] = await prisma.$queryRaw`
-      SELECT student_id, student_name, department_key, total_clicks as player_clicks
+    // ดึงคะแนนรวมและ top player ของแต่ละคณะจาก popcat_players
+    const rows: any[] = await prisma.$queryRaw`
+      SELECT
+        d.department_key,
+        d.total_clicks,
+        top.student_id   AS top_student_id,
+        top.student_name AS top_student_name,
+        top.total_clicks AS top_student_clicks
       FROM (
-        SELECT 
-          student_id,
-          student_name,
-          department_key,
-          total_clicks,
-          ROW_NUMBER() OVER (PARTITION BY department_key ORDER BY total_clicks DESC) as rn
+        SELECT department_key, SUM(total_clicks) AS total_clicks
         FROM popcat_players
-      ) t
-      WHERE rn = 1;
+        GROUP BY department_key
+      ) d
+      JOIN (
+        SELECT student_id, student_name, department_key, total_clicks,
+               ROW_NUMBER() OVER (PARTITION BY department_key ORDER BY total_clicks DESC) AS rn
+        FROM popcat_players
+      ) top ON top.department_key = d.department_key AND top.rn = 1
+      ORDER BY d.total_clicks DESC;
     `;
 
-    // สร้าง Map สำหรับ lookup top player ด้วย department_key
-    const playerMap: Record<string, { student_id: string; student_name: string; player_clicks: number }> = {};
-    for (const p of topPlayers) {
-      playerMap[p.department_key] = {
-        student_id: p.student_id,
-        student_name: p.student_name,
-        player_clicks: Number(p.player_clicks),
-      };
-    }
-
-    // รวมข้อมูลทั้งสอง
-    const result = deptScores.map((dept) => ({
-      department_key: dept.department_key,
-      department_name: dept.department_name,
-      total_clicks: Number(dept.total_clicks),
-      image_url: dept.ImageCat ?? null,
-      top_student_id: playerMap[dept.department_key]?.student_id ?? null,
-      top_student_name: playerMap[dept.department_key]?.student_name ?? null,
-      top_student_clicks: playerMap[dept.department_key]?.player_clicks ?? 0,
+    const result = rows.map((r) => ({
+      department_key:       r.department_key,
+      total_clicks:         Number(r.total_clicks),
+      top_student_id:       r.top_student_id ?? null,
+      top_student_name:     r.top_student_name ?? null,
+      top_student_clicks:   Number(r.top_student_clicks ?? 0),
     }));
 
     return c.json({ status: true, data: result });
@@ -358,4 +346,5 @@ export const getLeaderboard = async (c: Context) => {
     console.error(error);
     return c.json({ status: false, message: "Server Error" }, 500);
   }
-};
+};
+
