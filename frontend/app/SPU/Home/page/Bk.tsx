@@ -3,7 +3,7 @@ import Image from "next/image";
 export default function BK() {
   return (
     <div className="md:w-full h-screen">
-      <div className="relative lg:block hidden w-full h-full">
+      <div className="relative md:block hidden w-full h-full">
         <Image
           src={
             "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/PPPPPPPP.webp"

@@ -6,7 +6,8 @@ import {
   clickBulk,
   registerUser,
   clickBulkUser,
-  getTopDepartments
+  getTopDepartments,
+  getLeaderboard
 } from "../controllers/popcatController.js";
 
 const popcatRoutes = new Hono();
@@ -18,5 +19,6 @@ popcatRoutes.post("/click-bulk", clickBulk);
 popcatRoutes.post("/register", registerUser);
 popcatRoutes.post("/click-bulk-user", clickBulkUser);
 popcatRoutes.get("/top-departments", getTopDepartments);
+popcatRoutes.get("/leaderboard", getLeaderboard);
 
 export default popcatRoutes;

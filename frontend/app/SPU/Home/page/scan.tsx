@@ -65,8 +65,7 @@ export default function Scan({ onActivePostChange }: ScanProps) {
           // ⏱️ หน่วงเวลารอ 5 วินาทีนับจากช่วงเวลาสร้างโพสต์ (Created At) ก่อนปล่อยให้ไหลเข้าจอใหญ่
           const createdAt = newPost.created_at ? new Date(newPost.created_at).getTime() : Date.now();
           const elapsed = Date.now() - createdAt;
-          // 🚨 แก้ไขบั๊ก Timezone/Clock mismatch: หากเวลาใน DB อยู่ในอนาคต (elapsed < 0) หรือสร้างเกิน 5 วินาทีแล้ว ให้แสดงผลทันที
-          const delayRemaining = (elapsed < 0 || elapsed >= 5000) ? 0 : 5000 - elapsed;
+          const delayRemaining = Math.max(0, 5000 - elapsed);
 
           setTimeout(() => {
             setActiveQueue((prev) => [...prev, newPost]);
