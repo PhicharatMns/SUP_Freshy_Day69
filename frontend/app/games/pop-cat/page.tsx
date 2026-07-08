@@ -964,6 +964,7 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { post } from "@/app/Post";
 import Link from "next/link";
+import PopClose from "../pop-close/page";
 
 interface Bubble {
   color: string;
@@ -1008,8 +1009,8 @@ export const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#B5D334]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/digi01.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/digi02.webp",
+      closed: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/digi01.webp",
+      open: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/dig02.webp",
     },
   },
   "information-technology": {
@@ -1025,8 +1026,8 @@ export const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#91268f]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/IT001.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/IT002.webp",
+      closed: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/IT001.webp",
+      open: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/IT002.webp",
     },
   },
   "communication-arts": {
@@ -1042,8 +1043,8 @@ export const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#ffdd00]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/Ni_TED01.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/Ni_TED02.webp",
+      closed: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/Ni_TED01.webp",
+      open: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/Ni_TED02.webp",
     },
   },
   engineering: {
@@ -1059,8 +1060,8 @@ export const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#981f22]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/widwa01.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/widwa02.webp",
+      closed: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/widwa01.webp",
+      open: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/widwa02.webp",
     },
   },
   "architecture-design": {
@@ -1076,8 +1077,8 @@ export const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#801418]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/satapudV2_01.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/satapudV2_02.webp",
+      closed: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/widwa01.webp",
+      open: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/widwa02.webp",
     },
   },
   "business-administration": {
@@ -1093,8 +1094,8 @@ export const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#0B99DF]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/borrihanV2_01.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/borrihanV2_02.webp",
+      closed: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/borrihanV2_01.webp",
+      open: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/borrihanV2_02.webp",
     },
   },
   accountancy: {
@@ -1110,8 +1111,8 @@ export const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#00A651]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/32.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/33.webp",
+      closed: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/32.webp",
+      open: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/32.webp",
     },
   },
 
@@ -1128,8 +1129,8 @@ export const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#EC008C]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/niti01.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/niti02.webp",
+      closed: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/niti01.webp",
+      open: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/niti02.webp",
     },
   },
 
@@ -1146,8 +1147,8 @@ export const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#F5821F]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/sin_lapa01.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/sin_lapa02.webp",
+      closed: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/sin_lapa01.webp",
+      open: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/sin_lapa02.webp",
     },
   },
 
@@ -1164,8 +1165,8 @@ export const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#D81B60]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/kan_bin01.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/kan_bin02.webp",
+      closed: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/kan_bin01.webp",
+      open: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/kan_bin01.webp",
     },
   },
 
@@ -1182,8 +1183,8 @@ export const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#A7B6BE]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/nana01.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/nana02.webp",
+      closed: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/nana01.webp",
+      open: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/nana02.webp",
     },
   },
   entrepreneurship: {
@@ -1199,8 +1200,8 @@ export const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#F92D20]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/kan_sang01.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/kan_sang02.webp",
+      closed: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/kan_sang01.webp",
+      open: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/kan_sang02.webp",
     },
   },
   logistic: {
@@ -1216,8 +1217,8 @@ export const DEPARTMENTS_CONFIG: Record<
       glow: "bg-[#00A0E3]",
     },
     catImages: {
-      closed: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/logisV2_01.webp",
-      open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/logisV2_02.webp",
+      closed: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/logisV2_01.webp",
+      open: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/popcar/logisV2_02.webp",
     },
   },
 };
@@ -1248,6 +1249,8 @@ export default function PopCatGamePage() {
 
   const [isDropdownOpen, setIsDropdownOpen] =
     useState(false);
+
+  const [isGameOpen, setIsGameOpen] = useState<boolean | null>(null);
 
   const dropdownRef =
     useRef<HTMLDivElement>(null);
@@ -1285,9 +1288,51 @@ export default function PopCatGamePage() {
   }, []);
 
   /* =========================
+     load control state
+  ========================= */
+  useEffect(() => {
+    let isActive = true;
+
+    const fetchControlState = async () => {
+      try {
+        const res = await fetch(`${post}/apinext/control`, {
+          cache: "no-store",
+        });
+        const json = await res.json();
+
+        if (!isActive) return;
+
+        if (json?.success && json?.data?.type !== undefined) {
+          setIsGameOpen(Boolean(json.data.type));
+        } else {
+          setIsGameOpen(false);
+        }
+      } catch (err) {
+        console.error("Failed to load popcat control state", err);
+        if (isActive) {
+          setIsGameOpen(false);
+        }
+      }
+    };
+
+    void fetchControlState();
+
+    const interval = window.setInterval(() => {
+      void fetchControlState();
+    }, 10000);
+
+    return () => {
+      isActive = false;
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  /* =========================
      load scores
   ========================= */
   useEffect(() => {
+    if (isGameOpen !== true) return;
+
     const loadScores = async () => {
       try {
         const res = await fetch(`${post}/popcar/scores`);
@@ -1309,12 +1354,14 @@ export default function PopCatGamePage() {
     };
 
     loadScores();
-  }, []);
+  }, [isGameOpen]);
 
   /* =========================
      click handler (NO API CALL)
   ========================= */
   const handlePress = () => {
+    if (isGameOpen !== true) return;
+
     setIsMouthOpen(true);
     setIsBouncing(true);
     setBurstKey((k) => k + 1);
@@ -1362,7 +1409,7 @@ export default function PopCatGamePage() {
 
 
   const flushClicks = async () => {
-    if (isFlushing.current) return;
+    if (isFlushing.current || isGameOpen !== true) return;
 
     const entries = Object.entries(
       pendingClicks.current
@@ -1405,12 +1452,14 @@ export default function PopCatGamePage() {
      flush every 30 seconds
   ========================= */
   useEffect(() => {
+    if (isGameOpen !== true) return;
+
     const interval = setInterval(() => {
       flushClicks();
     }, 15000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isGameOpen]);
 
   const currentDept =
     DEPARTMENTS_CONFIG[selectedDeptId] ??
@@ -1420,6 +1469,8 @@ export default function PopCatGamePage() {
      send last data before close
   ========================= */
   useEffect(() => {
+    if (isGameOpen !== true) return;
+
     const handleBeforeUnload = () => {
       const data = JSON.stringify(pendingClicks.current);
 
@@ -1434,7 +1485,7 @@ export default function PopCatGamePage() {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, []);
+  }, [isGameOpen]);
 
   const departmentsKeys =
     Object.keys(DEPARTMENTS_CONFIG);
@@ -1465,6 +1516,27 @@ export default function PopCatGamePage() {
     setBubbles(generatedBubbles);
   }, []);
 
+
+  if (isGameOpen === false) {
+    return <PopClose />;
+  }
+
+  if (isGameOpen === null) {
+    return (
+      <main
+        className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden font-body"
+        style={{ backgroundColor: PAPER, color: INK }}
+      >
+        <div className="rounded-3xl border-4 px-6 py-8 text-center shadow-[8px_8px_0_0_rgba(32,26,20,0.25)]"
+          style={{ backgroundColor: PAPER_LIGHT, borderColor: INK }}>
+          <p className="font-display text-2xl">กำลังเชื่อมสถานะเกม...</p>
+          <p className="mt-2 text-sm" style={{ color: "rgba(32,26,20,0.65)" }}>
+            กรุณารอสักครู่
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main

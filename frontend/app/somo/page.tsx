@@ -1,44 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import HomePage from "../SPU/Home/page";
-import { post } from "../Post";
+import Link from "next/link";
 
 export default function Somo() {
-    const [isOpen, setIsOpen] = useState(false);
-
-    const toggleHome = async () => {
-        const newValue = !isOpen;
-
-        try {
-            const res = await fetch(`${post}/apinext/control`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    type: newValue
-                })
-            });
-
-            const data = await res.json();
-
-            if (data.success && data.data) {
-                setIsOpen(data.data.type);
-            }
-        } catch (error) {
-            console.error("Error:", error);
-        }
-    };
-
-    return (
-        <div className="p-6">
-            <button
-                onClick={toggleHome}
-                className="px-5 py-3 bg-purple-600 text-white rounded-xl active:scale-95 transition-all"
-            >
-                {isOpen ? "✕ ปิดหน้าหลัก" : "☰ เปิดหน้าหลัก"}
-            </button>
-        </div>
-    );
+  return (
+    <div className="flex max-w-sm flex-col gap-4 rounded-2xl bg-white p-6 shadow-xl">
+      <h2 className="text-lg font-bold">⚙️ ตัวควบคุม Pop Cat</h2>
+      <p className="text-sm text-slate-600">
+        ระบบเปิด/ปิดเกมและเปิด/ปิดการดู score ถูกย้ายไปที่หน้า Admin Control Panel แล้ว
+      </p>
+      <Link
+        href="/admin-secret-69"
+        className="rounded-xl bg-indigo-600 px-5 py-4 text-center font-bold text-white transition hover:bg-indigo-500"
+      >
+        ไปหน้า Admin Control Panel
+      </Link>
+    </div>
+  );
 }

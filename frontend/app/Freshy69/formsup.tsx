@@ -177,26 +177,7 @@ const openPopcat = () => {
 
         <div className="grid grid-cols-3 gap-4 w-full max-w-2xl p-4">
           {Social.map((e, i) => {
-            const buttonStyle = `w-full text-2xl h-40 z-50 hover:scale-105 flex items-center justify-center rounded-[20px] font-bold text-white shadow-lg bg-gradient-to-tr ${e.gradient} animate-gentle-bounce transition-all duration-300 cursor-pointer`;
-
-            // เปลี่ยนมาเช็คว่าถ้ามี link ให้ใช้คอมโพเนนต์ <Link>
-            // return e.lnik ? (
-            //   <Link
-            //     href={e.lnik}
-            //     className={buttonStyle}
-            //     key={i}
-            //   >
-            //     {e.title}
-            //   </Link>
-            // ) : (
-            //   <div
-            //     onClick={e.popup}
-            //     className={buttonStyle}
-            //     key={i}
-            //   >
-            //     {e.title}
-            //   </div>
-            // );
+            const buttonStyle = `w-full text-xl h-40 z-50 hover:scale-105 flex items-center justify-center rounded-[20px] font-bold text-white shadow-lg bg-gradient-to-tr ${e.gradient} animate-gentle-bounce transition-all duration-300 cursor-pointer`;
             return (
               <div
                 onClick={e.popup}

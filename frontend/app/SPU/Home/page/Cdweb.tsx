@@ -15,15 +15,27 @@ interface Bubble {
   opacity: number;
 }
 
-export default function Cdweb() {
+interface CdwebProps {
+  speed?: "normal" | "slow";
+}
+
+export default function Cdweb({ speed = "normal" }: CdwebProps) {
   const [src, setSrc] = useState("");
   const [bubbles, setBubbles] = useState<Bubble[]>([])
   const [isSpinning, setIsSpinning] = useState(false);
 
   const [pos, setPos] = useState({ x: 100, y: 100 });
+  const [boxSize, setBoxSize] = useState(380); // ⚡ เก็บขนาดกล่อง QR Code เพื่อเอาไปวาดแบบไดนามิก
+
 
   const posRef = useRef({ x: 100, y: 100 });
-  const velRef = useRef({ vx: 2.2, vy: 1.8 });
+  
+  // ⚡ กำหนดระดับความเร็วในการเด้งชนขอบจอตามพารามิเตอร์ที่ส่งเข้ามา
+  const velRef = useRef(
+    speed === "slow" 
+      ? { vx: 1.4, vy: 0.9 } // ปรับให้ขยับว่องไวขึ้น เพื่อความสวยงามบนจอใหญ่
+      : { vx: 2.2, vy: 1.8 }  // ความเร็วปกติสำหรับจอกลางใหญ่
+  );
 
   const boxSizeRef = useRef(380);
 
@@ -94,18 +106,18 @@ export default function Cdweb() {
       const w = window.innerWidth;
       const h = window.innerHeight;
 
-      const measured = qrRef.current?.getBoundingClientRect();
-
-      const size =
-        measured?.width && measured.width > 0
-          ? Math.ceil(measured.width)
-          : w >= 768
-            ? 390
-            : w >= 640
-              ? 300
-              : 220;
+      // ⚡ หากเป็นจอแนวตั้ง (สูงมากกว่ากว้าง) ให้ขนาดกว้าง 55% ของหน้าจอ สูงสุดไม่เกิน 600px
+      const isPortrait = h > w;
+      const size = isPortrait
+        ? Math.max(300, Math.min(Math.ceil(w * 0.55), 600))
+        : w >= 768
+          ? 380
+          : w >= 640
+            ? 280
+            : 200;
 
       boxSizeRef.current = size;
+      setBoxSize(size);
 
       const playWidth = Math.min(900, w);
       const areaLeft = (w - playWidth) / 2;
@@ -206,7 +218,6 @@ export default function Cdweb() {
         <div className="flex items-center justify-center w-full max-w-[750x] -mt-6 sm:-mt-12 md:-mt-140 -mb-2 sm:-mb-6">
           <svg
             width="100%"
-            height="auto"
             viewBox="0 0 620 260"
             className="drop-shadow-2xl overflow-visible"
           >
@@ -241,23 +252,25 @@ export default function Cdweb() {
 
       <div
         ref={qrRef}
-        className={`fixed bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-3xl shadow-2xl p-2 sm:p-3 md:p-4 z-20 ${isSpinning ? "animate-spin-qr" : ""
+        className={`fixed bg-white/95 backdrop-blur-sm rounded-[32px] shadow-2xl p-4 z-20 flex items-center justify-center ${isSpinning ? "animate-spin-qr" : ""
           }`}
         style={{
           left: pos.x,
           top: pos.y,
+          width: `${boxSize}px`,
+          height: `${boxSize}px`,
         }}
       >
         {!src ? (
-          <div className="w-[200px] h-[200px] sm:w-[280px] sm:h-[280px] md:w-[360px] md:h-[360px] bg-slate-100 animate-pulse" />
+          <div className="w-full h-full bg-slate-100 animate-pulse rounded-2xl" />
         ) : (
-          <div className="relative w-[200px] h-[200px] sm:w-[280px] sm:h-[280px] md:w-[360px] md:h-[360px]">
+          <div className="relative w-full h-full">
             <Image
               fill
               priority
               src={src}
               alt="qr"
-              className="object-contain rounded-xl md:rounded-2xl"
+              className="object-contain rounded-2xl"
             />
           </div>
         )}
