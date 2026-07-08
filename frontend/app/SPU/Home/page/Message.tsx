@@ -38,7 +38,9 @@ export default function Message() {
             const parsedTime = new Date(timeStr).getTime();
             if (isNaN(parsedTime)) return true; // หากแยกแยะเวลาไม่ได้ ปล่อยผ่านทันที
             
-            return Date.now() - parsedTime >= 5000;
+            const diff = Date.now() - parsedTime;
+            // 🚨 แก้ไขบั๊ก Timezone/Clock mismatch: หากเวลาใน DB อยู่ในอนาคต (diff < 0) หรือสร้างเกิน 5 วินาทีแล้ว ให้แสดงผลทันที
+            return diff >= 5000 || diff < 0;
           });
           setData(filteredData);
         }
