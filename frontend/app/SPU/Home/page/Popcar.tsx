@@ -114,7 +114,7 @@ export default function Popcar() {
           </div>
         ) : null}
         <div className="font-black text-base text-white mt-1">
-          {Number(item.total_clicks).toLocaleString()} คะแนน
+          {Number(item.top_student_clicks).toLocaleString()} คะแนน
         </div>
       </div>
     </div>
@@ -223,9 +223,9 @@ export default function Popcar() {
                         </div>
                       </div>
 
-                      {/* คะแนนรวม */}
+                      {/* คะแนนรายบุคคล */}
                       <div className="font-black text-base text-emerald-600 flex-shrink-0">
-                        {Number(dept.total_clicks).toLocaleString()} คะแนน
+                        {Number(dept.top_student_clicks).toLocaleString()} คะแนน
                       </div>
                     </div>
                   );
