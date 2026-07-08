@@ -307,3 +307,55 @@ export const getTopDepartments = async (c: Context) => {
     );
   }
 };
+
+// 🏆 Leaderboard รวม: คะแนนทั้งคณะ (departments_score) + top player ของแต่ละคณะ
+export const getLeaderboard = async (c: Context) => {
+  try {
+    // ดึง departments_score ทั้งหมด (คะแนนรวมทุกคนในคณะ + รูปสัตว์)
+    const deptScores = await prisma.departments_score.findMany({
+      orderBy: { total_clicks: 'desc' }
+    });
+
+    // ดึง top player ของแต่ละคณะ
+    const topPlayers: any[] = await prisma.$queryRaw`
+      SELECT student_id, student_name, department_key, total_clicks as player_clicks
+      FROM (
+        SELECT 
+          student_id,
+          student_name,
+          department_key,
+          total_clicks,
+          ROW_NUMBER() OVER (PARTITION BY department_key ORDER BY total_clicks DESC) as rn
+        FROM popcat_players
+      ) t
+      WHERE rn = 1;
+    `;
+
+    // สร้าง Map สำหรับ lookup top player ด้วย department_key
+    const playerMap: Record<string, { student_id: string; student_name: string; player_clicks: number }> = {};
+    for (const p of topPlayers) {
+      playerMap[p.department_key] = {
+        student_id: p.student_id,
+        student_name: p.student_name,
+        player_clicks: Number(p.player_clicks),
+      };
+    }
+
+    // รวมข้อมูลทั้งสอง
+    const result = deptScores.map((dept) => ({
+      department_key: dept.department_key,
+      department_name: dept.department_name,
+      total_clicks: Number(dept.total_clicks),
+      image_url: dept.ImageCat ?? null,
+      top_student_id: playerMap[dept.department_key]?.student_id ?? null,
+      top_student_name: playerMap[dept.department_key]?.student_name ?? null,
+      top_student_clicks: playerMap[dept.department_key]?.player_clicks ?? 0,
+    }));
+
+    return c.json({ status: true, data: result });
+
+  } catch (error) {
+    console.error(error);
+    return c.json({ status: false, message: "Server Error" }, 500);
+  }
+};
