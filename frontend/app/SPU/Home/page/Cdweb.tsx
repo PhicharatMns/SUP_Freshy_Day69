@@ -27,7 +27,6 @@ export default function Cdweb({ speed = "normal" }: CdwebProps) {
   const [pos, setPos] = useState({ x: 100, y: 100 });
   const [boxSize, setBoxSize] = useState(380); // ⚡ เก็บขนาดกล่อง QR Code เพื่อเอาไปวาดแบบไดนามิก
 
-  console.log("💿 [Cdweb เรนเดอร์] src:", src ? "มีข้อมูลภาพ QR" : "ว่างเปล่า", "ตำแหน่ง pos:", pos);
 
   const posRef = useRef({ x: 100, y: 100 });
   
