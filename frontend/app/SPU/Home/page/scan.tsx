@@ -46,7 +46,7 @@ export default function Scan({ onActivePostChange }: ScanProps) {
   
   const shownIds = useRef<Set<number>>(new Set());
   const isDisplayingPriority = useRef<boolean>(false);
-
+ตอน
   const [trigger, setTrigger] = useState(0);
   const forceRotate = () => setTrigger((t) => t + 1);
 
