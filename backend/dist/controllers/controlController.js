@@ -6,7 +6,11 @@ export const getControl = async (c) => {
             where: { id: 1 },
         });
         if (!row) {
-            return c.json({ success: false, message: "ไม่พบข้อมูล ID: 1" }, 404);
+            // ถ้าตารางว่างเปล่า ให้ส่งค่าเริ่มต้นกลับไปก่อน (ป้องกันหน้าบ้านพัง)
+            return c.json({
+                success: true,
+                data: { id: 1, type: false, popcar: false }
+            });
         }
         return c.json({
             success: true,
@@ -20,10 +24,20 @@ export const getControl = async (c) => {
 };
 export const updateControl = async (c) => {
     try {
-        const { type } = await c.req.json();
-        const updated = await prisma.control.update({
+        const body = await c.req.json();
+        const { type, popcar } = body;
+        // 🛠️ เปลี่ยนจาก .update() เป็น .upsert()
+        const updated = await prisma.control.upsert({
             where: { id: 1 },
-            data: { type },
+            update: {
+                type: type,
+                popcar: popcar
+            },
+            create: {
+                id: 1, // บังคับสร้างแถวที่ id = 1
+                type: type ?? false, // ถ้าไม่มีค่าส่งมา ให้ค่าเริ่มต้นเป็น false
+                popcar: popcar ?? false // ถ้าไม่มีค่าส่งมา ให้ค่าเริ่มต้นเป็น false
+            },
         });
         return c.json({
             success: true,
@@ -31,6 +45,7 @@ export const updateControl = async (c) => {
         });
     }
     catch (error) {
+        console.error("UPDATE Error:", error);
         return c.json({ success: false, message: "Internal Server Error" }, 500);
     }
 };

@@ -87,14 +87,20 @@ export const click = async (c: Context) => {
       );
     }
 
-    const updated = await prisma.departments_score.update({
+    const updated = await prisma.departments_score.upsert({
       where: {
         department_key: departmentKey
       },
-      data: {
+      update: {
         total_clicks: {
           increment: 1
         },
+        updated_at: new Date()
+      },
+      create: {
+        department_key: departmentKey,
+        department_name: departmentKey,
+        total_clicks: 1,
         updated_at: new Date()
       }
     });
@@ -131,14 +137,20 @@ export const clickBulk = async (c: Context) => {
         return c.json({ status: false, message: "Click count exceeds limit (max 1000)" }, 400);
       }
 
-      const updated = await prisma.departments_score.update({
+      const updated = await prisma.departments_score.upsert({
         where: {
           department_key: departmentKey
         },
-        data: {
+        update: {
           total_clicks: {
             increment: BigInt(parsedCount)
           },
+          updated_at: new Date()
+        },
+        create: {
+          department_key: departmentKey,
+          department_name: departmentKey,
+          total_clicks: BigInt(parsedCount),
           updated_at: new Date()
         }
       });
@@ -160,14 +172,20 @@ export const clickBulk = async (c: Context) => {
         }
 
         updates.push(
-          prisma.departments_score.update({
+          prisma.departments_score.upsert({
             where: {
               department_key: departmentKey
             },
-            data: {
+            update: {
               total_clicks: {
                 increment: BigInt(parsedCount)
               },
+              updated_at: new Date()
+            },
+            create: {
+              department_key: departmentKey,
+              department_name: departmentKey,
+              total_clicks: BigInt(parsedCount),
               updated_at: new Date()
             }
           })
@@ -291,41 +309,51 @@ export const clickBulkUser = async (c: Context) => {
       );
     }
 
-    // 🔄 รันแบบ Transaction เพื่อความชัวร์ว่าอัปเดตทั้ง 2 ตารางพร้อมกันแบบ Atomically
-    const [player] = await prisma.$transaction([
-      prisma.popcat_players.upsert({
+    // 1. อัปเดตคะแนนส่วนบุคคลใน popcat_players เสมอ (นี่คือคะแนนหลัก)
+    const player = await prisma.popcat_players.upsert({
+      where: {
+        student_id_department_key: {
+          student_id: user.student_id,
+          department_key: departmentKey
+        }
+      },
+      update: {
+        student_name: user.student_name,
+        total_clicks: {
+          increment: BigInt(parsedCount)
+        },
+        updated_at: new Date()
+      },
+      create: {
+        student_id: user.student_id,
+        student_name: user.student_name,
+        department_key: departmentKey,
+        total_clicks: BigInt(parsedCount)
+      }
+    });
+
+    // 2. พยายามอัปเดตคะแนนรวมใน departments_score (ถ้าทำไม่ได้เนื่องจากตาราง/ฟิลด์มีปัญหา จะไม่ทำให้ request ล่ม)
+    try {
+      await prisma.departments_score.upsert({
         where: {
-          student_id_department_key: {
-            student_id: user.student_id,
-            department_key: departmentKey
-          }
+          department_key: departmentKey
         },
         update: {
-          student_name: user.student_name,
           total_clicks: {
             increment: BigInt(parsedCount)
           },
           updated_at: new Date()
         },
         create: {
-          student_id: user.student_id,
-          student_name: user.student_name,
           department_key: departmentKey,
-          total_clicks: BigInt(parsedCount)
-        }
-      }),
-      prisma.departments_score.update({
-        where: {
-          department_key: departmentKey
-        },
-        data: {
-          total_clicks: {
-            increment: BigInt(parsedCount)
-          },
+          department_name: departmentKey,
+          total_clicks: BigInt(parsedCount),
           updated_at: new Date()
         }
-      })
-    ]);
+      });
+    } catch (e) {
+      console.error("Failed to sync departments_score in clickBulkUser:", e);
+    }
 
     return c.json({
       status: true,

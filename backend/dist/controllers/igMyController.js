@@ -1,11 +1,11 @@
 import { Context } from "hono";
 import { prisma } from "../config/database.js";
 import { uploadToR2 } from "../utils/r2.js";
-import sharp from 'sharp';
+import sharp from "sharp";
 export const insertIg = async (c) => {
     try {
         const formData = await c.req.formData();
-        const imageFile = formData.get('image');
+        const imageFile = formData.get("image");
         const name = String(formData.get("name") || "");
         const quoteText = String(formData.get("quoteText") || "");
         const igAccount = String(formData.get("igAccount") || "");
@@ -13,13 +13,13 @@ export const insertIg = async (c) => {
         if (!quoteText) {
             return c.json({
                 success: false,
-                message: "กรุณากรอก IG และความในใจ"
+                message: "กรุณากรอก IG และความในใจ",
             }, 400);
         }
         let uploadedImageUrl = null;
         let filePath = "";
         if (imageFile && imageFile.size > 0) {
-            if (!imageFile.type.startsWith('image/')) {
+            if (!imageFile.type.startsWith("image/")) {
                 return c.json({ success: false, message: "กรุณาอัปโหลดไฟล์รูปภาพที่ถูกต้อง" }, 400);
             }
             const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.webp`;
@@ -30,7 +30,7 @@ export const insertIg = async (c) => {
                 .webp({ quality: 60 })
                 .toBuffer();
             try {
-                uploadedImageUrl = await uploadToR2(filePath, webpBuffer, 'image/webp');
+                uploadedImageUrl = await uploadToR2(filePath, webpBuffer, "image/webp");
             }
             catch (storageError) {
                 console.error("❌ R2 Storage Upload Error:", storageError);
@@ -38,9 +38,12 @@ export const insertIg = async (c) => {
             }
         }
         // 1. ดึงโดเมนรูปภาพสาธารณะจาก .env
-        const publicUrlBase = process.env.R2_PUBLIC_URL || `https://${process.env.R2_ENDPOINT}/${process.env.R2_BUCKET_NAME || "sup69"}`;
+        const publicUrlBase = process.env.R2_PUBLIC_URL ||
+            `https://${process.env.R2_ENDPOINT}/${process.env.R2_BUCKET_NAME || "sup69"}`;
         const cleanBase = publicUrlBase.replace(/\/$/, "");
-        const finalImageUrl = uploadedImageUrl ? `${cleanBase}/${filePath.replace(/^\//, "")}` : null;
+        const finalImageUrl = uploadedImageUrl
+            ? `${cleanBase}/${filePath.replace(/^\//, "")}`
+            : null;
         const quote = await prisma.ig_quotes.create({
             data: {
                 name,
@@ -48,13 +51,13 @@ export const insertIg = async (c) => {
                 image_url: finalImageUrl,
                 ig_account: igAccount,
                 type,
-                popup: true // ⚡ กำหนดเป็น true เพื่อให้ดึงขึ้นสไลด์จอใหญ่อัตโนมัติทันที
-            }
+                popup: true, // ⚡ กำหนดเป็น true เพื่อให้ดึงขึ้นสไลด์จอใหญ่อัตโนมัติทันที
+            },
         });
         return c.json({
             success: true,
             message: "บันทึกข้อมูลตาราง IG และแปลงรูปภาพสำเร็จเรียบร้อย!",
-            data: { id: quote.id, imageUrl: finalImageUrl }
+            data: { id: quote.id, imageUrl: finalImageUrl },
         }, 201);
     }
     catch (error) {
@@ -66,21 +69,21 @@ export const selectIg = async (c) => {
     try {
         const rows = await prisma.ig_quotes.findMany({
             orderBy: {
-                id: 'desc'
+                id: "desc",
             },
-            take: 20
+            take: 100,
         });
         return c.json({
             success: true,
             message: "ดึงข้อมูลจากตาราง IG สำเร็จ",
-            data: rows
+            data: rows,
         }, 200);
     }
     catch (error) {
         console.error("❌ DB Error (ig_my):", error);
         return c.json({
             success: false,
-            message: "เกิดข้อผิดพลาดในการดึงข้อมูลจากเซิร์ฟเวอร์"
+            message: "เกิดข้อผิดพลาดในการดึงข้อมูลจากเซิร์ฟเวอร์",
         }, 500);
     }
 };
@@ -88,54 +91,54 @@ export const nextPopup = async (c) => {
     try {
         const item = await prisma.ig_quotes.findFirst({
             where: {
-                popup: true
+                popup: true,
             },
             orderBy: {
-                id: 'asc'
-            }
+                id: "asc",
+            },
         });
         if (!item) {
             return c.json({
                 success: true,
-                data: null
+                data: null,
             });
         }
         await prisma.ig_quotes.update({
             where: {
-                id: item.id
+                id: item.id,
             },
             data: {
-                popup: false
-            }
+                popup: false,
+            },
         });
         return c.json({
             success: true,
-            data: item
+            data: item,
         });
     }
     catch (error) {
         console.error(error);
         return c.json({
             success: false,
-            message: 'Server Error'
+            message: "Server Error",
         }, 500);
     }
 };
 export const deleteIg = async (c) => {
     try {
-        const id = Number(c.req.param('id'));
+        const id = Number(c.req.param("id"));
         if (!id) {
             return c.json({ success: false, message: "ระบุ ID ไม่ถูกต้อง" }, 400);
         }
         // ลบข้อมูลแถวนี้ออกจากฐานข้อมูล MySQL
         await prisma.ig_quotes.delete({
             where: {
-                id: id
-            }
+                id: id,
+            },
         });
         return c.json({
             success: true,
-            message: "ลบโพสต์ IG เรียบร้อยแล้ว!"
+            message: "ลบโพสต์ IG เรียบร้อยแล้ว!",
         }, 200);
     }
     catch (error) {
@@ -143,7 +146,28 @@ export const deleteIg = async (c) => {
         return c.json({
             success: false,
             message: "เกิดข้อผิดพลาดในการลบข้อมูล",
-            error: error.message
+            error: error.message,
         }, 500);
+    }
+};
+export const checkExistsIg = async (c) => {
+    try {
+        const id = Number(c.req.param("id"));
+        if (!id) {
+            return c.json({ success: false, exists: false }, 400);
+        }
+        const item = await prisma.ig_quotes.findUnique({
+            where: {
+                id: id,
+            },
+        });
+        return c.json({
+            success: true,
+            exists: item !== null,
+        }, 200);
+    }
+    catch (error) {
+        console.error("❌ Check Exists Error:", error);
+        return c.json({ success: false, exists: false }, 500);
     }
 };

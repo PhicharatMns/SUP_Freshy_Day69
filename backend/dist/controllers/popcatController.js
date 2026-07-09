@@ -1,5 +1,13 @@
 import { Context } from "hono";
 import { prisma } from "../config/database.js";
+// 🛠️ FIX: วิธีแก้ปัญหา BigInt - สอนให้ JavaScript แปลง BigInt เป็นตัวเลขปกติก่อนส่ง JSON
+BigInt.prototype.toJSON = function () {
+    return Number(this);
+};
+// 💾 Cache สำหรับ Leaderboard ป้องกัน DB Overload
+let cachedLeaderboard = null;
+let lastLeaderboardCacheTime = 0;
+const LEADERBOARD_CACHE_TTL = 2000; // 2 วินาที
 export const getScores = async (c) => {
     try {
         const rows = await prisma.departments_score.findMany({
@@ -56,14 +64,20 @@ export const click = async (c) => {
                 message: "departmentKey is required",
             }, 400);
         }
-        const updated = await prisma.departments_score.update({
+        const updated = await prisma.departments_score.upsert({
             where: {
                 department_key: departmentKey
             },
-            data: {
+            update: {
                 total_clicks: {
                     increment: 1
                 },
+                updated_at: new Date()
+            },
+            create: {
+                department_key: departmentKey,
+                department_name: departmentKey,
+                total_clicks: 1,
                 updated_at: new Date()
             }
         });
@@ -82,28 +96,78 @@ export const click = async (c) => {
 };
 export const clickBulk = async (c) => {
     try {
-        const { departmentKey, count } = await c.req.json();
-        if (!departmentKey || !count) {
-            return c.json({
-                status: false,
-                message: "departmentKey and count required",
-            }, 400);
-        }
-        const updated = await prisma.departments_score.update({
-            where: {
-                department_key: departmentKey
-            },
-            data: {
-                total_clicks: {
-                    increment: BigInt(count)
-                },
-                updated_at: new Date()
+        const body = await c.req.json();
+        // 1. รองรับแบบรูปแบบดั้งเดิม { departmentKey, count }
+        if (body.departmentKey !== undefined && body.count !== undefined) {
+            const { departmentKey, count } = body;
+            const parsedCount = Number(count);
+            if (isNaN(parsedCount) || parsedCount <= 0) {
+                return c.json({ status: false, message: "Invalid count value" }, 400);
             }
-        });
+            if (parsedCount > 1000) {
+                return c.json({ status: false, message: "Click count exceeds limit (max 1000)" }, 400);
+            }
+            const updated = await prisma.departments_score.upsert({
+                where: {
+                    department_key: departmentKey
+                },
+                update: {
+                    total_clicks: {
+                        increment: BigInt(parsedCount)
+                    },
+                    updated_at: new Date()
+                },
+                create: {
+                    department_key: departmentKey,
+                    department_name: departmentKey,
+                    total_clicks: BigInt(parsedCount),
+                    updated_at: new Date()
+                }
+            });
+            return c.json({
+                status: true,
+                data: updated,
+            });
+        }
+        // 2. รองรับแบบ Map { "digital-media": 45 } ที่ถูกส่งมาจาก navigator.sendBeacon ตอนปิดเกม
+        if (typeof body === 'object' && body !== null) {
+            const updates = [];
+            for (const [departmentKey, count] of Object.entries(body)) {
+                const parsedCount = Number(count);
+                // ข้ามหากจำนวนคลิกไม่ถูกต้อง หรือโกงค่าลบ
+                if (isNaN(parsedCount) || parsedCount <= 0 || parsedCount > 1000) {
+                    continue;
+                }
+                updates.push(prisma.departments_score.upsert({
+                    where: {
+                        department_key: departmentKey
+                    },
+                    update: {
+                        total_clicks: {
+                            increment: BigInt(parsedCount)
+                        },
+                        updated_at: new Date()
+                    },
+                    create: {
+                        department_key: departmentKey,
+                        department_name: departmentKey,
+                        total_clicks: BigInt(parsedCount),
+                        updated_at: new Date()
+                    }
+                }));
+            }
+            if (updates.length > 0) {
+                await prisma.$transaction(updates);
+            }
+            return c.json({
+                status: true,
+                message: "Bulk clicks from sendBeacon processed successfully"
+            });
+        }
         return c.json({
-            status: true,
-            data: updated,
-        });
+            status: false,
+            message: "Invalid payload format",
+        }, 400);
     }
     catch (error) {
         console.error(error);
@@ -151,11 +215,19 @@ export const clickBulkUser = async (c) => {
     try {
         const body = await c.req.json();
         const { departmentKey, count, studentId } = body;
-        if (!departmentKey || !count || !studentId) {
+        if (!departmentKey || count === undefined || !studentId) {
             return c.json({
                 status: false,
                 message: "departmentKey, count and studentId required",
             }, 400);
+        }
+        // 🔒 Security check: ป้องกันการส่งค่าโกง/ติดลบ
+        const parsedCount = Number(count);
+        if (isNaN(parsedCount) || parsedCount <= 0) {
+            return c.json({ status: false, message: "Invalid count value" }, 400);
+        }
+        if (parsedCount > 1000) {
+            return c.json({ status: false, message: "Click count exceeds limit (max 1000)" }, 400);
         }
         const user = await prisma.popcat_users.findUnique({
             where: {
@@ -168,6 +240,7 @@ export const clickBulkUser = async (c) => {
                 message: "User not found",
             }, 404);
         }
+        // 1. อัปเดตคะแนนส่วนบุคคลใน popcat_players เสมอ (นี่คือคะแนนหลัก)
         const player = await prisma.popcat_players.upsert({
             where: {
                 student_id_department_key: {
@@ -178,7 +251,7 @@ export const clickBulkUser = async (c) => {
             update: {
                 student_name: user.student_name,
                 total_clicks: {
-                    increment: BigInt(count)
+                    increment: BigInt(parsedCount)
                 },
                 updated_at: new Date()
             },
@@ -186,9 +259,32 @@ export const clickBulkUser = async (c) => {
                 student_id: user.student_id,
                 student_name: user.student_name,
                 department_key: departmentKey,
-                total_clicks: BigInt(count)
+                total_clicks: BigInt(parsedCount)
             }
         });
+        // 2. พยายามอัปเดตคะแนนรวมใน departments_score (ถ้าทำไม่ได้เนื่องจากตาราง/ฟิลด์มีปัญหา จะไม่ทำให้ request ล่ม)
+        try {
+            await prisma.departments_score.upsert({
+                where: {
+                    department_key: departmentKey
+                },
+                update: {
+                    total_clicks: {
+                        increment: BigInt(parsedCount)
+                    },
+                    updated_at: new Date()
+                },
+                create: {
+                    department_key: departmentKey,
+                    department_name: departmentKey,
+                    total_clicks: BigInt(parsedCount),
+                    updated_at: new Date()
+                }
+            });
+        }
+        catch (e) {
+            console.error("Failed to sync departments_score in clickBulkUser:", e);
+        }
         return c.json({
             status: true,
             data: player,
@@ -202,61 +298,78 @@ export const clickBulkUser = async (c) => {
         }, 500);
     }
 };
-
 export const getTopDepartments = async (c) => {
     try {
-        const rows = await prisma.$queryRaw`
-      SELECT
-        student_id,
-        student AS student_name,
-        department_key,
-        total_clicks,
-        updated_at
+        const rows = await prisma.$queryRaw `
+      SELECT student_id, student_name, department_key, total_clicks, updated_at
       FROM (
-        SELECT
+        SELECT 
           student_id,
-          student,
+          student_name,
           department_key,
           total_clicks,
           updated_at,
-          ROW_NUMBER() OVER (
-            PARTITION BY department_key
-            ORDER BY COALESCE(CAST(total_clicks AS INTEGER), 0) DESC
-          ) AS rn
+          ROW_NUMBER() OVER (PARTITION BY department_key ORDER BY total_clicks DESC) as rn
         FROM popcat_players
       ) t
       WHERE rn = 1
-      ORDER BY COALESCE(CAST(total_clicks AS INTEGER), 0) DESC;
+      ORDER BY total_clicks DESC;
     `;
-
-        console.log("Top Departments:", rows);
-        console.log(rows);
-        console.log(typeof rows[0].total_clicks);
-
-        const safeRows = JSON.parse(
-            JSON.stringify(
-                rows,
-                (_, value) =>
-                    typeof value === "bigint"
-                        ? value.toString()
-                        : value
-            )
-        );
-
         return c.json({
             status: true,
-            count: safeRows.length,
-            data: safeRows,
+            data: rows,
         });
-    } catch (error) {
-        console.error("getTopDepartments error:", error);
-
-        return c.json(
-            {
-                status: false,
-                message: error instanceof Error ? error.message : "Unknown error",
-            },
-            500
-        );
+    }
+    catch (error) {
+        console.error(error);
+        return c.json({
+            status: false,
+            message: "Server Error",
+        }, 500);
+    }
+};
+// 🏆 Leaderboard รวม: aggregate จาก popcat_players โดยตรง (รองรับกรณี departments_score ว่าง)
+export const getLeaderboard = async (c) => {
+    try {
+        const now = Date.now();
+        // 💾 หากยังมี Cache อยู่ ให้ส่งผลลัพธ์จาก Cache ได้ทันทีเพื่อลดโหลด DB
+        if (cachedLeaderboard && (now - lastLeaderboardCacheTime < LEADERBOARD_CACHE_TTL)) {
+            return c.json({ status: true, data: cachedLeaderboard });
+        }
+        // ดึงคะแนนรวมและ top player ของแต่ละคณะจาก popcat_players
+        const rows = await prisma.$queryRaw `
+      SELECT
+        d.department_key,
+        d.total_clicks,
+        top.student_id   AS top_student_id,
+        top.student_name AS top_student_name,
+        top.total_clicks AS top_student_clicks
+      FROM (
+        SELECT department_key, SUM(total_clicks) AS total_clicks
+        FROM popcat_players
+        GROUP BY department_key
+      ) d
+      JOIN (
+        SELECT student_id, student_name, department_key, total_clicks,
+               ROW_NUMBER() OVER (PARTITION BY department_key ORDER BY total_clicks DESC) AS rn
+        FROM popcat_players
+      ) top ON top.department_key = d.department_key AND top.rn = 1
+      ORDER BY d.total_clicks DESC;
+    `;
+        const result = rows.map((r) => ({
+            department_key: r.department_key,
+            total_clicks: Number(r.total_clicks),
+            top_student_id: r.top_student_id ?? null,
+            top_student_name: r.top_student_name ?? null,
+            top_student_clicks: Number(r.top_student_clicks ?? 0),
+        }));
+        // บันทึก Cache ล่าสุด
+        cachedLeaderboard = result;
+        lastLeaderboardCacheTime = now;
+        return c.json({ status: true, data: result });
+    }
+    catch (error) {
+        console.error(error);
+        return c.json({ status: false, message: "Server Error" }, 500);
     }
 };

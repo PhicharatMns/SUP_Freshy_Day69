@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { getScores, getScoreByDepartment, click, clickBulk, registerUser, clickBulkUser, getTopDepartments } from "../controllers/popcatController.js";
+import { getScores, getScoreByDepartment, click, clickBulk, registerUser, clickBulkUser, getTopDepartments, getLeaderboard } from "../controllers/popcatController.js";
 const popcatRoutes = new Hono();
 popcatRoutes.get("/scores", getScores);
 popcatRoutes.get("/score/:departmentKey", getScoreByDepartment);
@@ -8,4 +8,5 @@ popcatRoutes.post("/click-bulk", clickBulk);
 popcatRoutes.post("/register", registerUser);
 popcatRoutes.post("/click-bulk-user", clickBulkUser);
 popcatRoutes.get("/top-departments", getTopDepartments);
+popcatRoutes.get("/leaderboard", getLeaderboard);
 export default popcatRoutes;
