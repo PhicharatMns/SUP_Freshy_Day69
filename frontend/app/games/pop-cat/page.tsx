@@ -1282,6 +1282,7 @@ export default function PopCatGamePage() {
   const isGameOpenRef = useRef<boolean | null>(isGameOpen);
   isGameOpenRef.current = isGameOpen;
 
+  const flushClicksRef = useRef<any>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
