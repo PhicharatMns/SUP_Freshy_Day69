@@ -121,7 +121,7 @@ export default function Popcar() {
   );
 
   return (
-    <div className="absolute inset-0 flex flex-col items-center md:justify-center w-full h-screen">
+    <div className="absolute bg-black/60 backdrop-blur-lg inset-0 flex flex-col items-center md:justify-center w-full h-screen">
       <div className="w-[780px] flex flex-col h-screen mt-10 bg-gray-50 p-3 rounded-t-2xl border border-gray-200 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 
         {/* ================= LOADING ================= */}
