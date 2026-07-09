@@ -6,7 +6,7 @@ export default function BK() {
       <div className="relative md:block hidden w-full h-full">
         <Image
           src={
-            "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/PPPPPPPP.webp"
+            "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/bk/PPPPPPPP.webp"
           }
           alt="bk"
           fill
@@ -19,7 +19,7 @@ export default function BK() {
         <div className="absolute top-6 right-6 w-56 h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 animate-spin-slow">
           <Image
             src={
-              "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/2-removebg-preview.png"
+              "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/bk/2-removebg-preview.png"
             }
             alt="bk"
             fill
@@ -32,7 +32,7 @@ export default function BK() {
         <div className="absolute bottom-4 left-40 w-80 h-80 md:w-80 md:h-80 lg:w-96 lg:h-96 animate-spin">
           <Image
             src={
-              "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/4-removebg-preview.png"
+              "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/bk/4-removebg-preview.png"
             }
             alt="bk"
             fill
@@ -45,7 +45,7 @@ export default function BK() {
         <div className="absolute top-4 left-40 w-56 h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 animate-spin-slow">
           <Image
             src={
-              "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/5-removebg-preview.png"
+              "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/bk/5-removebg-preview%20(2).png"
             }
             alt="bk"
             fill
@@ -75,7 +75,7 @@ export default function BK() {
         <div className="absolute bottom-4 right-7 w-56 h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 animate-spin-slow">
           <Image
             src={
-              "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/PNG___1_-removebg-preview.png"
+              "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/bk/PNG___1_-removebg-preview%20(1).png"
             }
             alt="bk"
             fill
@@ -101,7 +101,7 @@ export default function BK() {
       <div className="relative md:hidden block w-full h-full">
         <Image
           src={
-            "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/msBK.webp"
+            "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/bk/msBK%20(1).webp"
           }
           alt="bk"
           fill

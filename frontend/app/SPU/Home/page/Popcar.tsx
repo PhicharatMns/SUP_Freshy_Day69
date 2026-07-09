@@ -102,7 +102,7 @@ export default function Popcar() {
           rank === 1 ? "bg-yellow-700 border border-yellow-300" : rank === 2 ? "bg-slate-600" : "bg-amber-700"
         }`}>
           <p className="truncate">N : {item.top_student_name || "-"}</p>
-          <p>รหัส : {item.top_student_id || "-"}</p>
+          <p>รหัส : 69{item.top_student_id || "-"}</p>
         </div>
       </div>
 
