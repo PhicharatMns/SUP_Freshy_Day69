@@ -1458,7 +1458,7 @@ export default function PopCatGamePage() {
 
     try {
       for (const [departmentKey, count] of entries) {
-        await fetch(`${post}/popcar/click-bulk-user`, {
+        const res = await fetch(`${post}/popcar/click-bulk-user`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -1469,6 +1469,14 @@ export default function PopCatGamePage() {
             studentId: user.studentId,
           }),
         });
+
+        // 🚨 หากระบบฐานข้อมูลรีเซ็ตและไม่พบผู้ใช้ในระบบอีกต่อไป
+        if (res.status === 404) {
+          localStorage.removeItem("popcat_user");
+          alert("ไม่พบบัญชีผู้เล่นของคุณในฐานข้อมูล (อาจมีการรีเซ็ตระบบ) ระบบจะพาคุณกลับไปลงทะเบียนใหม่อีกครั้ง");
+          window.location.href = "/Freshy69";
+          return;
+        }
       }
 
       pendingClicks.current = {};
