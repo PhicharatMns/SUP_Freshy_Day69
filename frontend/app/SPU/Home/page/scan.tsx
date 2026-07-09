@@ -195,7 +195,7 @@ export default function Scan({ onActivePostChange }: ScanProps) {
                 <Image
                   fill
                   priority
-                  quality={80}
+                  unoptimized
                   src={normalizeImageUrl(current.image_url)}
                   alt={current.name}
                   className="object-cover rounded-3xl"
@@ -203,7 +203,7 @@ export default function Scan({ onActivePostChange }: ScanProps) {
               </motion.div>
             </div>
           </div>
-
+ 
           {/* ================= ฝั่งขวา: QR Code & ข้อความคำคม ================= */}
           <div>
             <div className="flex flex-col items-center justify-center rounded-3xl overflow-hidden md:ml-6">
@@ -220,7 +220,7 @@ export default function Scan({ onActivePostChange }: ScanProps) {
                   <Image
                     fill
                     priority
-                    quality={80}
+                    unoptimized
                     src={qr}
                     alt="QR"
                     className="object-contain p-10 w-full h-[600px]"
