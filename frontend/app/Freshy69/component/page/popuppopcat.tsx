@@ -131,6 +131,7 @@ export default function Popuppopcat({ setpoup }: propsPopuppopcat) {
                                     const value = e.target.value;
 
                                     if (!value.startsWith("69")) return;
+                                    if (value.length > 8) return; 
 
                                     setStudentId(value.slice(2));
                                 }}

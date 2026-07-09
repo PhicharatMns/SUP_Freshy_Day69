@@ -20,7 +20,7 @@ await connectDB();
 app.use('*', logger());
 
 app.use('*', cors({
-  origin: '*',
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'https://spu69.online', 'https://www.spu69.online'],
   allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowHeaders: ["Content-Type", "Authorization", "x-device-id"] // 👈 อนุญาต Device ID header
 }));

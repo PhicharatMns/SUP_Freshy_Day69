@@ -6,6 +6,11 @@ import { prisma } from "../config/database.js";
   return Number(this);
 };
 
+// 💾 Cache สำหรับ Leaderboard ป้องกัน DB Overload
+let cachedLeaderboard: any = null;
+let lastLeaderboardCacheTime = 0;
+const LEADERBOARD_CACHE_TTL = 2000; // 2 วินาที
+
 export const getScores = async (c: Context) => {
   try {
     const rows = await prisma.departments_score.findMany({
@@ -113,34 +118,79 @@ export const click = async (c: Context) => {
 
 export const clickBulk = async (c: Context) => {
   try {
-    const { departmentKey, count } = await c.req.json();
+    const body = await c.req.json();
 
-    if (!departmentKey || !count) {
-      return c.json(
-        {
-          status: false,
-          message: "departmentKey and count required",
+    // 1. รองรับแบบรูปแบบดั้งเดิม { departmentKey, count }
+    if (body.departmentKey !== undefined && body.count !== undefined) {
+      const { departmentKey, count } = body;
+      const parsedCount = Number(count);
+      if (isNaN(parsedCount) || parsedCount <= 0) {
+        return c.json({ status: false, message: "Invalid count value" }, 400);
+      }
+      if (parsedCount > 1000) {
+        return c.json({ status: false, message: "Click count exceeds limit (max 1000)" }, 400);
+      }
+
+      const updated = await prisma.departments_score.update({
+        where: {
+          department_key: departmentKey
         },
-        400
-      );
+        data: {
+          total_clicks: {
+            increment: BigInt(parsedCount)
+          },
+          updated_at: new Date()
+        }
+      });
+
+      return c.json({
+        status: true,
+        data: updated,
+      });
     }
 
-    const updated = await prisma.departments_score.update({
-      where: {
-        department_key: departmentKey
-      },
-      data: {
-        total_clicks: {
-          increment: BigInt(count)
-        },
-        updated_at: new Date()
-      }
-    });
+    // 2. รองรับแบบ Map { "digital-media": 45 } ที่ถูกส่งมาจาก navigator.sendBeacon ตอนปิดเกม
+    if (typeof body === 'object' && body !== null) {
+      const updates = [];
+      for (const [departmentKey, count] of Object.entries(body)) {
+        const parsedCount = Number(count);
+        // ข้ามหากจำนวนคลิกไม่ถูกต้อง หรือโกงค่าลบ
+        if (isNaN(parsedCount) || parsedCount <= 0 || parsedCount > 1000) {
+          continue;
+        }
 
-    return c.json({
-      status: true,
-      data: updated,
-    });
+        updates.push(
+          prisma.departments_score.update({
+            where: {
+              department_key: departmentKey
+            },
+            data: {
+              total_clicks: {
+                increment: BigInt(parsedCount)
+              },
+              updated_at: new Date()
+            }
+          })
+        );
+      }
+
+      if (updates.length > 0) {
+        await prisma.$transaction(updates);
+      }
+
+      return c.json({
+        status: true,
+        message: "Bulk clicks from sendBeacon processed successfully"
+      });
+    }
+
+    return c.json(
+      {
+        status: false,
+        message: "Invalid payload format",
+      },
+      400
+    );
   } catch (error) {
     console.error(error);
 
@@ -206,7 +256,7 @@ export const clickBulkUser = async (c: Context) => {
     const body = await c.req.json();
     const { departmentKey, count, studentId } = body;
 
-    if (!departmentKey || !count || !studentId) {
+    if (!departmentKey || count === undefined || !studentId) {
       return c.json(
         {
           status: false,
@@ -214,6 +264,15 @@ export const clickBulkUser = async (c: Context) => {
         },
         400
       );
+    }
+
+    // 🔒 Security check: ป้องกันการส่งค่าโกง/ติดลบ
+    const parsedCount = Number(count);
+    if (isNaN(parsedCount) || parsedCount <= 0) {
+      return c.json({ status: false, message: "Invalid count value" }, 400);
+    }
+    if (parsedCount > 1000) {
+      return c.json({ status: false, message: "Click count exceeds limit (max 1000)" }, 400);
     }
 
     const user = await prisma.popcat_users.findUnique({
@@ -232,27 +291,41 @@ export const clickBulkUser = async (c: Context) => {
       );
     }
 
-    const player = await prisma.popcat_players.upsert({
-      where: {
-        student_id_department_key: {
-          student_id: user.student_id,
-          department_key: departmentKey
-        }
-      },
-      update: {
-        student_name: user.student_name,
-        total_clicks: {
-          increment: BigInt(count)
+    // 🔄 รันแบบ Transaction เพื่อความชัวร์ว่าอัปเดตทั้ง 2 ตารางพร้อมกันแบบ Atomically
+    const [player] = await prisma.$transaction([
+      prisma.popcat_players.upsert({
+        where: {
+          student_id_department_key: {
+            student_id: user.student_id,
+            department_key: departmentKey
+          }
         },
-        updated_at: new Date()
-      },
-      create: {
-        student_id: user.student_id,
-        student_name: user.student_name,
-        department_key: departmentKey,
-        total_clicks: BigInt(count)
-      }
-    });
+        update: {
+          student_name: user.student_name,
+          total_clicks: {
+            increment: BigInt(parsedCount)
+          },
+          updated_at: new Date()
+        },
+        create: {
+          student_id: user.student_id,
+          student_name: user.student_name,
+          department_key: departmentKey,
+          total_clicks: BigInt(parsedCount)
+        }
+      }),
+      prisma.departments_score.update({
+        where: {
+          department_key: departmentKey
+        },
+        data: {
+          total_clicks: {
+            increment: BigInt(parsedCount)
+          },
+          updated_at: new Date()
+        }
+      })
+    ]);
 
     return c.json({
       status: true,
@@ -311,6 +384,12 @@ export const getTopDepartments = async (c: Context) => {
 // 🏆 Leaderboard รวม: aggregate จาก popcat_players โดยตรง (รองรับกรณี departments_score ว่าง)
 export const getLeaderboard = async (c: Context) => {
   try {
+    const now = Date.now();
+    // 💾 หากยังมี Cache อยู่ ให้ส่งผลลัพธ์จาก Cache ได้ทันทีเพื่อลดโหลด DB
+    if (cachedLeaderboard && (now - lastLeaderboardCacheTime < LEADERBOARD_CACHE_TTL)) {
+      return c.json({ status: true, data: cachedLeaderboard });
+    }
+
     // ดึงคะแนนรวมและ top player ของแต่ละคณะจาก popcat_players
     const rows: any[] = await prisma.$queryRaw`
       SELECT
@@ -339,6 +418,10 @@ export const getLeaderboard = async (c: Context) => {
       top_student_name:     r.top_student_name ?? null,
       top_student_clicks:   Number(r.top_student_clicks ?? 0),
     }));
+
+    // บันทึก Cache ล่าสุด
+    cachedLeaderboard = result;
+    lastLeaderboardCacheTime = now;
 
     return c.json({ status: true, data: result });
 
