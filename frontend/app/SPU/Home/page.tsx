@@ -67,7 +67,7 @@ export default function HomePage() {
 
       {/* 3. Popcar รถป๊อป (z-30) (จะแสดงก็ต่อเมื่อกด "เรียกใช้ Popcar" ที่รีโมท) */}
       {showPopcar && (
-        <div className="absolute inset-0 z-30 pointer-events-none">
+        <div className="absolute inset-0  pointer-events-none z-[9999]">
           <Popcar />
         </div>
       )}

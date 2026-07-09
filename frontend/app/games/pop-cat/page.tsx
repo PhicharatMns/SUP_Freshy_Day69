@@ -1214,8 +1214,8 @@ export const DEPARTMENTS_CONFIG: Record<
     },
   },
   entrepreneurship: {
-    name: "คณะการสร้างเจ้าของธุรกิจและการบริหารจัดการ",
-    nameEn: "School of Entrepreneurship and Management",
+    name: "คณะการสร้างเจ้าของธุรกิจ",
+    nameEn: "School of Entrepreneurship",
     abbr: "SE",
     theme: {
       accent: "text-[#F92D20]",
