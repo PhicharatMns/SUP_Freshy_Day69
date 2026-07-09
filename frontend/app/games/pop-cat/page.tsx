@@ -1278,6 +1278,11 @@ export default function PopCatGamePage() {
 
   const [isGameOpen, setIsGameOpen] = useState<boolean | null>(null);
 
+  // 🔄 ใช้ Refs เพื่อเข้าถึงสถานะล่าสุดใน event closures เสมอ
+  const isGameOpenRef = useRef<boolean | null>(isGameOpen);
+  isGameOpenRef.current = isGameOpen;
+
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   /* =========================
@@ -1326,11 +1331,16 @@ export default function PopCatGamePage() {
 
         if (!isActive) return;
 
-        if (json?.success && json?.data?.type !== undefined) {
-          setIsGameOpen(Boolean(json.data.type));
-        } else {
-          setIsGameOpen(false);
+        const nextGameOpen = json?.success && json?.data?.type !== undefined ? Boolean(json.data.type) : false;
+
+        // 🚨 หากสถานะเปลี่ยนจาก เปิด -> ปิด ให้ทำการยิง API ส่งคะแนนก้อนสุดท้ายที่เหลือทันทีก่อนเปลี่ยนหน้าจอ
+        if (isGameOpenRef.current === true && nextGameOpen === false) {
+          if (flushClicksRef.current) {
+            await flushClicksRef.current(true); // force = true เพื่อบายพาสการเช็ค isGameOpen
+          }
         }
+
+        setIsGameOpen(nextGameOpen);
       } catch (err) {
         console.error("Failed to load popcat control state", err);
         if (isActive) {
@@ -1432,8 +1442,8 @@ export default function PopCatGamePage() {
 
   const hasUserData = Boolean(user.studentId || user.studentName);
 
-  const flushClicks = async () => {
-    if (isFlushing.current || isGameOpen !== true) return;
+  const flushClicks = async (force = false) => {
+    if (isFlushing.current || (!force && isGameOpen !== true)) return;
 
     const entries = Object.entries(pendingClicks.current);
 
@@ -1468,6 +1478,9 @@ export default function PopCatGamePage() {
     }
   };
 
+  // อัปเดตฟังก์ชันล่าใน Ref เสมอเพื่อหลีกเลี่ยง Stale Closures
+  flushClicksRef.current = flushClicks;
+
   /* =========================
      flush every 30 seconds
   ========================= */
@@ -1490,16 +1503,33 @@ export default function PopCatGamePage() {
   useEffect(() => {
     if (isGameOpen !== true) return;
 
-    const handleBeforeUnload = () => {
-      const data = JSON.stringify(pendingClicks.current);
+    const flushBeforeExit = () => {
+      const entries = Object.entries(pendingClicks.current);
+      if (entries.length === 0) return;
 
+      const data = JSON.stringify(pendingClicks.current);
       navigator.sendBeacon(`${post}/popcar/click-bulk`, data);
+      
+      // ล้างค่าในเครื่องทันทีเพื่อป้องกันการส่งซ้ำเมื่อกลับเข้ามาใหม่
+      pendingClicks.current = {};
+    };
+
+    const handleBeforeUnload = () => {
+      flushBeforeExit();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        flushBeforeExit();
+      }
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [isGameOpen]);
 
@@ -1908,16 +1938,24 @@ export default function PopCatGamePage() {
               onMouseDown={handlePress}
               onMouseUp={handleRelease}
               onMouseLeave={handleRelease}
-              onTouchStart={() => {
+              onTouchStart={(e) => {
+                e.preventDefault();
                 handlePress();
               }}
-              onTouchEnd={handleRelease}
-              onTouchCancel={handleRelease}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                handleRelease();
+              }}
+              onTouchCancel={(e) => {
+                e.preventDefault();
+                handleRelease();
+              }}
               className={`relative z-0 w-56 h-56 sm:w-64 sm:h-64 md:w-72 md:h-72 rounded-full flex items-center justify-center overflow-hidden cursor-pointer select-none active:outline-none transition-transform duration-75 ${isBouncing ? "translate-x-[6px] translate-y-[6px]" : ""
                 }`}
               style={{
                 backgroundColor: PAPER_LIGHT,
                 border: `5px solid ${INK}`,
+                touchAction: "none", // ป้องกันการกดเบิ้ล/ซูม/เลื่อนหน้าจอขณะเล่นบนมือถือ
                 boxShadow: isBouncing
                   ? `2px 2px 0 0 ${INK}`
                   : `8px 8px 0 0 ${INK}`,
