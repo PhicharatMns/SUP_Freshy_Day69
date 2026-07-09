@@ -21,7 +21,7 @@ export default function Message() {
     const fetchQaData = async () => {
       try {
         const response = await fetch(
-          `${post}/Qafrom/select-qa?t=${Date.now()}`
+          `${post}/Qafrom/select-qa?t=${Date.now()}`,
         );
 
         if (!response.ok) {
@@ -37,7 +37,7 @@ export default function Message() {
             const timeStr = q.created_at.replace(" ", "T");
             const parsedTime = new Date(timeStr).getTime();
             if (isNaN(parsedTime)) return true; // หากแยกแยะเวลาไม่ได้ ปล่อยผ่านทันที
-            
+
             const diff = Date.now() - parsedTime;
             // 🚨 แก้ไขบั๊ก Timezone/Clock mismatch: หากเวลาใน DB อยู่ในอนาคต (diff < 0) หรือสร้างเกิน 5 วินาทีแล้ว ให้แสดงผลทันที
             return diff >= 5000 || diff < 0;
@@ -73,23 +73,30 @@ export default function Message() {
 
   // 🛠️ ปรับเปลี่ยนพาธและโดเมนรูปภาพให้ถูกต้องปลอดภัย 100% (ป้องกันโดเมนซ้ำซ้อน)
   const normalizeImageUrl = (url: string | null | undefined) => {
-    if (!url) return 'https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp';
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      if (url.includes('894df2ee46e1279e8499573d3c22949b.r2.cloudflarestorage.com/sup69')) {
-        return url.replace('https://894df2ee46e1279e8499573d3c22949b.r2.cloudflarestorage.com/sup69', 'https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev');
+    if (!url)
+      return "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/DEK69.webp";
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      if (
+        url.includes(
+          "894df2ee46e1279e8499573d3c22949b.r2.cloudflarestorage.com/sup69",
+        )
+      ) {
+        return url.replace(
+          "https://894df2ee46e1279e8499573d3c22949b.r2.cloudflarestorage.com/sup69",
+          "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev",
+        );
       }
       return url;
     }
-    if (url.startsWith('Image69/') || url.startsWith('IG_Images/')) {
+    if (url.startsWith("Image69/") || url.startsWith("IG_Images/")) {
       return `https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/${url}`;
     }
-    return url.startsWith('/') ? url : `/${url}`;
+    return url.startsWith("/") ? url : `/${url}`;
   };
 
   return (
     // ตัวนอกสุด: ล็อกความสูงหน้าจอ และห้ามล้นออกนอกจอใหญ่
     <div className="w-full h-full md:flex hidden md:justify-end overflow-hidden pointer-events-none">
-      
       {/* กล่องเลื่อน (Scroll Box): จุดนี้ใส่ pointer-events-auto เพื่อให้เมาส์สกรอลล์ตรงนี้ได้จริง ๆ */}
       <div className="w-[460px] h-full max-h-screen flex flex-col gap-3 p-4 overflow-y-auto pointer-events-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <AnimatePresence>
@@ -133,13 +140,17 @@ export default function Message() {
                   </div>
                   <p
                     className={`line-clamp-2 break-all text-sm leading-relaxed ${
-                      e.feeling_text === "" ? "text-pink-500" : "text-slate-600 font-semibold"
+                      e.feeling_text === ""
+                        ? "text-pink-500"
+                        : "text-slate-600 font-semibold"
                     }`}
                   >
-                    <span className="text-slate-800 font-semibold">
-                      ถามว่า :{" "}
-                    </span>
-                    {e.feeling_text || "ให้กําลังใจ สโม"}
+                    <div className='flex gap-1 text-[20px]'>
+                      <span className="text-slate-800 font-semibold">
+                        ถามว่า :{" "}
+                      </span>
+                      <span>{e.feeling_text || "ไม่มีข้อความคำถาม"}</span>
+                    </div>
                   </p>
                 </div>
               </motion.div>
