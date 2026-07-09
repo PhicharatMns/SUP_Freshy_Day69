@@ -1009,7 +1009,7 @@ export const DEPARTMENTS_CONFIG: Record<
       closed:
         "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/digi01.webp",
       open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/digi02.webp",
-      logoCommittee: "",
+      logoCommittee: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/group/Logo-SPU-SDM_Color-r4ruygzzp8pcb62fculbxi8gv02afcabn42siuir5s.webp",
     },
   },
   "information-technology": {
@@ -1028,7 +1028,7 @@ export const DEPARTMENTS_CONFIG: Record<
       closed:
         "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/IT001.webp",
       open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/IT002.webp",
-      logoCommittee: "",
+      logoCommittee: "https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/group/Logo-SPU-SIT_Color-r4ruyzsrhxf2rdb4b2pvbdhoqphmpacydp4i4dqvpc.webp",
     },
   },
   "communication-arts": {
@@ -1047,6 +1047,7 @@ export const DEPARTMENTS_CONFIG: Record<
       closed:
         "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/Ni_TED01.webp",
       open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/Ni_TED02.webp",
+      logoCommittee: 'https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/group/Logo-SPU-CA_Color-rauus2ttj9lzep5pvkksm4ec3f7gyyidlu66nzbrpc.webp'
     },
   },
   engineering: {
@@ -1065,6 +1066,8 @@ export const DEPARTMENTS_CONFIG: Record<
       closed:
         "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/widwa01.webp",
       open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/widwa02.webp",
+      logoCommittee: 'https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/group/Logo-SPU-SOE_Color-r4rv00ggwgt9c5tvd0kbim8nwqgy1hehiqkfu68iyo.webp'
+
     },
   },
   "architecture-design": {
@@ -1083,6 +1086,8 @@ export const DEPARTMENTS_CONFIG: Record<
       closed:
         "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/satapudV2_01.webp",
       open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/satapudV2_02.webp",
+      logoCommittee: 'https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/group/Logo-SPU-SoDA_Color-r4ruzrzx6yhofo65qewoe6dik9mn47gwhkp2iol2io.webp'
+
     },
   },
   "business-administration": {
@@ -1101,6 +1106,8 @@ export const DEPARTMENTS_CONFIG: Record<
       closed:
         "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/borrihanV2_01.webp",
       open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/borrihanV2_02.webp",
+      logoCommittee: 'https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/group/Logo-SPU-BUS_Color-r4ruwhk99tzjssy6xzpoo09fppue6ceq1ahw1tgoao.webp'
+
     },
   },
   accountancy: {
@@ -1119,6 +1126,7 @@ export const DEPARTMENTS_CONFIG: Record<
       closed:
         "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/32.webp",
       open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/33.webp",
+      logoCommittee: 'https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/group/Logo-SPU-ACC_Color-r4ruwts5qog9zqgfymzu2f6ffq65yer8eyz7aeyk1s.webp'
     },
   },
 
@@ -1138,6 +1146,8 @@ export const DEPARTMENTS_CONFIG: Record<
       closed:
         "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/niti01.webp",
       open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/niti02.webp",
+      logoCommittee: 'https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/group/Logo-SPU-LAW_Color-r4ruxqoidvpba34nmj7rzovk87o0ftdu7ht733ls00.webp'
+
     },
   },
 
@@ -1157,6 +1167,8 @@ export const DEPARTMENTS_CONFIG: Record<
       closed:
         "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/sin_lapa01.webp",
       open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/sin_lapa02.webp",
+      logoCommittee: 'https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/group/Logo-SPU-SLA_Color-r4ruziljam4t7kjt9auep8qwmewyz8fl4a67pwz08w.webp'
+
     },
   },
 
@@ -1176,6 +1188,8 @@ export const DEPARTMENTS_CONFIG: Record<
       closed:
         "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/kan_bin01.webp",
       open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/kan_bin02.webp",
+      logoCommittee: 'https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/group/JOB-MKT-2025_04_238_Logo-SPU-CATH_Color_0-scaled-r7q3ot2eqce4vz68i963jtvqyxxdr1dfmzx46zos8w.webp'
+
     },
   },
 
@@ -1195,6 +1209,8 @@ export const DEPARTMENTS_CONFIG: Record<
       closed:
         "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/nana01.webp",
       open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/nana02.webp",
+      logoCommittee: 'https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/group/Logo-SPU-IC_Color-scaled-r6gfrm7imrsyi55k3cxxmhwjochd755dbau9ge89hc.webp'
+
     },
   },
   entrepreneurship: {
@@ -1213,6 +1229,8 @@ export const DEPARTMENTS_CONFIG: Record<
       closed:
         "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/kan_sang01.webp",
       open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/kan_sang02.webp",
+      logoCommittee: 'https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/group/Logo-SPU-SE_Color-r4ruyoip7wzmw1ri4xuchgc5m3184x46c5aod27ls0.webp'
+
     },
   },
   logistic: {
@@ -1231,6 +1249,8 @@ export const DEPARTMENTS_CONFIG: Record<
       closed:
         "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/logisV2_01.webp",
       open: "https://sdqlpckrrynnekozzqfg.supabase.co/storage/v1/object/public/publicImage/popcar/logisV2_02.webp",
+      logoCommittee: 'https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/group/Logo-SPU-LSC_Color-r4ruy5pxf89wfuit6ppt3l2xqdlvuz1jlk8yrizh8g.webp'
+
     },
   },
 };
@@ -1621,8 +1641,8 @@ export default function PopCatGamePage() {
       `}</style>
 
       <div className="p-4 flex gap-3 items-center z-[999]">
-        <button
-          onClick={() => window.history.back()}
+        <Link href={'/Freshy69'}
+
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition-all duration-200"
         >
           <svg
@@ -1640,7 +1660,7 @@ export default function PopCatGamePage() {
             />
           </svg>
           ย้อนกลับ
-        </button>
+        </Link>
       </div>
 
       {/* พื้นผิวฮาล์ฟโทน (จุดจางๆ) ให้ความรู้สึกงานพิมพ์การ์ตูน */}
@@ -1784,7 +1804,7 @@ export default function PopCatGamePage() {
       </svg>
 
       {/* ===================== เนื้อหาหลัก ===================== */}
-      <div className="flex-1 flex flex-col items-center justify-between px-5 pt-14 pb-10 relative z-10 w-full max-w-md sm:max-w-lg mx-auto">
+      <div className="flex-1 flex flex-col items-center justify-between px-5 pt-5 pb-5 relative z-10 w-full max-w-md sm:max-w-lg mx-auto">
         {/* หัวเรื่อง */}
         <div className="text-center space-y-3 mt-2">
           <span
@@ -1797,6 +1817,17 @@ export default function PopCatGamePage() {
           >
             SPU Freshy Day • Playground 2026
           </span>
+
+
+          <div className=" relative w-full h-20   mx-auto">
+            <Image
+              src={currentDept.catImages.logoCommittee}
+              alt={`${currentDept.name}`}
+              fill
+              priority={true}
+              className="object-cover"
+            />
+          </div>
 
           <div>
             <span
@@ -1823,12 +1854,7 @@ export default function PopCatGamePage() {
         {/* โซนกดแมว POP CAT */}
         <div className="w-full flex flex-col items-center justify-center py-6 sm:py-8">
           <div className="text-center mb-6">
-            <span
-              className="text-[10px] sm:text-xs uppercase tracking-widest font-extrabold block mb-1"
-              style={{ color: "#6b5c46" }}
-            >
-              จำนวนคลิกของทีมนี้
-            </span>
+
             <span
               className={`font-display comic-outline text-6xl sm:text-7xl tabular-nums transition-colors duration-300 ${currentDept.theme.accent}`}
               style={{ filter: `drop-shadow(4px 4px 0 ${INK})` }}
@@ -1840,9 +1866,8 @@ export default function PopCatGamePage() {
           <div className="relative">
             {/* แสงเรืองสีประจำคณะ (เอฟเฟกต์เล็กๆ รอบปุ่ม ไม่กระทบพื้นหลังทั้งหน้า) */}
             <div
-              className={`absolute inset-0 rounded-full blur-2xl opacity-30 transition-all duration-300 ${currentDept.theme.glow} ${
-                isMouthOpen ? "scale-110 opacity-50" : "scale-100"
-              }`}
+              className={`absolute inset-0 rounded-full blur-2xl opacity-30 transition-all duration-300 ${currentDept.theme.glow} ${isMouthOpen ? "scale-110 opacity-50" : "scale-100"
+                }`}
             />
 
             {/* ประกายดาวตอนกด */}
@@ -1888,9 +1913,8 @@ export default function PopCatGamePage() {
               }}
               onTouchEnd={handleRelease}
               onTouchCancel={handleRelease}
-              className={`relative z-0 w-56 h-56 sm:w-64 sm:h-64 md:w-72 md:h-72 rounded-full flex items-center justify-center overflow-hidden cursor-pointer select-none active:outline-none transition-transform duration-75 ${
-                isBouncing ? "translate-x-[6px] translate-y-[6px]" : ""
-              }`}
+              className={`relative z-0 w-56 h-56 sm:w-64 sm:h-64 md:w-72 md:h-72 rounded-full flex items-center justify-center overflow-hidden cursor-pointer select-none active:outline-none transition-transform duration-75 ${isBouncing ? "translate-x-[6px] translate-y-[6px]" : ""
+                }`}
               style={{
                 backgroundColor: PAPER_LIGHT,
                 border: `5px solid ${INK}`,
@@ -1927,12 +1951,7 @@ export default function PopCatGamePage() {
         >
           <div className="flex items-start justify-between gap-3 ">
             <div className="min-w-0">
-              <p
-                className="text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.2em]"
-                style={{ color: "#6b5c46" }}
-              >
-                ผู้เล่น
-              </p>
+
               <p
                 className="mt-1 font-display text-lg sm:text-xl truncate"
                 style={{ color: INK }}
@@ -1943,7 +1962,7 @@ export default function PopCatGamePage() {
               </p>
               <p className="text-sm font-semibold" style={{ color: "#6b5c46" }}>
                 {hasUserData
-                  ? `รหัสนักศึกษา: ${user.studentId || "—"} • ID: ${user.id ?? "—"}`
+                  ? `รหัสนักศึกษา: 69${user.studentId || "—"} • ID: ${user.id ?? "—"}`
                   : "กรุณาลงทะเบียนก่อนเข้าหน้าเกม"}
               </p>
             </div>
@@ -2079,8 +2098,8 @@ export default function PopCatGamePage() {
                         (
                           e.currentTarget as HTMLButtonElement
                         ).style.backgroundColor = isSelected
-                          ? dept.theme.accentHex + "22"
-                          : "transparent";
+                            ? dept.theme.accentHex + "22"
+                            : "transparent";
                       }}
                     >
                       {/* จุดสีประจำคณะ */}

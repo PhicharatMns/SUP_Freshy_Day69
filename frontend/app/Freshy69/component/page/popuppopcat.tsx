@@ -57,7 +57,7 @@ export default function Popuppopcat({ setpoup }: propsPopuppopcat) {
                 JSON.stringify({
                     id: result.data.id,
                     studentId: result.data.student_id,
-                    studentName: result.data.student_name, 
+                    studentName: result.data.student_name,
                 })
             );
 
@@ -126,11 +126,17 @@ export default function Popuppopcat({ setpoup }: propsPopuppopcat) {
                                 <label className="text-sm font-semibold text-gray-700 pl-1">รหัสนักศึกษา</label>
                             </div>
                             <input
-                                value={studentId}
-                                onChange={(e) => setStudentId(e.target.value)}
-                                className="w-full border border-slate-300 rounded-[15px] py-2.5 px-4 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200"
-                                type='number'
-                                placeholder="เช่น 67134327"
+                                value={`69${studentId}`}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+
+                                    if (!value.startsWith("69")) return;
+
+                                    setStudentId(value.slice(2));
+                                }}
+                                className="w-full border border-slate-300 rounded-[15px] py-2.5 px-4"
+                                type="number"
+                                placeholder="69xxxxxx"
                             />
                         </div>
 

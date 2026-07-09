@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 // =========================================================================
 // 🚧 หน้า "Pop Cat ปิดระบบชั่วคราว"
 // ใช้ธีมโปสเตอร์ SPU Freshy Day (กระดาษครีม + หมึกเข้ม + สีสด)
@@ -67,6 +69,29 @@ export default function PopClose() {
           backgroundSize: "16px 16px",
         }}
       />
+
+       <div className="p-4 flex gap-3 items-center z-[999]">
+        <Link href={'/Freshy69'}
+        
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition-all duration-200"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="w-4 h-4"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+            />
+          </svg>
+          ย้อนกลับ
+        </Link>
+      </div>
 
       {/* ===== ของตกแต่ง — มุมจอ (คงที่ ไม่ขึ้นกับ state) ===== */}
 

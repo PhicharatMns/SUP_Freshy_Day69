@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import Qa from "./component/page/QA";
 import Popuppopcat from "./component/page/popuppopcat";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 
 // Interface สำหรับข้อมูลฟองสบู่
 interface Bubble {
@@ -36,7 +38,7 @@ export default function Formsup() {
 
 
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
-  const router = useRouter(); 
+  const router = useRouter();
   // ฟองสบู่
   const bubbleColors = [
     "bg-white",
@@ -78,7 +80,7 @@ export default function Formsup() {
     },
   };
 
-  
+
 
   const openpopupMyselt = () => setpoup(prev => ({
     ...prev,
@@ -92,19 +94,19 @@ export default function Formsup() {
 
   const openpopupQa = () => setpoup(prev => ({ ...prev, myQa: true }))
 
-const openPopcat = () => {
-  const user = localStorage.getItem("popcat_user");
+  const openPopcat = () => {
+    const user = localStorage.getItem("popcat_user");
 
-  if (user) {
-    router.replace("/games");
-    return;
-  }
+    if (user) {
+      router.replace("/games");
+      return;
+    }
 
-  setpoup((prev) => ({
-    ...prev,
-    popcat: true,
-  }));
-};
+    setpoup((prev) => ({
+      ...prev,
+      popcat: true,
+    }));
+  };
 
 
   const Social = [
@@ -178,25 +180,6 @@ const openPopcat = () => {
         <div className="grid grid-cols-3 gap-4 w-full max-w-2xl p-4">
           {Social.map((e, i) => {
             const buttonStyle = `w-full text-lg h-40 z-50 hover:scale-105 flex items-center justify-center rounded-[20px] font-bold text-white shadow-lg bg-gradient-to-tr ${e.gradient} animate-gentle-bounce transition-all duration-300 cursor-pointer`;
-
-            // เปลี่ยนมาเช็คว่าถ้ามี link ให้ใช้คอมโพเนนต์ <Link>
-            // return e.lnik ? (
-            //   <Link
-            //     href={e.lnik}
-            //     className={buttonStyle}
-            //     key={i}
-            //   >
-            //     {e.title}
-            //   </Link>
-            // ) : (
-            //   <div
-            //     onClick={e.popup}
-            //     className={buttonStyle}
-            //     key={i}
-            //   >
-            //     {e.title}
-            //   </div>
-            // );
             return (
               <div
                 onClick={e.popup}
@@ -207,6 +190,22 @@ const openPopcat = () => {
               </div>
             )
           })}
+        </div>
+
+        <div>
+          <div className="w-80 h-20 relative mt-15  mx-auto">
+            <Image
+              src="https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/bk/7-removebg-preview.png"
+              alt="https://pub-48170382f78a40c58965b28eaa08b4c6.r2.dev/bk/7-removebg-preview.png"
+              fill
+              priority={true}
+              sizes="(max-width: 768px) 100vw"
+            />
+          </div>
+          <div className="text-center text-[12px] text-gray-600">
+            <p>โครงการนี้จัดทำและพัฒนาโดยนักศึกษา คณะเทคโนโลยีสารสนเทศ มหาวิทยาลัยศรีปทุม</p>
+            <Link  href='/Developer' className="text-blue-500">คลิกเพื่อดูรายชื่อ</Link>
+          </div>
         </div>
       </div>
 
